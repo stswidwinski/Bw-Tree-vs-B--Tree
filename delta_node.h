@@ -8,9 +8,6 @@
 #include "node.h"
 #include "pair.h"
 
-// we maintain payloads as byte arrays
-using byte = unsigned char;
-
 class DeltaNode : Node {
 	public:
 		DataNode(NodeType t) {
@@ -22,7 +19,7 @@ class DeltaNode : Node {
 	private:
 		// All deltas have a pair representing data. Delete deltas
 		// will have a non-initialized value element.
-		Pair<int, byte> value;
+		Pair<int, int> value;
 
 		NodeType type_;
 
