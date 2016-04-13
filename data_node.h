@@ -10,14 +10,17 @@
 #include "node.h" 
 #include "pair.h"
 
-// we maintain payloads as byte arrays
-using byte = unsigned char;
-
 class DataNode : Node {
 	public:
 		DataNode() : type_(DATA) {}
 
 		NodeType getType() override;
+
+		// notice that from a node we can only get the PID
+		// of the actual payload. To get the payload use mem_map.
+
+		// @TODO
+		// int getPID(int key);
 
 	private:
 		// the highest key value that can be stored in this node.
@@ -28,8 +31,8 @@ class DataNode : Node {
 		Node* linkPter;
 		// type of node
 		NodeType type_;
-		// array of records
-		Pair<int, byte>* data;
+		// array of records <Key, PID>
+		Pair<int, int>* data;
 };
 
 #endif
