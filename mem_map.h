@@ -11,23 +11,40 @@
 #ifndef _MEM_MAP_H
 #define _MEM_MAP_H_
 
-// we maintain payloads as byte arrays
-using byte = unsigned char;
+#include "node.h"
+#include <atomic>
 
 class MemoryMap {
 	public:
-		MemoryMap() {}
 
-		// Node* getNode(NodeType type);
+		MemoryMap(int cap) {
+			capacity_ = cap;
+			currentKey_ = 0;
+			map_ = new Node*[cap];
+		}
+
+		// delegating constructor
+		MemoryMap() : MemoryMap(2) { }
+		
+		~MemoryMap() {
+			delete[] map;
+		}
+
+		// put node into memory table. Returns PID assigned.
+		// PUT does not have to be atomic, since new elements are not
+		// seen to transactions until their parents know about them.
+		int put (Node* node);
+
+		// get from mem_map element at PID. This does not have to be atomic either.
+		Node** get (int PID);
+
+		// use CAS to update the the address at PID to node.
+		bool CAS(int PID, Node* oldNode, Node* newNode);
 
 	private:
-
-		// Node pools. We should determine the size of each buffer by the maximal
-		// size of the number of nodes inserted / changed. Ideas for how to estimate 
-		// this? Trial & error?
-
-		// Typically, a pool of resources is a linked list of 'empty' objects.
-		// Hence, we would have those for each type of node we need.
+		int capacity_;
+		byte* map_;
+		int currentKey_;
 };
 
 #endif
