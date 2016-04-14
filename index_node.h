@@ -8,19 +8,32 @@
 #include "node.h" 
 #include "pair.h"
 
-// we maintain payloads as byte arrays
-using byte = unsigned char;
-
 class IndexNode : Node {
 	public:
-		IndexNode() : type_(INDEX) {}
+		IndexNode(int size) : type_(INDEX) {
+			maxKeyListSize_ = size;
+			searchArray_ = new Pair<int, int>[size];
+			currentSize_ = 0;
+			smallestPID = -1;
+		}
 
 		NodeType getType() override;
 
+		// returns the PID of the node to go to next
+		// based on key. This is done via binary search.
+		int findPID(int key);
 	private:
+		// max. number of keys in the searchArray_
+		int maxKeyListSize_;
+		// current number of keys in the searchArray_
+		int currentSize_;
+		// the 'left most' pointer
+		int smallestPID;
+		// type of node.
 		NodeType type_;
-		// array of key values and pointers. Used for search.
-		Pair<int, Node*>* searchArray;
+		// array of key values and PID. Used for tree traversal.
+		// the array is sorted.
+		Pair<int, int>* searchArray_;
 };
 
 #endif
