@@ -21,13 +21,20 @@ enum NodeType {
 
 class Node {
 	public:
+		Node(NodeType type) : type_{type} {};
+		
 		// returns the type of the node.
-		virtual NodeType getType() = 0;
+		NodeType getType() { 
+			return type_;
+		}
+
+		virtual ~Node(){};
 
 		// returns the PID of the next page to search.
 		// NOTE: data node does not implement this method.
 		virtual int find(int key);
-
+	protected:
+		NodeType type_;
 		
 };
 

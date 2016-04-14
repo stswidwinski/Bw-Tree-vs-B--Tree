@@ -4,11 +4,7 @@
 	Implements mem_map.h
 */
 #include "nodes/index_node.h"
-
-NodeType IndexNode::getType() {
-	return type_;
-}
-
+	
 int IndexNode::findPID(int key) {
 	// empty node.
 	if(currentSize_ == 0)

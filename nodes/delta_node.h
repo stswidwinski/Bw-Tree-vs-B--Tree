@@ -8,21 +8,14 @@
 #include "nodes/node.h"
 #include "utils/pair.h"
 
-class DeltaNode : Node {
+class DeltaNode : public Node {
 	public:
-		DataNode(NodeType t) {
-			type_ = t;
-		}
-
-		NodeType getType() override;
+		DeltaNode() : Node(DELTA_INSERT) {}
 
 	private:
 		// All deltas have a pair representing data. Delete deltas
 		// will have a non-initialized value element.
 		Pair<int, int> value;
-
-		NodeType type_;
-
 };
 
 #endif

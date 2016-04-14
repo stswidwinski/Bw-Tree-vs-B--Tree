@@ -4,10 +4,6 @@
 
 #include "nodes/data_node.h" 
 
-NodeType DataNode::getType() {
-	return type_;
-}
-
 // @TODO
 // HOW DO WE DETERMINE THE LENGTH OF THE RETURNED PAYLOAD?
 

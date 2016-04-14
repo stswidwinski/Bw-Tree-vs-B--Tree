@@ -2,15 +2,15 @@
 	index_node.h
 */
 
-#ifndef _DATA_NODE_H_
-#define _DATA_NODE_H_
+#ifndef _INDEX_NODE_H_
+#define _INDEX_NODE_H_
 
 #include "nodes/node.h" 
 #include "utils/pair.h"
 
-class IndexNode : Node {
+class IndexNode : public Node {
 	public:
-		IndexNode(int size) : type_(INDEX) {
+		IndexNode(int size) : Node(INDEX) {
 			maxKeyListSize_ = size;
 			searchArray_ = new Pair<int, int>[size];
 			currentSize_ = 0;
@@ -19,7 +19,7 @@ class IndexNode : Node {
 
 		// no initialization. Buffer pool doesn't need it since we 
 		// use setVariables any way.
-		IndexNode() : type_(INDEX) {}
+		IndexNode() : Node(INDEX) {}
 
 		// for setting variables after obtaining node from 
 		// buffer pool.
@@ -32,15 +32,6 @@ class IndexNode : Node {
 			smallestPID_ = sp;
 		}
 
-		IndexNode(int size, searchArray_) : type_(INDEX) {
-			maxKeyListSize_ = size;
-			searchArray_ = new Pair<int, int>[size];
-			currentSize_ = 0;
-			smallestPID_ = -1;
-		}
-
-		NodeType getType() override;
-
 		// returns the PID of the node to go to next
 		// based on key. This is done via binary search.
 		int findPID(int key);
@@ -51,8 +42,6 @@ class IndexNode : Node {
 		int currentSize_;
 		// the 'left most' pointer
 		int smallestPID_;
-		// type of node.
-		NodeType type_;
 		// array of key values and PID. Used for tree traversal.
 		// the array is sorted.
 		Pair<int, int>* searchArray_;

@@ -1,10 +1,10 @@
-OBJDIRS +=
+OBJDIRS += nodes
 
 # Create template specific variables
-UPPERC_DIR :=
-LOWERC_DIR :=
+UPPERC_DIR := NODES
+LOWERC_DIR := nodes
 
-TXN_SRCS := nodes/node.h nodes/data_node.cc nodes/index_node.cc
+NODES_SRCS := nodes/index_node.cc nodes/data_node.cc
 
 SRC_LINKED_OBJECTS :=
 TEST_LINKED_OBJECTS :=
