@@ -14,7 +14,29 @@ class IndexNode : Node {
 			maxKeyListSize_ = size;
 			searchArray_ = new Pair<int, int>[size];
 			currentSize_ = 0;
-			smallestPID = -1;
+			smallestPID_ = -1;
+		}
+
+		// no initialization. Buffer pool doesn't need it since we 
+		// use setVariables any way.
+		IndexNode() : type_(INDEX) {}
+
+		// for setting variables after obtaining node from 
+		// buffer pool.
+		// sa -- search array, cs -- currect size, sp -- smallest PID
+		void setVariables(int size, Pair<int, int>* sa,
+			int cs, int sp) {
+			maxKeyListSize_ = size;
+			searchArray_ = sa;
+			currentSize_ = cs;
+			smallestPID_ = sp;
+		}
+
+		IndexNode(int size, searchArray_) : type_(INDEX) {
+			maxKeyListSize_ = size;
+			searchArray_ = new Pair<int, int>[size];
+			currentSize_ = 0;
+			smallestPID_ = -1;
 		}
 
 		NodeType getType() override;
@@ -28,7 +50,7 @@ class IndexNode : Node {
 		// current number of keys in the searchArray_
 		int currentSize_;
 		// the 'left most' pointer
-		int smallestPID;
+		int smallestPID_;
 		// type of node.
 		NodeType type_;
 		// array of key values and PID. Used for tree traversal.

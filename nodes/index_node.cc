@@ -16,7 +16,7 @@ int IndexNode::findPID(int key) {
 
 	// key is smaller then smallest element in search array.
 	if(key < searchArray_[0].key)
-		return smallestPID;
+		return smallestPID_;
 
 	// do binary search to find the right bucket
 	// the largest bucket such that given key is larger then
