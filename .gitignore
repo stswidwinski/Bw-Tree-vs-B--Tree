@@ -11,3 +11,6 @@
 
 # the object directory
 obj*
+
+# ignore binary directory
+bin*
