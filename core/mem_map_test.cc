@@ -74,4 +74,3 @@ int main(int argc, char** argv) {
   NonCASInsertionWithResizing();
   CASReplacement();
 }
-
