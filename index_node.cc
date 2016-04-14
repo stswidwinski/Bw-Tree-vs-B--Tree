@@ -19,11 +19,13 @@ int IndexNode::findPID(int key) {
 		return smallestPID;
 
 	// do binary search to find the right bucket
+	// the largest bucket such that given key is larger then
+	// bucket's key.
 	int left = 0, right = currentSize_ - 1, middle = 0;
 	while(left < right) {
 		// avoiding overflow
 		middle = left + (right - left) / 2;
-		if(searchArray_[middle]->key > key) {
+		if(searchArray_[middle]->key <= key) {
 			right = middle;
 		} else {
 			left = middle + 1;
