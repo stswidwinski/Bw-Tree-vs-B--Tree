@@ -8,6 +8,8 @@
 #ifndef _LINKED_LIST_H_
 #define _LINKED_LIST_H_
 
+#include <iostream>
+
 template <typename Element>
 class LinkedList {
 	public:
@@ -20,8 +22,15 @@ class LinkedList {
 		// free any memory. It's too slow and memory leaks are fine
 		// in this context.
 		Element* pop() {
-			if(tail == nullptr)
+			if(tail == nullptr) {
+				// if we are debugging, instead of failing on pop
+				// just malloc more memory.
+				#ifdef DEBUG
+					cerr << "[LinkedList]: No memory left to pop."
+					push(new Element());
+				#endif
 				return nullptr;
+			}
 
 			Element* result = tail->contents;
 			tail = tail->next;

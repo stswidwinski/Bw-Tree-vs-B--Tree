@@ -8,6 +8,8 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include <stdint.h>
+
 // debug mode
 #define DEBUG true
 
@@ -22,7 +24,7 @@
   } while (0);
 
 // PID and byte value types.
-typedef uint64 PID;
+typedef uint64_t PID;
 typedef unsigned char byte;
 
 #endif  // _COMMON_H_
