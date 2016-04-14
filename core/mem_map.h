@@ -37,10 +37,10 @@ class MemoryMap {
 		int put (Node* node);
 
 		// get from mem_map element at PID. This does not have to be atomic either.
-		Node** get (int PID);
+		Node* get (int PID);
 
 		// use CAS to update the the address at PID to node.
-		bool CAS(int PID, Node** oldNode, Node* newNode);
+		bool CAS(int PID, Node* oldNode, Node* newNode);
 
 	private:
 		int capacity_;

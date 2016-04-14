@@ -36,9 +36,9 @@ Node* MemoryMap::get (int PID) {
 }
 
 // use CAS to update the the address at PID to node.
-bool MemoryMap::CAS(int PID, Node** oldNode, Node* newNode) {
+bool MemoryMap::CAS(int PID, Node* oldNode, Node* newNode) {
 	if(PID < 0 || PID >= currentKey_)
 		return false;
 
-	return cmp_and_swap( (uint64_t*) oldNode, (uint64_t) *oldNode, (uint64_t) newNode);
+	return cmp_and_swap( (uint64_t*) &map_[PID], (uint64_t) oldNode, (uint64_t) newNode);
 }
