@@ -7,16 +7,19 @@
 #ifndef _BW_TREE_H_
 #define _BW_TREE_H_
 
-using byte = unsigned char;
+typedef unsigned char byte;
 
 class BwTree {
 	public:
 		BwTree() {}
 
+		// get the PID of the next page to search
+		byte* get(int key);
+
 		/*
 			Interface description
 
-			byte* getPID(key request)
+			int get(key request)
 
 			Steps:
 				0) Traverse the tree to find the correct page (index nodes and index-delta-nodes)
