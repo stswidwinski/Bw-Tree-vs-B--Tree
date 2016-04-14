@@ -16,36 +16,37 @@
 #include "utils/common.h"
 #include <stdint.h>
 
+template <typename Load>
 class MemoryMap {
 	public:
 
 		MemoryMap(int cap) {
 			capacity_ = cap;
 			currentKey_ = 0;
-			map_ = new Node*[cap];
+			map_ = new Load*[cap];
 		}
 
 		// delegating constructor
 		MemoryMap() : MemoryMap(2) { }
 		
 		~MemoryMap() {
-			delete[] map;
+			delete[] map_;
 		}
 
 		// put node into memory table. Returns PID assigned.
 		// PUT does not have to be atomic, since new elements are not
 		// seen to transactions until their parents know about them.
-		PID put (Node* node);
+		PID put (Load* payload);
 
 		// get from mem_map element at PID. This does not have to be atomic either.
-		Node* get (PID id);
+		Load* get (PID id);
 
 		// use CAS to update the the address at PID to node.
-		bool CAS(PID id, Node* oldNode, Node* newNode);
+		bool CAS(PID id, Load* oldNode, Load* newNode);
 
 	private:
 		PID capacity_;
-		byte* map_;
+		Load** map_;
 		PID currentKey_;
 };
 

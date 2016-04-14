@@ -1,13 +1,20 @@
-OBJDIRS +=
+OBJDIRS += core
 
 # Create template specific variables
-UPPERC_DIR :=
-LOWERC_DIR :=
+UPPERC_DIR := CORE
+LOWERC_DIR := core
 
-TXN_SRCS := core/mem_map.cc
+CORE_SRCS := core/mem_map.cc
 
 SRC_LINKED_OBJECTS :=
 TEST_LINKED_OBJECTS :=
 
 # Link the template to avoid redundancy
 include $(MAKEFILE_TEMPLATE)
+
+# Need to specify test cases explicitly because they have variables in recipe
+test-core: $(CORE_TESTS)
+	@for a in $(CORE_TESTS); do \
+		echo == $$a ==; \
+		$(LDLIBRARYPATH) $$a; \
+	done

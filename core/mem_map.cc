@@ -6,10 +6,11 @@
 
 #include "core/mem_map.h"
 
-PID MemoryMap::put (Node* payload) {
-	if(currentKey >= capacity_) {
+template <typename Load>
+PID MemoryMap<Load>::put (Load* payload) {
+	if(currentKey_ >= capacity_) {
 		// increase the size of the memory map. 
-		Node** newMap = new Node*[capacity_*2];
+		Load** newMap = new Load*[capacity_*2];
 		// transfer old elements into new map.
 		for(int i = 0; i < capacity_; i++) {
 			newMap[i] = map_[i];
@@ -24,19 +25,21 @@ PID MemoryMap::put (Node* payload) {
 	PID key = currentKey_;
 	currentKey_++;
 
-	map_[key] = Node;
+	map_[key] = payload;
 	return key;
 }
 
-Node* MemoryMap::get (PID id) {
+template <typename Load>
+Load* MemoryMap<Load>::get (PID id) {
 	if(id < 0 || id >= capacity_)
 		return nullptr;
 
 	return map_[id];
 }
 
+template <typename Load>
 // use CAS to update the the address at PID to node.
-bool MemoryMap::CAS(PID id, Node* oldNode, Node* newNode) {
+bool MemoryMap<Load>::CAS(PID id, Load* oldNode, Load* newNode) {
 	if(id < 0 || id >= currentKey_)
 		return false;
 
