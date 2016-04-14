@@ -13,6 +13,7 @@
 
 #include "nodes/node.h"
 #include "utils/util.h"
+#include "utils/common.h"
 #include <stdint.h>
 
 class MemoryMap {
@@ -34,18 +35,18 @@ class MemoryMap {
 		// put node into memory table. Returns PID assigned.
 		// PUT does not have to be atomic, since new elements are not
 		// seen to transactions until their parents know about them.
-		int put (Node* node);
+		PID put (Node* node);
 
 		// get from mem_map element at PID. This does not have to be atomic either.
-		Node* get (int PID);
+		Node* get (PID id);
 
 		// use CAS to update the the address at PID to node.
-		bool CAS(int PID, Node* oldNode, Node* newNode);
+		bool CAS(PID id, Node* oldNode, Node* newNode);
 
 	private:
-		int capacity_;
+		PID capacity_;
 		byte* map_;
-		int currentKey_;
+		PID currentKey_;
 };
 
 #endif

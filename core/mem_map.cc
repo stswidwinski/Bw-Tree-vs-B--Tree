@@ -6,7 +6,7 @@
 
 #include "core/mem_map.h"
 
-int MemoryMap::put (Node* payload) {
+PID MemoryMap::put (Node* payload) {
 	if(currentKey >= capacity_) {
 		// increase the size of the memory map. 
 		Node** newMap = new Node*[capacity_*2];
@@ -21,24 +21,24 @@ int MemoryMap::put (Node* payload) {
 		// print error. Mallocing memory is slow. Should not happen.
 	}
 
-	int key = currentKey_;
+	PID key = currentKey_;
 	currentKey_++;
 
 	map_[key] = Node;
 	return key;
 }
 
-Node* MemoryMap::get (int PID) {
-	if(PID < 0 || PID >= capacity_)
+Node* MemoryMap::get (PID id) {
+	if(id < 0 || id >= capacity_)
 		return nullptr;
 
-	return map_[PID];
+	return map_[id];
 }
 
 // use CAS to update the the address at PID to node.
-bool MemoryMap::CAS(int PID, Node* oldNode, Node* newNode) {
-	if(PID < 0 || PID >= currentKey_)
+bool MemoryMap::CAS(PID id, Node* oldNode, Node* newNode) {
+	if(id < 0 || id >= currentKey_)
 		return false;
 
-	return cmp_and_swap( (uint64_t*) &map_[PID], (uint64_t) oldNode, (uint64_t) newNode);
+	return cmp_and_swap( (uint64_t*) &map_[id], (uint64_t) oldNode, (uint64_t) newNode);
 }
