@@ -12,20 +12,43 @@
 #ifndef _MEM_MAN_H
 #define _MEM_MAN_H_
 
+#include "nodes/node.h"
+#include "nodes/data_node.h"
+#include "nodes/index_node.h"
+#include "nodes/delta_node.h"
+#include "utils/common.h"
+
 class MemoryManager {
 	public:
-		MemoryManager() {}
+		MemoryManager(int dataNodeCount,
+			int indexNodeCount,
+			int deltaNodeCount,
+			int indexDeltaNodeCount);
 
-		// Node* getNode(NodeType type);
+		// server node of given type
+		Node* getNode(NodeType type);
 
 	private:
+		// number of nodes left in the pool
+		int data_;
+		int index_;
+		int delta_;
+		int indexDelta_;
 
-		// Node pools. We should determine the size of each buffer by the maximal
-		// size of the number of nodes inserted / changed. Ideas for how to estimate 
-		// this? Trial & error?
+		// index of node we will server next
+		int dataNodeCurr_;
+		int indexNodeCurr_;
+		int deltaNodeCurr_;
+		int indexDeltaNodeCurr_;
 
-		// Typically, a pool of resources is a linked list of 'empty' objects.
-		// Hence, we would have those for each type of node we need.
+		// arrays of nodes
+		LinkedList<Node*>* dataNodes_;
+		LinkedList<Node*>* indexNodes_;
+		LinkedList<Node*>* deltaNodes_;
+		LinkedList<Node*>* indexDeltaNodes_;
+
+		// make a linked list with count number of nodes type type.
+		LinkedList<Node*>* initialize(NodeType type, int count);
 };
 
 #endif
