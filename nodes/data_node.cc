@@ -2,7 +2,7 @@
 	data_node.cc
 */
 
-#include "data_node.h" 
+#include "nodes/data_node.h" 
 
 NodeType DataNode::getType() {
 	return type_;

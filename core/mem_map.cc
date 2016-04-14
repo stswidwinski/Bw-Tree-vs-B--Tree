@@ -4,7 +4,7 @@
 	Implements mem_map.h
 */
 
-#include "mem_map.h"
+#include "core/mem_map.h"
 
 int MemoryMap::put (Node* payload) {
 	if(currentKey >= capacity_) {

@@ -2,7 +2,7 @@
 	bw_tree.cc
 */
 
-#include "bw_tree.h"
+#include "core/bw_tree.h"
 
 byte* BwTree::get(int key) {
 	

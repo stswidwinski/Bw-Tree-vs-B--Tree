@@ -11,8 +11,8 @@
 #ifndef _MEM_MAP_H
 #define _MEM_MAP_H_
 
-#include "node.h"
-#include "util.h"
+#include "nodes/node.h"
+#include "utils/util.h"
 #include <stdint.h>
 
 class MemoryMap {

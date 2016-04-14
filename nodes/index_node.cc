@@ -3,7 +3,7 @@
 
 	Implements mem_map.h
 */
-#include "index_node.h"
+#include "nodes/index_node.h"
 
 NodeType IndexNode::getType() {
 	return type_;

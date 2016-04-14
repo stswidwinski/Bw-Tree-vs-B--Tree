@@ -5,8 +5,8 @@
 #ifndef _DATA_NODE_H_
 #define _DATA_NODE_H_
 
-#include "node.h" 
-#include "pair.h"
+#include "nodes/node.h" 
+#include "utils/pair.h"
 
 class IndexNode : Node {
 	public:

@@ -1,11 +1,15 @@
 /*
 	bw_tree.h
 
-	The actual implementation of Bw-tree. 
+	Bw-tree is purely logical and does not exist as an explicit structure.
+	Hence, we only need to know the root PID and have a collection of
+	functions that do searches, inserts etc. 
 */
 
 #ifndef _BW_TREE_H_
 #define _BW_TREE_H_
+
+#include ""
 
 typedef unsigned char byte;
 
@@ -81,8 +85,8 @@ class BwTree {
 		*/
 
 	private:
-		// the root is actualy just an index node. see node.h and index_node.h.
-		Node* root_;
+		int rootPid_;
+
 
 };
 

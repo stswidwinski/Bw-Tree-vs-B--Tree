@@ -7,8 +7,8 @@
 #ifndef _DATA_NODE_H_
 #define _DATA_NODE_H_
 
-#include "node.h" 
-#include "pair.h"
+#include "nnodes/ode.h" 
+#include "utils/pair.h"
 
 typedef unsigned char byte;
 
