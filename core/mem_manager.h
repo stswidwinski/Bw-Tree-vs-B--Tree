@@ -33,19 +33,11 @@ class MemoryManager {
 		int data_;
 		int index_;
 		int delta_;
-		int indexDelta_;
-
-		// index of node we will server next
-		int dataNodeCurr_;
-		int indexNodeCurr_;
-		int deltaNodeCurr_;
-		int indexDeltaNodeCurr_;
 
 		// arrays of nodes
 		LinkedList<Node*>* dataNodes_;
 		LinkedList<Node*>* indexNodes_;
 		LinkedList<Node*>* deltaNodes_;
-		LinkedList<Node*>* indexDeltaNodes_;
 
 		// make a linked list with count number of nodes type type.
 		LinkedList<Node*>* initialize(NodeType type, int count);

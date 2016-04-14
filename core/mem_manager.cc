@@ -18,12 +18,16 @@ MemoryManager::MemoryManager(int dataNodeCount,
 Node* MemoryManager::getNode(NodeType type) {
 	switch(type) {
 		case INDEX:
+			data_ --;
 			return indexNodes_->pop();
 		case DATA:
+			index_ --;
+			indexNodeCurr_ --;
 			return dataNodes_->pop();
 		case DELTA_INSERT:
 		case DELTA_DELETE:
 		case DELTA_UPDATE:
+			delta_ --;
 			return deltaNodes_->pop();
 		}
 	}
