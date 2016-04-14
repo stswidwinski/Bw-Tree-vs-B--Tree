@@ -9,14 +9,27 @@
 #ifndef _BW_TREE_H_
 #define _BW_TREE_H_
 
-#include ""
+#include "core/mem_map.h"
+#include "nodes/index_node.h"
 
 typedef unsigned char byte;
 
 class BwTree {
 	public:
-		BwTree() {}
+		// indexNodeSize is the maximum number of elements
+		// that an index node can have in its searchArray.
+		BwTree(int indexNodeSize) {
+			map_ = new MemoryMap();
+			indexNodeSize_ = indexNodeSize;
+			
+			// put the root node in, save its PID.
+			Node* root = new IndexNode(indexNodeSize);
+			rootPid_ = map_.put(root);
+		}
 
+		~BwTree() {
+			delete map_;
+		}
 		// get the PID of the next page to search
 		byte* get(int key);
 
@@ -85,8 +98,9 @@ class BwTree {
 		*/
 
 	private:
+		MemoryMap map_;
 		int rootPid_;
-
+		int indexNodeSize_;
 
 };
 
