@@ -12,7 +12,8 @@
 #define _MEM_MAP_H_
 
 #include "node.h"
-#include <atomic>
+#include "util.h"
+#include <stdint.h>
 
 class MemoryMap {
 	public:
@@ -39,7 +40,7 @@ class MemoryMap {
 		Node** get (int PID);
 
 		// use CAS to update the the address at PID to node.
-		bool CAS(int PID, Node* oldNode, Node* newNode);
+		bool CAS(int PID, Node** oldNode, Node* newNode);
 
 	private:
 		int capacity_;

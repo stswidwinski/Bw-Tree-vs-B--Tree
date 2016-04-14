@@ -4,7 +4,7 @@
   We only really care about cmp_and_swap function. 
 */
 
-#include <util.h>
+#include "util.h"
 
 extern inline void do_pause();
 
