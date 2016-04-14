@@ -21,6 +21,6 @@ class Pair {
 
 		Key key;
 		Value value;
-}
+};
 
 #endif
