@@ -11,7 +11,7 @@
 #ifndef _MEM_MAP_H
 #define _MEM_MAP_H_
 
-#include "nodes/node.h"
+#include "nodes/node.cc"
 #include "utils/util.h"
 #include "utils/common.h"
 #include <stdint.h>
