@@ -23,12 +23,6 @@ class LinkedList {
 		// in this context.
 		Element* pop() {
 			if(tail == nullptr) {
-				// if we are debugging, instead of failing on pop
-				// just malloc more memory.
-				#ifdef DEBUG
-					cerr << "[LinkedList]: No memory left to pop."
-					push(new Element());
-				#endif
 				return nullptr;
 			}
 
