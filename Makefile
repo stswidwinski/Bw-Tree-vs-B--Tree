@@ -52,9 +52,9 @@ all:
 MAKEFILE_TEMPLATE := Makefile.template
 
 # Makefile fragments for library code
+include utils/Makefile.inc
 include nodes/Makefile.inc
 include core/Makefile.inc
-include utils/Makefile.inc
 
 test: $(TESTS)
 
