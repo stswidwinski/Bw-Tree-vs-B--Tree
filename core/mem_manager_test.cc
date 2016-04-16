@@ -1,5 +1,5 @@
 #include "utils/testing.h"
-#include "core/mem_manager.cc"
+#include "core/mem_manager.h"
 #include <string>
 
 TEST(GeneralTest) {

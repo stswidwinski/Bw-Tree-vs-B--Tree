@@ -12,7 +12,7 @@
 #ifndef _MEM_MAN_H
 #define _MEM_MAN_H_
 
-#include "nodes/node.h"
+#include "nodes/node.cc"
 #include "nodes/data_node.h"
 #include "nodes/index_node.h"
 #include "nodes/delta_node.h"
