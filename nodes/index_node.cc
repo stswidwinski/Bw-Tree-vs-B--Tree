@@ -21,12 +21,12 @@ int IndexNode::findPID(int key) {
 	while(left < right) {
 		// avoiding overflow
 		middle = left + (right - left) / 2;
-		if(searchArray_[middle]->key <= key) {
+		if(searchArray_[middle].key <= key) {
 			right = middle;
 		} else {
 			left = middle + 1;
 		}
 	}
 
-	return searchArray_[middle]->value;
+	return searchArray_[middle].value;
 }

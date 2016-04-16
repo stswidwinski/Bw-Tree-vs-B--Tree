@@ -7,7 +7,7 @@
 // @TODO
 // HOW DO WE DETERMINE THE LENGTH OF THE RETURNED PAYLOAD?
 
-byte DataNode::getValue(int key) {
+byte* DataNode::getValue(int key) {
 	// binary search on the data_ array.
 	int left = 0, right = dataLength_, middle = 0, midVal = 0;
 	while(left < right) {
@@ -15,14 +15,14 @@ byte DataNode::getValue(int key) {
 		midVal = data_[middle].key;
 		
 		if(midVal > key) {
-			upper = middle - 1;
+			right = middle - 1;
 		} else if (midVal < key) {
-			lower = middle + 1;
+			left = middle + 1;
 		} else {
 			break;
 		}
 	}
 
 	// if nothing found, return null. Else, return what is found.
-	return left < right ? data_[middle]->value : null;
+	return left < right ? data_[middle].value : nullptr;
 }

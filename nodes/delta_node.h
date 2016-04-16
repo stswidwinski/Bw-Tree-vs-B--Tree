@@ -5,7 +5,7 @@
 #ifndef _DELTA_NODE_H_
 #define _DELTA_NODE_H_
 
-#include "nodes/node.h"
+#include "nodes/node.cc"
 #include "utils/pair.h"
 
 class DeltaNode : public Node {

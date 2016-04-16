@@ -5,7 +5,7 @@
 #ifndef _INDEX_NODE_H_
 #define _INDEX_NODE_H_
 
-#include "nodes/node.h" 
+#include "nodes/node.cc" 
 #include "utils/pair.h"
 
 class IndexNode : public Node {

@@ -7,7 +7,7 @@
 #ifndef _DATA_NODE_H_
 #define _DATA_NODE_H_
 
-#include "nodes/node.h" 
+#include "nodes/node.cc" 
 #include "utils/pair.h"
 
 typedef unsigned char byte;
@@ -30,7 +30,7 @@ class DataNode : public Node {
 		// of the actual payload. To get the payload use mem_map.
 
 		// Get the value for key. This will be 
-		byte getValue(int key);
+		byte* getValue(int key);
 
 	private:
 		// pointer to node's immediate right sibling on the same level.
