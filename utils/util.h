@@ -4,8 +4,8 @@
   We only really care about cmp_and_swap function. 
 */
 
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef UTIL_H_
+#define UTIL_H_
 
 #include <stdint.h>
 

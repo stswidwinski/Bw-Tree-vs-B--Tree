@@ -23,6 +23,9 @@
     exit(1); \
   } while (0);
 
+// the length of the entry.
+#define ENTRY_LEN 8
+
 // PID and byte value types.
 typedef uint64_t PID;
 typedef unsigned char byte;

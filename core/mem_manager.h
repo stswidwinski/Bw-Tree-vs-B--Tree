@@ -9,7 +9,7 @@
 	we just ask for the necessary element from memory manager.
 */
 
-#ifndef _MEM_MAN_H
+#ifndef _MEM_MAN_H_
 #define _MEM_MAN_H_
 
 #include "nodes/node.cc"

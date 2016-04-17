@@ -8,7 +8,7 @@
 	on modifications of leafs.
 */
 
-#ifndef _MEM_MAP_H
+#ifndef _MEM_MAP_H_
 #define _MEM_MAP_H_
 
 #include "nodes/node.cc"
