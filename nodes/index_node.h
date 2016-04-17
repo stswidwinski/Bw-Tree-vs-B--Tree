@@ -7,14 +7,16 @@
 
 #include "nodes/node.cc" 
 #include "utils/pair.h"
+#include "utils/common.h"
 
 class IndexNode : public Node {
 	public:
-		IndexNode(int size) : Node(INDEX) {
-			maxKeyListSize_ = size;
-			searchArray_ = new Pair<int, int>[size];
-			currentSize_ = 0;
-			smallestPID_ = -1;
+		IndexNode(int currentSize,
+			PID smallestPID,
+			Pair<int, PID>* searchArray) : Node(INDEX) {
+			searchArray_ = searchArray;
+			currentSize_ = currentSize_;
+			smallestPID_ = smallestPID;
 		}
 
 		// no initialization. Buffer pool doesn't need it since we 
@@ -23,28 +25,26 @@ class IndexNode : public Node {
 
 		// for setting variables after obtaining node from 
 		// buffer pool.
-		// sa -- search array, cs -- currect size, sp -- smallest PID
-		void setVariables(int size, Pair<int, int>* sa,
-			int cs, int sp) {
-			maxKeyListSize_ = size;
-			searchArray_ = sa;
-			currentSize_ = cs;
-			smallestPID_ = sp;
+		void setVariables(Pair<int, PID>* searchArray,
+			int currentSize, 
+			int smallestPID) {
+		
+			searchArray_ = searchArray;
+			currentSize_ = currentSize;
+			smallestPID_ = smallestPID;
 		}
 
 		// returns the PID of the node to go to next
 		// based on key. This is done via binary search.
-		int findPID(int key);
+		PID findPID(int key);
 	private:
-		// max. number of keys in the searchArray_
-		int maxKeyListSize_;
 		// current number of keys in the searchArray_
 		int currentSize_;
 		// the 'left most' pointer
-		int smallestPID_;
+		PID smallestPID_;
 		// array of key values and PID. Used for tree traversal.
 		// the array is sorted.
-		Pair<int, int>* searchArray_;
+		Pair<int, PID>* searchArray_;
 };
 
 #endif
