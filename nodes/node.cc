@@ -17,6 +17,8 @@ enum NodeType {
   DELTA_INSERT = 2,
   DELTA_DELETE = 3,
   DELTA_UPDATE = 4,
+  DELTA_SPLIT = 5,
+  DELTA_INDEX_SPLIT = 6
 };
 
 class Node {
