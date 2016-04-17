@@ -14,34 +14,34 @@ template <typename Element>
 class LinkedList {
 	public:
 		LinkedList() {
-			head = nullptr;
-			tail = nullptr;
+			head_ = nullptr;
+			tail_ = nullptr;
 		};
 
 		// a cut-down version of standard pop. We do NOT
 		// free any memory. It's too slow and memory leaks are fine
 		// in this context.
 		Element* pop() {
-			if(tail == nullptr) {
+			if(tail_ == nullptr) {
 				return nullptr;
 			}
 
-			Element* result = tail->contents;
-			tail = tail->next;
+			Element* result = tail_->contents;
+			tail_ = tail_->next;
 			return result;
 		}
 
-		// append to the head. This is standard.
+		// append to the head_. This is standard.
 		void push (Element* elem) {
 			ListElement* listElem = new ListElement(elem);
 			
 			// first element or any next element.
-			if (head == nullptr) {
-				head = listElem;
-				tail = head;
+			if (head_ == nullptr) {
+				head_ = listElem;
+				tail_ = head_;
 			} else {
-				head->next = listElem;
-				head = listElem;
+				head_->next = listElem;
+				head_ = listElem;
 			}
 		}
 
@@ -61,11 +61,9 @@ class LinkedList {
 				Element* contents;
 		};
 
-		// standard head and tail of the list
-		ListElement* head;
-		ListElement* tail;
-
-
+		// standard head_ and tail_ of the list
+		ListElement* head_;
+		ListElement* tail_;
 };
 
 #endif
