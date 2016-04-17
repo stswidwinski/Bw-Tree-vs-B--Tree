@@ -34,7 +34,7 @@ class DataNode : public Node {
 
 		// for initialization of node after retrieving from
 		// buffer pool.
-		void initialize(Pair<int, byte*>* data,
+		void setVariables(Pair<int, byte*>* data,
 			int dataLength,
 			PID sidePter,
 			int lowKey,
