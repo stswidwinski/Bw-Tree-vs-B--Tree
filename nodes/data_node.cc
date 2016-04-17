@@ -4,9 +4,6 @@
 
 #include "nodes/data_node.h" 
 
-// @TODO
-// HOW DO WE DETERMINE THE LENGTH OF THE RETURNED PAYLOAD?
-
 byte* DataNode::getValue(int key) {
 	// binary search on the data_ array.
 	int left = 0, right = dataLength_, middle = 0, midVal = 0;

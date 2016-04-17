@@ -7,6 +7,7 @@
 #ifndef _DATA_NODE_H_
 #define _DATA_NODE_H_
 
+#include "utils/common.h"
 #include "nodes/node.cc" 
 #include "utils/pair.h"
 
@@ -17,24 +18,45 @@ class DataNode : public Node {
 		// full initialization
 		DataNode(Pair<int, byte*>* data,
 			int dataLength,
-			Node* pter) : Node(DATA) {
+			PID sidePter,
+			int lowKey,
+			int highKey) : Node(DATA) {
+	
 			data_ = data;
 			dataLength_ = dataLength;
-			linkPter_ = pter;
+			sidePter_ = sidePter;
+			lowKey_ = lowKey;
+			highKey_ = highKey;
 		}
 
 		// initialization for buffer.
 		DataNode() : Node(DATA) {}
 
-		// notice that from a node we can only get the PID
-		// of the actual payload. To get the payload use mem_map.
+		// for initialization of node after retrieving from
+		// buffer pool.
+		void initialize(Pair<int, byte*>* data,
+			int dataLength,
+			PID sidePter,
+			int lowKey,
+			int highKey) {
 
-		// Get the value for key. This will be 
+			data_ = data;
+			dataLength_ = dataLength;
+			sidePter_ = sidePter;
+			lowKey_ = lowKey;
+			highKey_ = highKey;
+		}
+
+		// Get the value for key within the page.
 		byte* getValue(int key);
 
 	private:
+		// the lowest and highest key that can be stored.
+		// must be consistent with the index nodes above it.
+		int lowKey_;
+		int highKey_;
 		// pointer to node's immediate right sibling on the same level.
-		Node* linkPter_;
+		PID sidePter_;
 		// array of records <Key, PID>
 		Pair<int, byte*>* data_;
 		// length of the data array
