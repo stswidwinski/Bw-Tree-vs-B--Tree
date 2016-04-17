@@ -5,7 +5,7 @@
 */
 #include "nodes/index_node.h"
 	
-PID IndexNode::findPID(int key) {
+PID IndexNode::nextPID(int key) {
 	// empty node.
 	if(currentSize_ == 0)
 		return -1;

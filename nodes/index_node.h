@@ -36,7 +36,7 @@ class IndexNode : public Node {
 
 		// returns the PID of the node to go to next
 		// based on key. This is done via binary search.
-		PID findPID(int key);
+		PID nextPID(int key);
 	private:
 		// current number of keys in the searchArray_
 		int currentSize_;
