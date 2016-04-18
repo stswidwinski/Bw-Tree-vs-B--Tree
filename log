@@ -1,0 +1,26 @@
+Some notes...
+
+1. BerkeleyDB uses this interface:
+
+get:
+
+int
+DB->get(DB *db,
+    DB_TXN *txnid, DBT *key, DBT *data, u_int32_t flags);
+
+from \url{https://web.stanford.edu/class/cs276a/projects/docs/berkeleydb/api_c/db_get.html}
+
+put:
+
+int
+DB->put(DB *db,
+    DB_TXN *txnid, DBT *key, DBT *data, u_int32_t flags);
+
+
+2. Entire B+ tree is defined by the branching factor b 
+
+3. Just set the root to be an index node 
+
+4. At the very beginning, you have a root node of type Index which contains inside the
+<separator key, pointer> map a value of "INF, 0"
+

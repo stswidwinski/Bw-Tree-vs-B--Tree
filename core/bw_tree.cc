@@ -4,7 +4,7 @@
 
 #include "core/bw_tree.h"
 
-byte* BwTree::get(int key) {
+/*byte* BwTree::get(int key) {
 	
 	currentPid = rootPid_;
 	currentNode = root;
@@ -31,7 +31,7 @@ byte* BwTree::get(int key) {
 				return currentNode.getNewValue();
 			}
 		}
-	}
+	}*/
 
 	// Now currentNode is the data node, go through data node
 	
@@ -76,4 +76,3 @@ byte* BwTree::get(int key) {
 
 
 
-}
