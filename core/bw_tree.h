@@ -19,10 +19,11 @@ class BwTree {
 		// indexNodeSize is the maximum number of elements
 		// that an index node can have in its searchArray.
 		BwTree(int indexNodeSize) {
-			map_ = new MemoryMap();
+			map_ = new MemoryMap<Node>();
 			indexNodeSize_ = indexNodeSize;
 			
 			// put the root node in, save its PID.
+                        // smallestPid, searchArray
 			Node* root = new IndexNode(indexNodeSize);
 			rootPid_ = map_.put(root);
 		}
@@ -98,7 +99,7 @@ class BwTree {
 		*/
 
 	private:
-		MemoryMap map_;
+		MemoryMap<Node>* map_;
 		int rootPid_;
 		int indexNodeSize_;
 

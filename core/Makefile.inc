@@ -4,7 +4,7 @@ OBJDIRS += core
 UPPERC_DIR := CORE
 LOWERC_DIR := core
 
-CORE_SRCS := core/mem_map.cc core/mem_manager.cc
+CORE_SRCS := core/mem_map.cc core/mem_manager.cc core/bw_tree.cc
 
 SRC_LINKED_OBJECTS :=
 TEST_LINKED_OBJECTS :=
