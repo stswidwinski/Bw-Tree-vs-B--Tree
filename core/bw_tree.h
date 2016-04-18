@@ -34,6 +34,9 @@ class BwTree {
 		// get the PID of the next page to search
 		byte* get(int key);
 
+                // update the delta record with the corresponding payload
+                void update(BKey key, byte *pay, unsigned int n);
+
 		/*
 			Interface description
 

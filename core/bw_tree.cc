@@ -4,6 +4,12 @@
 
 #include "core/bw_tree.h"
 
+// delta updates
+// not much diff between this and inserts
+void BwTree::update(BKey key, byte *pay, unsigned int n) {
+
+}
+
 /*byte* BwTree::get(int key) {
 	
 	currentPid = rootPid_;

@@ -22,5 +22,8 @@ DB->put(DB *db,
 3. Just set the root to be an index node 
 
 4. At the very beginning, you have a root node of type Index which contains inside the
-<separator key, pointer> map a value of "INF, 0"
+<separator key, pointer> map a value of "INF, PID_INIT"
+
+PID_INIT points to a data node of key space range [0, MAX_KEY] (and therefore can possess all keys...
+when delta updates/inserts append, they initially produce an infinite chain)
 

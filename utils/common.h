@@ -25,10 +25,11 @@
 
 // the length of the entry.
 #define ENTRY_LEN 8
+#define MAX_KEY 1048576 // 2^20 
 
-// PID and byte value types.
 typedef uint64_t PID;
 typedef unsigned char byte;
+typedef unsigned int BKey;
 
 #endif  // _COMMON_H_
 
