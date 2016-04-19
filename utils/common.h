@@ -9,6 +9,7 @@
 #define _COMMON_H_
 
 #include <stdint.h>
+#include <iostream>
 
 // debug mode
 #define DEBUG true
@@ -25,6 +26,10 @@
 
 // the length of the entry.
 #define ENTRY_LEN 8
+// flag which means that PID was not found
+#define PID_NOT_FOUND -100
+// maximal delta-chain length
+#define MAX_DELTA_CHAIN 100
 
 // PID and byte value types.
 typedef uint64_t PID;
