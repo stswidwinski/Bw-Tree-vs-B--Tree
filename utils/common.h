@@ -27,7 +27,7 @@
 #define ENTRY_LEN 8
 #define MAX_KEY 1048576 // 2^20 
 
-typedef uint64_t PID;
+typedef int PID;
 typedef unsigned char byte;
 typedef unsigned int BKey;
 
