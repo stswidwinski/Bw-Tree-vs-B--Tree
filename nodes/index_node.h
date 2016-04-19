@@ -13,30 +13,23 @@ class IndexNode : public Node {
 	public:
 		IndexNode(int currentSize,
 			PID smallestPID,
-			Pair<int, PID>* searchArray) : Node(INDEX) {
-			searchArray_ = searchArray;
-			currentSize_ = currentSize_;
-			smallestPID_ = smallestPID;
-		}
+			Pair<int, PID>* searchArray);
 
 		// no initialization. Buffer pool doesn't need it since we 
 		// use setVariables any way.
-		IndexNode() : Node(INDEX) {}
+		IndexNode();
 
 		// for setting variables after obtaining node from 
 		// buffer pool.
 		void setVariables(Pair<int, PID>* searchArray,
 			int currentSize, 
-			int smallestPID) {
-		
-			searchArray_ = searchArray;
-			currentSize_ = currentSize;
-			smallestPID_ = smallestPID;
-		}
+			int smallestPID);
 
 		// returns the PID of the node to go to next
 		// based on key. This is done via binary search.
-		PID nextPID(int key);
+		PID nextPid(int key) override;
+
+		virtual ~IndexNode();
 	private:
 		// current number of keys in the searchArray_
 		int currentSize_;

@@ -1,11 +1,29 @@
 /*
 	index_node.cc
 
-	Implements mem_map.h
+	Implements index_node.h
 */
 #include "nodes/index_node.h"
-	
-PID IndexNode::nextPID(int key) {
+
+IndexNode::IndexNode() : Node(INDEX) {};	
+
+IndexNode::IndexNode(int currentSize,
+	PID smallestPID,
+	Pair<int, PID>* searchArray) : Node(INDEX) {
+		searchArray_ = searchArray;
+		currentSize_ = currentSize;
+		smallestPID_ = smallestPID;
+}
+
+void IndexNode::setVariables(Pair<int, PID>* searchArray,
+	int currentSize, 
+	int smallestPID) {		
+		searchArray_ = searchArray;
+		currentSize_ = currentSize;
+		smallestPID_ = smallestPID;
+}
+
+PID IndexNode::nextPid(int key) {
 	// empty node.
 	if(currentSize_ == 0)
 		return -1;
@@ -30,3 +48,5 @@ PID IndexNode::nextPID(int key) {
 
 	return searchArray_[middle].value;
 }
+
+IndexNode::~IndexNode(){}

@@ -10,6 +10,8 @@
 #ifndef _NODE_H_
 #define _NODE_H_
 
+#include "utils/common.h"
+
 // Nodes can have multiple types
 enum NodeType {
   INDEX = 0,
@@ -31,6 +33,11 @@ class Node {
 		}
 
 		virtual ~Node(){};
+
+		virtual PID nextPid(int key) {
+			DIE("nextPID called on wrong node");
+			return -1;
+		}
 
 		// returns the PID of the next page to search.
 		// NOTE: data node does not implement this method.

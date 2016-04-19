@@ -4,6 +4,8 @@
 
 #include "nodes/delta_node.h"
 
+DeltaNode::DeltaNode () : Node(DELTA_INSERT) {}
+
 DeltaNode::DeltaNode (NodeType type,
 		Pair<int, byte*>* newValue,
 		PID nextNode) : Node(type) {
@@ -47,11 +49,10 @@ void DeltaNode::setVariables(NodeType type,
 	newValue_ = nullptr;
 }
 
-
-//@ TODO
-// taking a side pointer when the node is DELTA_SPLIT
-// means that the SMO must be finished. Call this here.
-PID DeltaNode::nextPID(int key) {
+// the need for SMO finalization can be detected here.
+// how to communicate this?
+// @TODO
+PID DeltaNode::nextPid(int key) {
 	if(Node::type_ == DELTA_SPLIT) {
 		if(key <= borderKey_ &&
 			key > splitKey_) {
@@ -69,3 +70,5 @@ PID DeltaNode::nextPID(int key) {
 		return nextNode_;
 	}
 }
+
+DeltaNode::~DeltaNode(){}

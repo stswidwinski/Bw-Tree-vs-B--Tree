@@ -23,6 +23,9 @@ class DeltaNode : public Node {
 			int splitKey,
 			int borderKey = -1);
 
+		// for buffer initialization
+		DeltaNode();
+
 		// set values -- update, insert, delete.
 		void setVariables(NodeType type,
 			Pair<int, byte*>* newValue,
@@ -35,9 +38,6 @@ class DeltaNode : public Node {
 			int splitKey,
 			int borderKey = -1);
 
-		// for buffer initialization
-		DeltaNode() : Node(DELTA_INSERT) {}
-
 		// for insert, update, delete
 		int getNewKey() {
 			return newValue_->key;
@@ -48,8 +48,9 @@ class DeltaNode : public Node {
 			return newValue_->value;
 		}
 
-		// for split nodes.
-		PID nextPID(int key);
+		PID nextPid(int key) override;
+
+		virtual ~DeltaNode();
 
 	private:
 		// update deltas store new value for given key.
