@@ -4,10 +4,10 @@ OBJDIRS += core
 UPPERC_DIR := CORE
 LOWERC_DIR := core
 
-CORE_SRCS := core/mem_map.cc core/mem_manager.cc core/bw_tree.cc
+CORE_SRCS := core/mem_map.cc core/mem_manager.cc
 
 SRC_LINKED_OBJECTS :=
-TEST_LINKED_OBJECTS :=
+TEST_LINKED_OBJECTS := obj/nodes/node.o obj/nodes/delta_node.o obj/nodes/index_node.o
 
 # Link the template to avoid redundancy
 include $(MAKEFILE_TEMPLATE)
