@@ -27,20 +27,42 @@ class BwTree {
 		BwTree(int indexNodeSize) {
 			map_ = new MemoryMap<Node>();
 			indexNodeSize_ = indexNodeSize;
+
+                        // can resize manager later
+                        // for now serve 10 of each node
+			manager_ = new MemoryManager(10, 10, 10, 4);
+                        Node * data = manager_->getNode(DATA);
+//                        data->setVariables();
+                        PID dataID = map_->put(data);
 			
+                        // put the "infinite" data node in first 
+//                        Node* data = new DataNode(DATA, );
+                        
 			// put the root node in, save its PID.
                         // smallestPid, searchArray
+<<<<<<< HEAD
 			Node* root = new IndexNode(indexNodeSize,
 				-1,
 				new Pair<int, PID>);
 			rootPid_ = map_->put(root);
+=======
+                        Pair<int, PID>* searchArray  = new Pair<int, PID>(MAX_KEY, dataID);
+			Node* root = new IndexNode(indexNodeSize, dataID, searchArray);
+  	                rootPid_ = map_->put(root);
+//  	                initDataPid_ = map_->put(root);
+>>>>>>> origin/bwtree-get
 		}
 
 		~BwTree() {
+                    // todo fix the mem management... i.e. searchArray and root
 			delete map_;
 		}
 		// get the PID of the next page to search
 		byte* get(int key);
+
+                // update the delta record with the corresponding payload
+                // don't really need inserts, since they are the same
+                void update(BKey key, byte *pay, unsigned int n);
 
 		/*
 			Interface description
@@ -108,6 +130,7 @@ class BwTree {
 
 	private:
 		MemoryMap<Node>* map_;
+		MemoryManager* manager_;
 		int rootPid_;
 		int indexNodeSize_;
 

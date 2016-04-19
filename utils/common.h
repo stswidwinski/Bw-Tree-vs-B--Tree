@@ -28,12 +28,14 @@
 #define ENTRY_LEN 8
 // flag which means that PID was not found
 #define PID_NOT_FOUND -100
-// maximal delta-chain length
+
 #define MAX_DELTA_CHAIN 100
 
-// PID and byte value types.
+#define MAX_KEY 1048576 // 2^20 
+
 typedef uint64_t PID;
 typedef unsigned char byte;
+typedef unsigned int BKey;
 
 #endif  // _COMMON_H_
 

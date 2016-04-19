@@ -4,6 +4,7 @@
 
 #include "core/bw_tree.h"
 
+<<<<<<< HEAD
 PID BwTree::getPageID(int key, MemoryManager* man) {
 	PID currentPid = rootPid_;
 	Node* currentNode = map_->get(currentPid);
@@ -42,11 +43,30 @@ PID BwTree::getPageID(int key, MemoryManager* man) {
 			// splits
 			chainLength ++;
 		}
+=======
+// delta updates
+// not much diff between this and inserts
+void BwTree::update(BKey key, byte *pay, unsigned int n) {
+
+}
+
+/*byte* BwTree::get(int key) {
+	
+	currentPid = rootPid_;
+	currentNode = root;
+
+	// Get the next pid until we find a non-index node
+	while((currentNode.getType() == INDEX) || (currentNode.getType() == DELTA_INDEX_SPLIT)) {
+		currentPid = currentNode.nextPid(key);
+		currentNode = map_.get(currentPid);
+	}
+>>>>>>> origin/bwtree-get
 
 		if(chainLength > MAX_DELTA_CHAIN) {
 			// consolidate
 			// @TODO
 		}
+<<<<<<< HEAD
 
 		// this can trigger finalizing SMO.
 		// @TODO
@@ -54,6 +74,9 @@ PID BwTree::getPageID(int key, MemoryManager* man) {
 		currentPid = currentNode->nextPid(key);
 		currentNode = map_->get(currentPid);
 	}
+=======
+	}*/
+>>>>>>> origin/bwtree-get
 
 	return resultingPid;
 }
@@ -129,4 +152,7 @@ PID BwTree::getPageID(int key, MemoryManager* man) {
 
 
 
+<<<<<<< HEAD
 // }
+=======
+>>>>>>> origin/bwtree-get
