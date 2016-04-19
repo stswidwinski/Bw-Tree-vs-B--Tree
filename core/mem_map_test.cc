@@ -1,5 +1,5 @@
 #include "utils/testing.h"
-#include "core/mem_map.cc"
+#include "core/mem_map.h"
 #include "utils/common.h"
 #include <string>
 

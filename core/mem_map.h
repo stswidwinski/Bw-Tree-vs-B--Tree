@@ -36,13 +36,43 @@ class MemoryMap {
 		// put node into memory table. Returns PID assigned.
 		// PUT does not have to be atomic, since new elements are not
 		// seen to transactions until their parents know about them.
-		PID put (Load* payload);
+		PID put (Load* payload) {
+			if(currentKey_ >= capacity_) {
+				// increase the size of the memory map. 
+				Load** newMap = new Load*[capacity_*2];
+				// transfer old elements into new map.
+				for(int i = 0; i < capacity_; i++) {
+					newMap[i] = map_[i];
+				}
+				delete[] map_;
+				map_ = newMap;
+				capacity_ *= 2;
+				// @TODO
+				// print error. Mallocing memory is slow. Should not happen.
+			}
+
+			PID key = currentKey_;
+			currentKey_++;
+
+			map_[key] = payload;
+			return key;
+		}
 
 		// get from mem_map element at PID. This does not have to be atomic either.
-		Load* get (PID id);
+		Load* get (PID id)  {
+			if(id < 0 || id >= capacity_)
+				return nullptr;
+
+			return map_[id];
+		}
 
 		// use CAS to update the the address at PID to node.
-		bool CAS(PID id, Load* oldNode, Load* newNode);
+		bool CAS(PID id, Load* oldNode, Load* newNode)  {
+			if(id < 0 || id >= currentKey_)
+				return false;
+
+			return cmp_and_swap( (uint64_t*) &map_[id], (uint64_t) oldNode, (uint64_t) newNode);
+		}
 
 	private:
 		PID capacity_;
