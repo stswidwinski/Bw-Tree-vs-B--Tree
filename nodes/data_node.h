@@ -16,13 +16,12 @@ typedef unsigned char byte;
 class DataNode : public Node {
 	public:
 		// full initialization
-		DataNode(Pair<int, byte*>* data,
-			int dataLength,
+		DataNode(int dataLength,
 			PID sidePter,
 			int lowKey,
 			int highKey) : Node(DATA) {
 	
-			data_ = data;
+                        data_ = new  Pair<int, byte*>[dataLength];
 			dataLength_ = dataLength;
 			sidePter_ = sidePter;
 			lowKey_ = lowKey;

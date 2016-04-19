@@ -2,15 +2,15 @@
 
 MemoryManager::MemoryManager(int dataNodeCount,
 	int indexNodeCount,
-	int deltaNodeCount) {
+	int deltaNodeCount, int branchFactor) {
 	
 	data_ = 0;
 	delta_ = 0;
 	index_ = 0;
 
-	dataNodes_ = initialize(DATA, dataNodeCount);
-	indexNodes_ = initialize(INDEX, indexNodeCount);
-	deltaNodes_ = initialize(DELTA_INSERT, deltaNodeCount);
+	dataNodes_ = initialize(DATA, dataNodeCount, branchFactor);
+	indexNodes_ = initialize(INDEX, indexNodeCount, branchFactor);
+	deltaNodes_ = initialize(DELTA_INSERT, deltaNodeCount, branchFactor);
 }
 
 Node* MemoryManager::getNode(NodeType type) {
@@ -32,7 +32,7 @@ Node* MemoryManager::getNode(NodeType type) {
 	DIE("Node Type Does Not Match");
 }
 
-LinkedList<Node>* MemoryManager::initialize(NodeType type, int count) {
+LinkedList<Node>* MemoryManager::initialize(NodeType type, int count, int branchFactor) {
 	LinkedList<Node>* result = new LinkedList<Node>;
 
 	for(int i = 0; i < count; i++) {
@@ -41,7 +41,7 @@ LinkedList<Node>* MemoryManager::initialize(NodeType type, int count) {
 				result->push(new IndexNode());
 				break;
 			case DATA:
-				result->push(new DataNode());
+				result->push(new DataNode(branchFactor, 0, 0, MAX_KEY));
 				break;
 			case DELTA_INSERT:
 			case DELTA_DELETE:

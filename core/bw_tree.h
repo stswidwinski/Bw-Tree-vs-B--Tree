@@ -25,7 +25,7 @@ class BwTree {
 
                         // can resize manager later
                         // for now serve 10 of each node
-			manager_ = new MemoryManager(10, 10, 10);
+			manager_ = new MemoryManager(10, 10, 10, 4);
                         Node * data = manager_->getNode(DATA);
 //                        data->setVariables();
                         PID dataID = map_->put(data);

@@ -4,7 +4,7 @@
 
 TEST(GeneralTest) {
 	// make a manager.
-	MemoryManager* m = new MemoryManager(10, 20, 30);
+	MemoryManager* m = new MemoryManager(10, 20, 30, 4);
 
 	// attempt to obtain the buffers.
 	for(int i = 0; i < 10; i++)
