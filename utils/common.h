@@ -28,10 +28,10 @@
 #define ENTRY_LEN 8
 // flag which means that PID was not found
 #define PID_NOT_FOUND -100
-
+// maximal length of the delta chain
 #define MAX_DELTA_CHAIN 100
-
-#define MAX_KEY 1048576 // 2^20 
+// maximal number of keys in index nodes
+#define MAX_KEY 1024
 
 typedef int PID;
 typedef unsigned char byte;
