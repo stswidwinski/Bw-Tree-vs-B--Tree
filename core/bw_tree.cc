@@ -4,7 +4,6 @@
 
 #include "core/bw_tree.h"
 
-<<<<<<< HEAD
 PID BwTree::getPageID(int key, MemoryManager* man) {
 	PID currentPid = rootPid_;
 	Node* currentNode = map_->get(currentPid);
@@ -43,7 +42,7 @@ PID BwTree::getPageID(int key, MemoryManager* man) {
 			// splits
 			chainLength ++;
 		}
-=======
+
 // delta updates
 // not much diff between this and inserts
 void BwTree::update(BKey key, byte *pay, unsigned int n) {
@@ -60,13 +59,11 @@ void BwTree::update(BKey key, byte *pay, unsigned int n) {
 		currentPid = currentNode.nextPid(key);
 		currentNode = map_.get(currentPid);
 	}
->>>>>>> origin/bwtree-get
 
 		if(chainLength > MAX_DELTA_CHAIN) {
 			// consolidate
 			// @TODO
 		}
-<<<<<<< HEAD
 
 		// this can trigger finalizing SMO.
 		// @TODO
@@ -74,9 +71,7 @@ void BwTree::update(BKey key, byte *pay, unsigned int n) {
 		currentPid = currentNode->nextPid(key);
 		currentNode = map_->get(currentPid);
 	}
-=======
 	}*/
->>>>>>> origin/bwtree-get
 
 	return resultingPid;
 }
@@ -149,10 +144,3 @@ void BwTree::update(BKey key, byte *pay, unsigned int n) {
 		consolidation. That is true for both the index and page delta chains. Details of consolidation
 		later. 
 		*/
-
-
-
-<<<<<<< HEAD
-// }
-=======
->>>>>>> origin/bwtree-get
