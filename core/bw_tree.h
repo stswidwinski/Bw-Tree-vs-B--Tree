@@ -10,6 +10,12 @@
 #define _BW_TREE_H_
 
 #include "core/mem_map.h"
+#include "core/mem_manager.h"
+#include "utils/common.h"
+#include "utils/pair.h"
+#include "nodes/node.cc"
+#include "nodes/data_node.h"
+#include "nodes/delta_node.h"
 #include "nodes/index_node.h"
 
 typedef unsigned char byte;
@@ -24,8 +30,10 @@ class BwTree {
 			
 			// put the root node in, save its PID.
                         // smallestPid, searchArray
-			Node* root = new IndexNode(indexNodeSize);
-			rootPid_ = map_.put(root);
+			Node* root = new IndexNode(indexNodeSize,
+				-1,
+				new Pair<int, PID>);
+			rootPid_ = map_->put(root);
 		}
 
 		~BwTree() {
@@ -102,6 +110,11 @@ class BwTree {
 		MemoryMap<Node>* map_;
 		int rootPid_;
 		int indexNodeSize_;
+
+		// find the PID of the data page (or delta insert/update)
+		// node that contains the required key. Returns PID_NOT_FOUND (see common.h)
+		// if none found or if delete node found.
+		PID getPageID(int key, MemoryManager* man);
 
 };
 

@@ -4,34 +4,87 @@
 
 #include "core/bw_tree.h"
 
-byte* BwTree::get(int key) {
-	
-	currentPid = rootPid_;
-	currentNode = root;
+PID BwTree::getPageID(int key, MemoryManager* man) {
+	PID currentPid = rootPid_;
+	Node* currentNode = map_->get(currentPid);
+	PID resultingPid = PID_NOT_FOUND;
+	// we must remember last non-delta PID for consolidate
+	// TODO
+	// PID lastNonDelta = rootPid_;
+	// count the chaing length to know when to consolidate
+	int chainLength = 0;
+	// current node type. Reduce memory jumps.
+	NodeType type;
 
-	// Get the next pid until we find a non-index node
-	while((currentNode.getType() == INDEX) || (currentNode.getType() == DELTA_INDEX_SPLIT)) {
-		currentPid = currentNode.nextPid(key);
-		currentNode = map_.get(currentPid);
-	}
+	// traverse the tree until we have found the data node.
+	while( (type = currentNode->getType()) != DATA) {
+		
+		if(type == DELTA_INSERT ||
+			type == DELTA_UPDATE || 
+			type == DELTA_DELETE) {
+		
+			chainLength ++;
 
-	// Go through the delta nodes to get to the base page
-	currentType = currentNode.getType();
-	while ((currentType != DATA)){
-
-		if (currentType == DELTA_SPLIT) {
-			// @TODO have to deal with SMO -- idk 
-
-		// Node is either insert, delete, update,
-		}else if(currentNode.getNewKey() == key){
-			if (currentType == DELTA_DELETE){
-				// @TODO check this is correct
-				return nullptr;
-			} else
-				return currentNode.getNewValue();
-			}
+			// does the delta node pertain to sought key
+			if( ((DeltaNode*) currentNode)->getNewKey() == key) {
+				// for non-deletes, return found node. For delete, -1
+				if(type != DELTA_DELETE)
+					resultingPid = currentPid;
+				else
+					resultingPid = PID_NOT_FOUND;
+				// done.
+				break;
+			} 
+		} else if (type == INDEX) {
+			chainLength = 0;
+			// lastNonDelta = currentPid;
+		} else {
+			// splits
+			chainLength ++;
 		}
+
+		if(chainLength > MAX_DELTA_CHAIN) {
+			// consolidate
+			// @TODO
+		}
+
+		// this can trigger finalizing SMO.
+		// @TODO
+		// How to handle SMOs (and detect them). More cases?
+		currentPid = currentNode->nextPid(key);
+		currentNode = map_->get(currentPid);
 	}
+
+	return resultingPid;
+}
+
+// byte* BwTree::get(int key) {
+	
+// 	PID currentPid = rootPid_;
+	
+// 	// Get the next pid until we find a non-index node
+// 	while((currentNode.getType() == INDEX) || (currentNode.getType() == DELTA_INDEX_SPLIT)) {
+// 		currentPid = currentNode.nextPid(key);
+// 		currentNode = map_.get(currentPid);
+// 	}
+
+// 	// Go through the delta nodes to get to the base page
+// 	currentType = currentNode.getType();
+// 	while ((currentType != DATA)){
+
+// 		if (currentType == DELTA_SPLIT) {
+// 			// @TODO have to deal with SMO -- idk 
+
+// 		// Node is either insert, delete, update,
+// 		}else if(currentNode.getNewKey() == key){
+// 			if (currentType == DELTA_DELETE){
+// 				// @TODO check this is correct
+// 				return nullptr;
+// 			} else
+// 				return currentNode.getNewValue();
+// 			}
+// 		}
+// 	}
 
 	// Now currentNode is the data node, go through data node
 	
@@ -76,4 +129,4 @@ byte* BwTree::get(int key) {
 
 
 
-}
+// }
