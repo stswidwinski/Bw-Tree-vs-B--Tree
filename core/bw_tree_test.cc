@@ -1,9 +1,9 @@
 #include "utils/testing.h"
-#include "core/mem_map.cc"
+#include "core/bw_tree.h"
 #include "utils/common.h"
 #include <string>
 
-TEST(NonCASInsertionNoResizing) {
+/*TEST(mem) {
   MemoryMap<int>* m = new MemoryMap<int>(100);
 
   // insert 
@@ -20,7 +20,7 @@ TEST(NonCASInsertionNoResizing) {
 }
 
 TEST(NonCASInsertionWithResizing) {
-  MemoryMap<int>* m = new MemoryMap<int>(2);
+//  MemoryMap<int>* m = new MemoryMap<int>(2);
 
   // insert
   for(int i = 0; i < 100; i++) {
@@ -67,10 +67,10 @@ TEST(CASReplacement) {
   delete[] pids;
 
   END;
-}
+}*/
 
 int main(int argc, char** argv) {
-  NonCASInsertionNoResizing();
-  NonCASInsertionWithResizing();
-  CASReplacement();
+//  NonCASInsertionNoResizing();
+//  NonCASInsertionWithResizing();
+//  CASReplacement();
 }

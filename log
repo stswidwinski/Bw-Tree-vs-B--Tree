@@ -27,3 +27,6 @@ DB->put(DB *db,
 PID_INIT points to a data node of key space range [0, MAX_KEY] (and therefore can possess all keys...
 when delta updates/inserts append, they initially produce an infinite chain)
 
+Key space is just used to hash into bucket. Each key-space is partitioned into b segments of the data node; when a 
+query "get" is called, the record corresponding to this segment is retrieved. Must be preserved with splits and so forth.
+

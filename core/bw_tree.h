@@ -10,6 +10,7 @@
 #define _BW_TREE_H_
 
 #include "core/mem_map.h"
+#include "core/mem_manager.h"
 #include "nodes/index_node.h"
 
 typedef unsigned char byte;
@@ -21,20 +22,34 @@ class BwTree {
 		BwTree(int indexNodeSize) {
 			map_ = new MemoryMap<Node>();
 			indexNodeSize_ = indexNodeSize;
+
+                        // can resize manager later
+                        // for now serve 10 of each node
+			manager_ = new MemoryManager(10, 10, 10);
+                        Node * data = manager_->getNode(DATA);
+//                        data->setVariables();
+                        PID dataID = map_->put(data);
 			
+                        // put the "infinite" data node in first 
+//                        Node* data = new DataNode(DATA, );
+                        
 			// put the root node in, save its PID.
                         // smallestPid, searchArray
-//			Node* root = new IndexNode(indexNodeSize);
-//			rootPid_ = map_->put(root);
+                        Pair<int, PID>* searchArray  = new Pair<int, PID>(MAX_KEY, dataID);
+			Node* root = new IndexNode(indexNodeSize, dataID, searchArray);
+  	                rootPid_ = map_->put(root);
+//  	                initDataPid_ = map_->put(root);
 		}
 
 		~BwTree() {
+                    // todo fix the mem management... i.e. searchArray and root
 			delete map_;
 		}
 		// get the PID of the next page to search
 		byte* get(int key);
 
                 // update the delta record with the corresponding payload
+                // don't really need inserts, since they are the same
                 void update(BKey key, byte *pay, unsigned int n);
 
 		/*
@@ -103,6 +118,7 @@ class BwTree {
 
 	private:
 		MemoryMap<Node>* map_;
+		MemoryManager* manager_;
 		int rootPid_;
 		int indexNodeSize_;
 

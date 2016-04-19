@@ -32,6 +32,12 @@ class DataNode : public Node {
 		// initialization for buffer.
 		DataNode() : Node(DATA) {}
 
+                ~DataNode() {
+
+                }
+
+                // todo need to deal with garbage collection, maybe
+
 		// for initialization of node after retrieving from
 		// buffer pool.
 		void setVariables(Pair<int, byte*>* data,
