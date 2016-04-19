@@ -39,10 +39,15 @@ PID IndexNode::nextPid(int key) {
 	while(left < right) {
 		// avoiding overflow
 		middle = left + (right - left) / 2;
-		if(searchArray_[middle].key <= key) {
+		if(searchArray_[middle].key > key) {
 			right = middle;
-		} else {
+		} 
+		else if (searchArray_[middle].key < key) {
 			left = middle + 1;
+			middle++; 
+		}
+		else {
+			return searchArray_[middle].value;
 		}
 	}
 

@@ -11,3 +11,10 @@ TEST_LINKED_OBJECTS :=
 
 # Link the template to avoid redundancy
 include $(MAKEFILE_TEMPLATE)
+
+# Need to specify test cases explicitly because they have variables in recipe
+test-nodes: $(NODES_TESTS)
+	@for a in $(NODES_TESTS); do \
+		echo == $$a ==; \
+		$(LDLIBRARYPATH) $$a; \
+	done
