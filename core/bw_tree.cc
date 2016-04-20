@@ -9,7 +9,9 @@ Node* BwTree::findNode(int key, MemoryManager* man) {
 	// pointer to the node that is first in the delta
 	// chain.
 	Node* firstInChain = nullptr;
-	// if we detect SMO, we must 
+	// In the case of an SMO with parent non-delta node 
+	// not having a chain, we must physically point to
+	// that node.
 	Node* nonDeltaParent = nullptr;
 	// node we are processing
 	Node* currentNode = map_->get(currentPid);
@@ -23,38 +25,59 @@ Node* BwTree::findNode(int key, MemoryManager* man) {
 	// traverse the tree until we have found the data node.
 	while( (type = currentNode->getType()) != DATA) {
 		
-		if(type == DELTA_INSERT ||
-			type == DELTA_UPDATE || 
-			type == DELTA_DELETE) {
-		
-			chainLength ++;
-
-			// does the delta node pertain to sought key
-			if( ((DeltaNode*) currentNode)->getKey() == key) {
-				// for non-deletes, return found node. For delete, -1
-				if(type != DELTA_DELETE)
-					return currentNode;
-				else
-					return nullptr;
-			} 
-		} else if (type == INDEX) {
+		// process by type. Update book-keeping.
+		if(type == INDEX) {
 			chainLength = 0;
 			firstInChain = nullptr;
+			nonDeltaParent = currentNode;
+
+			currentPid = currentNode->nextPid(key);
+			currentNode = map_->get(currentPid);
 		} else {
-			// splits
-			chainLength ++;
+			if(firstInChain == nullptr)
+				firstInChain = currentNode;
+
+			chainLength++;
+
+			if(type == DELTA_INSERT ||
+				type == DELTA_UPDATE || 
+				type == DELTA_DELETE) {
+			
+				// does the delta node pertain to sought key
+				if( ((DeltaNode*) currentNode)->getKey() == key) {
+					// for non-deletes, return found node. For delete, -1
+					if(type != DELTA_DELETE)
+						return currentNode;
+					else
+						return nullptr;
+				}
+			} else {
+				// split deltas
+
+				// if we should follow the split node
+				if((DeltaNode*)->followSplit(key)) {
+					// unfinished SMO. 
+					if(type == DELTA_SPLIT) {
+						// TODO
+						// FINISH SPLIT
+					}
+
+					// follow the split path. get right PID.
+					currentPid = currentNode->nextPid(key);
+					currentNode = map_->get(currentPid);
+					continue;
+				}
+			} 
+
+			// this gets hit if non-split leg of split node
+			// or other delta node not pertaining to key.
+			currentNode = ((DeltaNode*) currentNode)->getNextNode();
 		}
 
 		if(chainLength > MAX_DELTA_CHAIN) {
 			// consolidate
 			// @TODO
 		}
-
-		// this can trigger finalizing SMO.
-		// @TODO
-		// How to handle SMOs (and detect them). More cases?
-		currentPid = currentNode->nextPid(key);
-		currentNode = map_->get(currentPid);
 	}
 
 	return resultingPid;
