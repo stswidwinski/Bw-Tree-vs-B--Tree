@@ -39,12 +39,12 @@ class DeltaNode : public Node {
 			int borderKey = -1);
 
 		// for insert, update, delete
-		int getNewKey() {
+		int getKey() {
 			return newValue_->key;
 		}
 
 		// for insert, update
-		byte* getNewValue() {
+		byte* getValue() {
 			return newValue_->value;
 		}
 

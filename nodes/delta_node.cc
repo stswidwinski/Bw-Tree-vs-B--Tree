@@ -20,7 +20,7 @@ DeltaNode::DeltaNode (NodeType type,
 	setVariables(type, nextNode, pter, splitKey, borderKey);
 }
 
-void DeltaNode::setVariables(NodeType type,
+void DeltaNode::setVariables (NodeType type,
 		Pair<int, byte*>* newValue,
 		Node* nextNode) {
 	Node::type_ = type;
@@ -32,7 +32,7 @@ void DeltaNode::setVariables(NodeType type,
 	borderKey_ = -1;
 }
 
-void DeltaNode::setVariables(NodeType type,
+void DeltaNode::setVariables (NodeType type,
 		Node* nextNode,
 		PID pter,
 		int splitKey,
