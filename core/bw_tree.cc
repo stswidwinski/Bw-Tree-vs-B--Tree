@@ -4,13 +4,17 @@
 
 #include "core/bw_tree.h"
 
-PID BwTree::getPageID(int key, MemoryManager* man) {
+Node* BwTree::findNode(int key, MemoryManager* man) {
 	PID currentPid = rootPid_;
+	// pointer to the node that is first in the delta
+	// chain.
+	Node* firstInChain = nullptr;
+	// if we detect SMO, we must 
+	Node* nonDeltaParent = nullptr;
+	// node we are processing
 	Node* currentNode = map_->get(currentPid);
-	PID resultingPid = PID_NOT_FOUND;
-	// we must remember last non-delta PID for consolidate
-	// TODO
-	// PID lastNonDelta = rootPid_;
+	// the result. Not set until the end.
+	Node* resultingNode = nullptr;
 	// count the chaing length to know when to consolidate
 	int chainLength = 0;
 	// current node type. Reduce memory jumps.
@@ -26,22 +30,35 @@ PID BwTree::getPageID(int key, MemoryManager* man) {
 			chainLength ++;
 
 			// does the delta node pertain to sought key
-			if( ((DeltaNode*) currentNode)->getNewKey() == key) {
+			if( ((DeltaNode*) currentNode)->getKey() == key) {
 				// for non-deletes, return found node. For delete, -1
 				if(type != DELTA_DELETE)
-					resultingPid = currentPid;
+					return currentNode;
 				else
-					resultingPid = PID_NOT_FOUND;
-				// done.
-				break;
+					return nullptr;
 			} 
 		} else if (type == INDEX) {
 			chainLength = 0;
-			// lastNonDelta = currentPid;
+			firstInChain = nullptr;
 		} else {
 			// splits
 			chainLength ++;
 		}
+
+		if(chainLength > MAX_DELTA_CHAIN) {
+			// consolidate
+			// @TODO
+		}
+
+		// this can trigger finalizing SMO.
+		// @TODO
+		// How to handle SMOs (and detect them). More cases?
+		currentPid = currentNode->nextPid(key);
+		currentNode = map_->get(currentPid);
+	}
+
+	return resultingPid;
+}
 
 // delta updates
 // not much diff between this and inserts
