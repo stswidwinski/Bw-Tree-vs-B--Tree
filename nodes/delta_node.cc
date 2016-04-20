@@ -49,9 +49,6 @@ void DeltaNode::setVariables (NodeType type,
 	newValue_ = nullptr;
 }
 
-// the need for SMO finalization can be detected here.
-// how to communicate this?
-// @TODO
 PID DeltaNode::nextPid(int key) {
 	return pter_;
 }
