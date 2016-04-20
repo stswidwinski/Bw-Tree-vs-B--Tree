@@ -120,6 +120,9 @@ class BwTree {
 		// node that contains the required key. Returns PID_NOT_FOUND (see common.h)
 		// if none found or if delete node found.
 		Node* findNode(int key, MemoryManager* man);
+		
+		void consolidate(Node* chainStart, PID chainStartPID,
+			MemoryManager* man);
 
 };
 

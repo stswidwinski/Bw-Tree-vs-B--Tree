@@ -4,17 +4,13 @@
 
 #include "core/bw_tree.h"
 
-Node* BwTree::findNode(int key, MemoryManager* man) {
-	PID currentPid = rootPid_;
+Node* BwTree::findNode(int key, MemoryManager* man) 
+	PID firstInChainPID = PID_NOT_FOUND;
 	// pointer to the node that is first in the delta
 	// chain.
 	Node* firstInChain = nullptr;
-	// In the case of an SMO with parent non-delta node 
-	// not having a chain, we must physically point to
-	// that node.
-	Node* nonDeltaParent = nullptr;
 	// node we are processing
-	Node* currentNode = map_->get(currentPid);
+	Node* currentNode = map_->get(rootPid_);
 	// the result. Not set until the end.
 	Node* resultingNode = nullptr;
 	// count the chaing length to know when to consolidate
@@ -29,13 +25,15 @@ Node* BwTree::findNode(int key, MemoryManager* man) {
 		if(type == INDEX) {
 			chainLength = 0;
 			firstInChain = nullptr;
+			firstInChainPID = PID_NOT_FOUND;
 			nonDeltaParent = currentNode;
 
-			currentPid = currentNode->nextPid(key);
-			currentNode = map_->get(currentPid);
+			currentNode = map_->get(currentNode->nextPid(key));
 		} else {
-			if(firstInChain == nullptr)
+			if(firstInChain == nullptr) {
+				firstInChainPID = currentPid;
 				firstInChain = currentNode;
+			}
 
 			chainLength++;
 
@@ -56,15 +54,9 @@ Node* BwTree::findNode(int key, MemoryManager* man) {
 
 				// if we should follow the split node
 				if((DeltaNode*)->followSplit(key)) {
-					// unfinished SMO. 
-					if(type == DELTA_SPLIT) {
-						// TODO
-						// FINISH SPLIT
-					}
 
 					// follow the split path. get right PID.
-					currentPid = currentNode->nextPid(key);
-					currentNode = map_->get(currentPid);
+					currentNode = map_->get(currentNode->nextPid(key));
 					continue;
 				}
 			} 
@@ -81,6 +73,40 @@ Node* BwTree::findNode(int key, MemoryManager* man) {
 	}
 
 	return resultingPid;
+}
+
+void BwTree::consolidate(Node* chainStart, PID chainStartPID,
+	MemoryManager* man) {
+	// find the end of the chain
+	Node* chainEnd = chainStart;
+	while(chainEnd->getType() != DATA ||
+		chainEnd->getType() != INDEX) {
+		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+	}
+
+	Node* newPage = man->getNode(chainEnd->getType());
+	if(chainEnd->getType() == DATA) {
+		// copy the contents of the old page
+		// PERHAPS STEAL THEM by pointer reference?
+		// TODO
+
+		// collect changes from within the chain.
+		//		0) updates
+		// 		1) the highest / smallest split key
+		//		2) the deleted records
+		//
+		// All of this can be easily done in two passes.
+		// Not sure about one pass.
+	} else if(chainEnd->getType() == INDEX) {
+		// copy the contents of the old page. Index deltas are
+		// only split deltas. So we must add stuff to the array.
+		// this is why we actually need the low and high key.
+		//
+		// Can we have duplicates? Consider it.
+	} else {
+		DIE("Should not happen!.");
+	}
+
 }
 
 // delta updates
