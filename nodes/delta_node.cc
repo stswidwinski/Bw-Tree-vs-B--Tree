@@ -8,12 +8,12 @@ DeltaNode::DeltaNode () : Node(DELTA_INSERT) {}
 
 DeltaNode::DeltaNode (NodeType type,
 		Pair<int, byte*>* newValue,
-		PID nextNode) : Node(type) {
+		Node* nextNode) : Node(type) {
 	setVariables(type, newValue, nextNode);
 }
 
 DeltaNode::DeltaNode (NodeType type,
-		PID nextNode,
+		Node* nextNode,
 		PID pter,
 		int splitKey,
 		int borderKey) : Node(type) {
@@ -22,7 +22,7 @@ DeltaNode::DeltaNode (NodeType type,
 
 void DeltaNode::setVariables(NodeType type,
 		Pair<int, byte*>* newValue,
-		PID nextNode) {
+		Node* nextNode) {
 	Node::type_ = type;
 	newValue_ = newValue;
 	nextNode_ = nextNode;
@@ -33,7 +33,7 @@ void DeltaNode::setVariables(NodeType type,
 }
 
 void DeltaNode::setVariables(NodeType type,
-		PID nextNode,
+		Node* nextNode,
 		PID pter,
 		int splitKey,
 		int borderKey) {
@@ -53,22 +53,30 @@ void DeltaNode::setVariables(NodeType type,
 // how to communicate this?
 // @TODO
 PID DeltaNode::nextPid(int key) {
+	return pter_;
+}
+
+Node* DeltaNode::getNextNode() {
+	return nextNode_;
+}
+
+bool DeltaNode::followSplit(int key) {
 	if(Node::type_ == DELTA_SPLIT) {
 		if(key <= borderKey_ &&
 			key > splitKey_) {
 
-			return pter_;
+			return true;
 		}
 
-		return nextNode_;
+		return false;
 	} else if (Node::type_ == DELTA_INDEX_SPLIT) {
 		if(key > splitKey_) 
-			return pter_;
+			return true;
 
-		return nextNode_;
-	} else {
-		return nextNode_;
-	}
+		return false;;
+	} 
+
+	return false;
 }
 
 DeltaNode::~DeltaNode(){}

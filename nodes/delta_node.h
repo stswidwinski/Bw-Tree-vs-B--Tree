@@ -14,11 +14,11 @@ class DeltaNode : public Node {
 		// full initialization -- update, insert, delete.
 		DeltaNode(NodeType type,
 			Pair<int, byte*>* newValue,
-			PID nextNode);
+			Node* nextNode);
 
 		// full initialization -- split deltas.
 		DeltaNode(NodeType type,
-			PID nextNode,
+			Node* nextNode,
 			PID pter,
 			int splitKey,
 			int borderKey = -1);
@@ -29,11 +29,11 @@ class DeltaNode : public Node {
 		// set values -- update, insert, delete.
 		void setVariables(NodeType type,
 			Pair<int, byte*>* newValue,
-			PID nextNode);
+			Node* nextNode);
 
 		// set values -- update, insert, delete.
 		void setVariables(NodeType type,
-			PID nextNode,
+			Node* nextNode,
 			PID pter,
 			int splitKey,
 			int borderKey = -1);
@@ -48,7 +48,16 @@ class DeltaNode : public Node {
 			return newValue_->value;
 		}
 
+		// in case of split-delta, we need the 'side' pointer.
+		// this one is logical.
 		PID nextPid(int key) override;
+
+		Node* getNextNode();
+
+		// returns true if one should follow the split 
+		// pointer (call nextPid). Else, gives false (follow)
+		// getNextNode();
+		bool followSplit(int key);
 
 		virtual ~DeltaNode();
 
@@ -58,8 +67,8 @@ class DeltaNode : public Node {
 		// delete deltas store only meaningful key
 		Pair<int, byte*>* newValue_;
 
-		// PID of the next node we are pointing to
-		PID nextNode_;
+		// The next node in the chain.
+		Node* nextNode_;
 
 		// In split deltas -- side pointer.
 		// In index split deltas -- 
