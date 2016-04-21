@@ -7,6 +7,7 @@
 
 #include "nodes/node.cc" 
 #include "utils/pair.h"
+#include "utils/triple.h"
 #include "utils/common.h"
 
 class IndexNode : public Node {

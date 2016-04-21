@@ -13,6 +13,7 @@
 #include "core/mem_manager.h"
 #include "utils/common.h"
 #include "utils/pair.h"
+#include "utils/triple.h"
 #include "nodes/node.cc"
 #include "nodes/data_node.h"
 #include "nodes/delta_node.h"

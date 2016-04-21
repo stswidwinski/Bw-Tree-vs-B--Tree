@@ -8,6 +8,7 @@
 #include "nodes/node.cc"
 #include "utils/pair.h"
 #include "utils/common.h"
+#include "utils/triple.h"
 
 class DeltaNode : public Node {
 	public:

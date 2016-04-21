@@ -10,6 +10,7 @@
 #include "utils/common.h"
 #include "nodes/node.cc" 
 #include "utils/pair.h"
+#include "utils/triple.h"
 
 typedef unsigned char byte;
 

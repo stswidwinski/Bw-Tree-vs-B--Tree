@@ -13,7 +13,7 @@ Node* BwTree::findNode(int key, MemoryManager* man)
 	Node* currentNode = map_->get(rootPid_);
 	// the result. Not set until the end.
 	Node* resultingNode = nullptr;
-	// count the chaing length to know when to consolidate
+	// count the chain length to know when to consolidate
 	int chainLength = 0;
 	// current node type. Reduce memory jumps.
 	NodeType type;
