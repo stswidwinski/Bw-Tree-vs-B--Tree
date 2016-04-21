@@ -30,9 +30,9 @@
 // flag which means that PID was not found
 #define PID_NOT_FOUND -100
 // flag which means that record doesn't exist
-#define NO_RECORD -100
+#define NOT_FOUND -1
  // flag which means that record is above range 
-#define OVER_HIGH -101
+#define OVER_HIGH -2
 // flag which means that record is found 
 #define FOUND -102
 // maximal length of the delta chain
