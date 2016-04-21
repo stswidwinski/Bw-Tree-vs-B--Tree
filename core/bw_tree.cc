@@ -35,7 +35,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 	int foundRecord = NO_RECORD;
 
 	// traverse the tree until we have found the data node.
-	while( true) {
+	while(true) {
 		type = currentNode->getType();
 		// process by type. Update book-keeping.
 
