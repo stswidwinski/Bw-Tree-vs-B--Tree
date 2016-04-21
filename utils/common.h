@@ -24,6 +24,7 @@
     exit(1); \
   } while (0);
 
+#define KEY_NOT_SET -1
 // the length of the entry.
 #define ENTRY_LEN 8
 // flag which means that PID was not found
