@@ -51,6 +51,10 @@ class DataNode : public Node {
 
 		// Get the value for key within the page.
 		byte* getValue(int key);
+		// Get PID of sibling if searched value is too great
+		PID getSibling() {
+			return sidePter_;
+		}
 
 	private:
 		// the lowest and highest key that can be stored.

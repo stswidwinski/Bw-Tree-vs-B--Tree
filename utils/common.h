@@ -28,6 +28,10 @@
 #define ENTRY_LEN 8
 // flag which means that PID was not found
 #define PID_NOT_FOUND -100
+// flag which means that record doesn't exist
+#define NO_RECORD -100
+ // flag which means that record is above range 
+#define OVER_HIGH -101
 // maximal length of the delta chain
 #define MAX_DELTA_CHAIN 100
 // maximal number of keys in index nodes

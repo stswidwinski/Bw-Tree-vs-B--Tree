@@ -4,6 +4,27 @@
 
 #include "core/bw_tree.h"
 
+
+
+byte* BwTree::findInPage(int key, Node* node) {
+	byte* resultingValue = NO_RECORD;
+
+	// @TODO
+	return resultingValue;
+}
+
+
+/* both insert/update and get traverse all the way to the 
+node that contains (or should contain if it existed) the key
+
+in case of read you only traverse until either you are sure that the element is 
+NOT present in the tree OR until you find it.
+
+In the case of any write (insert/update) we want a pointer to the node that contains the value corresponding to key 
+(the PID of that page). We must also ensure that the value either exists (in case of update) or does not exist (in case of insert). 
+Hence, we actually need both PID and Node*
+
+*/
 Node* BwTree::findNode(int key, MemoryManager* man) 
 	PID firstInChainPID = PID_NOT_FOUND;
 	// pointer to the node that is first in the delta
@@ -13,13 +34,14 @@ Node* BwTree::findNode(int key, MemoryManager* man)
 	Node* currentNode = map_->get(rootPid_);
 	// the result. Not set until the end.
 	Node* resultingNode = nullptr;
+	byte* resultingValue = NO_RECORD;
 	// count the chain length to know when to consolidate
 	int chainLength = 0;
 	// current node type. Reduce memory jumps.
 	NodeType type;
 
 	// traverse the tree until we have found the data node.
-	while( (type = currentNode->getType()) != DATA) {
+	while((type = currentNode->getType()) != DATA) {
 		
 		// process by type. Update book-keeping.
 		if(type == INDEX) {
@@ -29,7 +51,8 @@ Node* BwTree::findNode(int key, MemoryManager* man)
 			nonDeltaParent = currentNode;
 
 			currentNode = map_->get(currentNode->nextPid(key));
-		} else {
+
+		} else { // have reached a delta or data node
 			if(firstInChain == nullptr) {
 				firstInChainPID = currentPid;
 				firstInChain = currentNode;
@@ -42,14 +65,12 @@ Node* BwTree::findNode(int key, MemoryManager* man)
 			
 				// does the delta node pertain to sought key
 				if( ((DeltaNode*) currentNode)->getKey() == key) {
-					return currentNode;
+					resultingNode = currentNode;
+					resultingPid = currentPid;
+					break;
 				}
-			} else {
-				// split deltas
-
-				// if we should follow the split node
-				if((DeltaNode*)->followSplit(key)) {
-
+			} else { // split deltas
+				if((DeltaNode*)->followSplit(key)) { // if we should follow the split node
 					// follow the split path. get right PID.
 					currentNode = map_->get(currentNode->nextPid(key));
 					continue;
@@ -66,8 +87,20 @@ Node* BwTree::findNode(int key, MemoryManager* man)
 			// @TODO
 		}
 	}
+	// broken from while loop -- have found node in which record
+	// exists or should exist
+	resultingValue = resultingNode.getValue(key);
+	// if the key exceeded the max on the page (i.e. page was split) search sibling
+	while (resultingValue == OVER_HIGH) {
+		resultingNode = map_->get(resultingNode->getSibling());
+		resultingValue = resultingNode.getValue(key);
+	}
 
-	return resultingPid;
+
+	// @TODO create triple of PID, Node, and Value -- how to do to not allocate memory
+
+
+	return resultingPid; // @TODO should return that triple
 }
 
 void BwTree::consolidate(Node* chainStart, PID chainStartPID,
