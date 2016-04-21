@@ -4,7 +4,7 @@
 
 #include "nodes/data_node.h" 
 
-int DataNode::getValue(int key, byte ** record) {
+int DataNode::pointToRecord(int key, byte ** record) {
 	// binary search on the data_ array.
 	if (key > highKey_) {
 		*record = nullptr;
@@ -26,5 +26,6 @@ int DataNode::getValue(int key, byte ** record) {
 		}
 	}
 
+	*record = nullptr;
 	return NOT_FOUND;
 }

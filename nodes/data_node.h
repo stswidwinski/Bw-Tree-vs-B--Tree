@@ -49,12 +49,13 @@ class DataNode : public Node {
 			highKey_ = highKey;
 		}
 
-		// Get the value for key within the page.
+		// Points record to the byte corresponding to key. On error
+		// this is not guaranteed.
 		//
 		// sets record to point to the byte retrieved.
 		// returns 0 on success and appropriate error code on error.
 		// see utils for codes -- NOT_FOUND and OVER_HIGH
-		int getValue(int key, byte ** record);
+		int pointToRecord(int key, byte ** record);
 		// Get PID of sibling if searched value is too great
 		PID getSibling() {
 			return sidePter_;
