@@ -32,7 +32,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 	NodeType type;
 
 	// flag to signify if record was found in page
-	int foundRecord = NO_RECORD;
+	int recordFound = NO_RECORD;
 
 	// traverse the tree until we have found the data node.
 	while(true) {
@@ -79,14 +79,21 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 					// @TODO
 				}
 
-				foundRecord = resultingNode->getValue(key, &resultingValue);
+				recordFound = resultingNode->pointToRecord(key, &resultingValue);
 				// if the key exceeded the max on the page (i.e. page was split) search sibling
-				while (foundRecord == OVER_HIGH) {
-					resultingNode = map_->get(resultingNode->getSibling());
-					foundRecord = resultingNode->getValue(key, &resultingValue);
+				if (recordFound == OVER_HIGH) {
+					// record not found, continue...
+					currentNode = map_->get(resultingNode->getSibling());
+					continue;
+				} else if (recordFound == NOT_FOUND) {
+					// it just doesn't exist
+					//TODO
+					// return the right thing
 				}
 
-				if (type == ADD_DELTA) {
+				// record has been found 
+				if (type == INSERT ||
+					type == UPDATE) {
 					resultingNode = firstInChain;
 					resultingPid = firstInChainPID;
 				}
