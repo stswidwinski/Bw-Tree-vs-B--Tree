@@ -41,12 +41,17 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 		if(type == INDEX) {
 			chainLength = 0;
 			firstInChain = nullptr;
-			firstInChainPID = PID_NOT_FOUND;
+			firstInChainPID = currentNode->nextPid(key);
 
-			currentNode = map_->get(currentNode->nextPid(key));
+			currentNode = map_->get(firstInChainPID);
 			continue;
 
-		} else { // have reached a delta or data node
+		} else if (type == DELTA_INSERT ||
+			type == DELTA_UPDATE || 
+			type == DELTA_SPLIT ||
+			type == DELTA_INDEX_SPLIT) {
+
+			// book-keeping
 			if(firstInChain == nullptr) {
 				firstInChainPID = currentPid;
 				firstInChain = currentNode;
@@ -54,57 +59,76 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 
 			if(type == DELTA_INSERT ||
 				type == DELTA_UPDATE) {
-			
+		
 				// does the delta node pertain to sought key
 				if( ((DeltaNode*) currentNode)->getKey() == key) {
-						resultingNode = currentNode;
-						resultingPid = currentPid;
-						foundRecord = resultingNode->getValue(&resultingValue);
-						break; // have found the data so can break out of while loop
+					// set found values that pertain to key
+					resultingNode = currentNode;
+					resultingPid = currentPid;
+					foundRecord = resultingNode->getValue(&resultingValue);
+					// TODO 
+					// set the right return value
+					return;
 				}
-			} else if (type == DELTA_SPLIT) { // split deltas
-				chainLength++;
-				if((DeltaNode*)->followSplit(key)) { // if we should follow the split node
-					// follow the split path. get right PID.
+				// otherwise, fall through.
+			} else if (type == DELTA_SPLIT) {
 
-					// @TODO have to deal with case that split not properly installed and have 
-					// to follow index node sibling pointer but I forgot how we said we would deal with that
-
-					currentNode = map_->get(currentNode->nextPid(key));
+				// following split means taking side pointer
+				if((DeltaNode*)->followSplit(key)) {
+					chainLength = 0;
+					firstInChain = nullptr;
+					firstInChainPID = currentNode->nextPid(key);
+					
+					currentNode = map_->get(firstInChainPID);
 					continue;
 				}
-			} else { // data node in which record should, but does not have to, be
-				if(chainLength > MAX_DELTA_CHAIN) {
-					// consolidate
-					// @TODO
-				}
 
-				recordFound = resultingNode->pointToRecord(key, &resultingValue);
-				// if the key exceeded the max on the page (i.e. page was split) search sibling
-				if (recordFound == OVER_HIGH) {
-					// record not found, continue...
-					currentNode = map_->get(resultingNode->getSibling());
-					continue;
-				} else if (recordFound == NOT_FOUND) {
-					// it just doesn't exist
-					//TODO
-					// return the right thing
-				}
+				// otherwise, fall through
+			} else if (type == DELTA_INDEX_SPLIT) {
+				// IS THIS CASE DIFFERENT FROM THE ONE ABOVE?
+				// TODO
+			}
 
-				// record has been found 
-				if (type == INSERT ||
-					type == UPDATE) {
-					resultingNode = firstInChain;
-					resultingPid = firstInChainPID;
-				}
-				// @TODO create triple of PID, Node, and Value -- how to do to not allocate memory
+			// regular delta following
+			chainLength++;
 
-				return resultingPid; // @TODO should return that triple
-			} 
+			if(chainLength > MAX_DELTA_CHAIN) {
+				// consolidate
+				// @TODO
+			}
 
-			// this gets hit if non-split leg of split node
-			// or other delta node not pertaining to key.
-			currentNode = ((DeltaNode*) currentNode)->getNextNode();
+			currentNode = map_->get(((DeltaNode*) currentNode)->getNextNode());
+			continue;
+
+		} else { 
+			// data node
+
+			// attempt to find the record
+			recordFound = resultingNode->pointToRecord(key, &resultingValue);
+			
+			if (recordFound == OVER_HIGH) {
+				// continue search in the sibling
+				chainLength = 0;
+				firstInChain = nullptr;
+				firstInChainPID = resultingNode->getSibling();
+
+				currentNode = map_->get(firstInChainPID);
+				continue;
+			} else if (recordFound == NOT_FOUND) {
+				// it just doesn't exist
+				// TODO
+				// return the right thing
+			}
+
+			// record has been found 
+			if (type == INSERT ||
+				type == UPDATE) {
+				resultingNode = firstInChain;
+				resultingPid = firstInChainPID;
+			}
+			// @TODO create triple of PID, Node, and Value -- how to do to not allocate memory
+
+			return resultingPid; // @TODO should return that triple
 		}
 	}	
 }
