@@ -4,10 +4,11 @@
 
 #include "nodes/data_node.h" 
 
-byte* DataNode::getValue(int key) {
+int DataNode::getValue(int key, byte ** record) {
 	// binary search on the data_ array.
 	if (key > highKey_) {
-		return (byte*) OVER_HIGH;
+		*record = nullptr;
+		return OVER_HIGH;
 	}
 
 	int left = 0, right = dataLength_, middle = 0, midVal = 0;
@@ -25,5 +26,8 @@ byte* DataNode::getValue(int key) {
 	}
 
 	// if nothing found, return null. Else, return what is found.
+	// @TODO I dont really know that the below line means
+	// want to set *record = data_[middle].value and return FOUND if found
+	// and return NO_RECORD otherwise
 	return left < right ? data_[middle].value : nullptr;
 }

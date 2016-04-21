@@ -45,8 +45,9 @@ class DeltaNode : public Node {
 		}
 
 		// for insert, update
-		byte* getValue() {
-			return newValue_->value;
+		int getValue(byte ** record) {
+			record * = newValue_->value;
+			return FOUND; 
 		}
 
 		// in case of split-delta, we need the 'side' pointer.

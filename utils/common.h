@@ -32,6 +32,8 @@
 #define NO_RECORD -100
  // flag which means that record is above range 
 #define OVER_HIGH -101
+// flag which means that record is found 
+#define FOUND -102
 // maximal length of the delta chain
 #define MAX_DELTA_CHAIN 100
 // maximal number of keys in index nodes

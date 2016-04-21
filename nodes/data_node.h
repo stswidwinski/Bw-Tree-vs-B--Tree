@@ -50,7 +50,7 @@ class DataNode : public Node {
 		}
 
 		// Get the value for key within the page.
-		byte* getValue(int key);
+		int getValue(int key, byte ** record);
 		// Get PID of sibling if searched value is too great
 		PID getSibling() {
 			return sidePter_;

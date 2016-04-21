@@ -16,7 +16,7 @@ In the case of any write (insert/update) we want a pointer to the node that cont
 Hence, we actually need both PID and Node*
 
 */
-Triple<PID, Node*, byte*> BwTree::findNode(int key, int type, MemoryManager* man) {
+Triple<PID, Node*, byte*> BwTree::findNode(int key, searchType type, MemoryManager* man) {
 	PID firstInChainPID = PID_NOT_FOUND;
 	// pointer to the node that is first in the delta
 	// chain.
@@ -25,11 +25,14 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, int type, MemoryManager* man
 	Node* currentNode = map_->get(rootPid_);
 	// the result. Not set until the end.
 	Node* resultingNode = nullptr;
-	byte* resultingValue = NO_RECORD;
+	byte* resultingValue = nullptr;
 	// count the chain length to know when to consolidate
 	int chainLength = 0;
 	// current node type. Reduce memory jumps.
 	NodeType type;
+
+	// flag to signify if record was found in page
+	int foundRecord = NO_RECORD;
 
 	// traverse the tree until we have found the data node.
 	while( true) {
@@ -57,9 +60,10 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, int type, MemoryManager* man
 			
 				// does the delta node pertain to sought key
 				if( ((DeltaNode*) currentNode)->getKey() == key) {
-					resultingNode = currentNode;
-					resultingPid = currentPid;
-					break;
+						resultingNode = currentNode;
+						resultingPid = currentPid;
+						foundRecord = resultingNode->getValue(&resultingValue);
+						break; // have found the data so can break out of while loop
 				}
 			} else if (type == DELTA_SPLIT) { // split deltas
 				chainLength++;
@@ -78,11 +82,11 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, int type, MemoryManager* man
 					// @TODO
 				}
 
-				resultingValue = resultingNode.getValue(key);
+				foundRecord = resultingNode->getValue(key, &resultingValue);
 				// if the key exceeded the max on the page (i.e. page was split) search sibling
-				while (resultingValue == OVER_HIGH) {
+				while (foundRecord == OVER_HIGH) {
 					resultingNode = map_->get(resultingNode->getSibling());
-					resultingValue = resultingNode.getValue(key);
+					foundRecord = resultingNode->getValue(key, &resultingValue);
 				}
 
 				if (type == ADD_DELTA) {
@@ -153,7 +157,8 @@ void BwTree::update(int key, byte *value, MemoryManager* man) {
 
 	Triple<PID, Node*, byte*> found = root->findNode(key, ADD_DELTA, man);
 
-	if (found.record != NO_RECORD) { 
+	// if the record was found, can update
+	if (found.value != nullptr) { 
 		// create new delta node
 		DeltaNode* newNode = man.getNode(DELTA_UPDATE);
 		// set new delta to point to found.node 
@@ -175,7 +180,8 @@ void BwTree::insert(int key, byte *value, MemoryManager* man) {
 	currentNode = root;
 
 	Triple<PID, Node*, byte*> found = root->findNode(key, ADD_DELTA, man);
-	if (found.record == NO_RECORD) { 
+	// if the record was not found, can add it
+	if (found.value == nullptr) { 
 		// create new delta node
 		DeltaNode* newNode = man.getNode(DELTA_INSERT);
 		// set new delta to point to found.node 

@@ -26,6 +26,8 @@ enum searchType {
   ADD_DELTA = 1,
 };
 
+
+
 class BwTree {
 	public:
 		// indexNodeSize is the maximum number of elements
@@ -46,11 +48,12 @@ class BwTree {
 		}
 		
 		// get the PID of the next page to search
-		byte* get(int key);
+		byte* BwTree::get(int key, MemoryManager* man);
 
-        // update the delta record with the corresponding payload
-        // don't really need inserts, since they are the same
-        void update(BKey key, byte *pay, unsigned int n);
+        // add a delta record with a new value for an existing key
+        void BwTree::update(int key, byte *value, MemoryManager* man);
+        // inserts a new delta record for a previously not existing key
+        void BwTree::insert(int key, byte *value, MemoryManager* man);
 
 		/*
 			Interface description
