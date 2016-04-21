@@ -21,13 +21,10 @@ int DataNode::getValue(int key, byte ** record) {
 		} else if (midVal < key) {
 			left = middle + 1;
 		} else {
-			break;
+			*record = midVal;
+			return 0;
 		}
 	}
 
-	// if nothing found, return null. Else, return what is found.
-	// @TODO I dont really know that the below line means
-	// want to set *record = data_[middle].value and return FOUND if found
-	// and return NO_RECORD otherwise
-	return left < right ? data_[middle].value : nullptr;
+	return NOT_FOUND;
 }
