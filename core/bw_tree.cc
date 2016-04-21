@@ -38,13 +38,10 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 	while(true) {
 		type = currentNode->getType();
 		// process by type. Update book-keeping.
-
-		// if index, find next node to traverse, get it and continue back to top of while
 		if(type == INDEX) {
 			chainLength = 0;
 			firstInChain = nullptr;
 			firstInChainPID = PID_NOT_FOUND;
-			nonDeltaParent = currentNode;
 
 			currentNode = map_->get(currentNode->nextPid(key));
 			continue;
