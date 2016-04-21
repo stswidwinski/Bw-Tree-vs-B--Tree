@@ -58,20 +58,14 @@ Node* DeltaNode::getNextNode() {
 }
 
 bool DeltaNode::followSplit(int key) {
-	if(Node::type_ == DELTA_SPLIT) {
+	if(Node::type_ == DELTA_SPLIT ||
+		Node::type_ == DELTA_INDEX_SPLIT) {
 		if(key <= borderKey_ &&
 			key > splitKey_) {
 
 			return true;
 		}
-
-		return false;
-	} else if (Node::type_ == DELTA_INDEX_SPLIT) {
-		if(key > splitKey_) 
-			return true;
-
-		return false;;
-	} 
+	}
 
 	return false;
 }
