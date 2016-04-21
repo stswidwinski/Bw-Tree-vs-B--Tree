@@ -7,7 +7,7 @@
 byte* DataNode::getValue(int key) {
 	// binary search on the data_ array.
 	if (key > highKey_) {
-		return OVER_HIGH;
+		return (byte*) OVER_HIGH;
 	}
 
 	int left = 0, right = dataLength_, middle = 0, midVal = 0;
