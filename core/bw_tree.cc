@@ -25,7 +25,7 @@ In the case of any write (insert/update) we want a pointer to the node that cont
 Hence, we actually need both PID and Node*
 
 */
-Node* BwTree::findNode(int key, MemoryManager* man) 
+Triple<PID, Node*, byte*> BwTree::findNode(int key, int update, MemoryManager* man) {
 	PID firstInChainPID = PID_NOT_FOUND;
 	// pointer to the node that is first in the delta
 	// chain.
@@ -72,6 +72,10 @@ Node* BwTree::findNode(int key, MemoryManager* man)
 			} else { // split deltas
 				if((DeltaNode*)->followSplit(key)) { // if we should follow the split node
 					// follow the split path. get right PID.
+
+					// @TODO have to deal with case that split not properly installed and have 
+					// to follow index node sibling pointer but I forgot how we said we would deal with that
+
 					currentNode = map_->get(currentNode->nextPid(key));
 					continue;
 				}
@@ -96,9 +100,12 @@ Node* BwTree::findNode(int key, MemoryManager* man)
 		resultingValue = resultingNode.getValue(key);
 	}
 
+	if (update) {
+		resultingNode = firstInChain;
+		resultingPid = firstInChainPID;
+	}
 
 	// @TODO create triple of PID, Node, and Value -- how to do to not allocate memory
-
 
 	return resultingPid; // @TODO should return that triple
 }
@@ -139,36 +146,41 @@ void BwTree::consolidate(Node* chainStart, PID chainStartPID,
 
 // delta updates
 // not much diff between this and inserts
-void BwTree::update(BKey key, byte *pay, unsigned int n) {
+void BwTree::update(BKey key, byte *pay, unsigned int n, MemoryManager* man) {
+	currentPid = rootPid_;
+	currentNode = root;
+
+	root.findNode()
 
 }
 
-/*byte* BwTree::get(int key) {
+byte* BwTree::get(int key, MemoryManager* man) {
 	
 	currentPid = rootPid_;
 	currentNode = root;
 
-	// Get the next pid until we find a non-index node
-	while((currentNode.getType() == INDEX) || (currentNode.getType() == DELTA_INDEX_SPLIT)) {
-		currentPid = currentNode.nextPid(key);
-		currentNode = map_.get(currentPid);
+	Triple<PID, Node*, byte*> found = root.findNode(key, 0, man);
+	return found;
 	}
-
-		if(chainLength > MAX_DELTA_CHAIN) {
-			// consolidate
-			// @TODO
-		}
-
-		// this can trigger finalizing SMO.
-		// @TODO
-		// How to handle SMOs (and detect them). More cases?
-		currentPid = currentNode->nextPid(key);
-		currentNode = map_->get(currentPid);
-	}
-	}*/
-
-	return resultingPid;
 }
+
+byte* BwTree::update(int key, MemoryManager* man) {
+	
+	currentPid = rootPid_;
+	currentNode = root;
+
+	Triple<PID, Node*, byte*> found = root.findNode(key, 1, man);
+	// create new delta node
+
+	// set new delta to point to found.val (the node)
+
+	// CAS within memory map to point to new delta
+
+
+	return found;
+	}
+}
+
 
 // byte* BwTree::get(int key) {
 	
