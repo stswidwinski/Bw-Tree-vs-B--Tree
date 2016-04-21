@@ -16,6 +16,7 @@ ifeq ($(LOWERC_DIR),proto)
 endif
 
 $(UPPERC_DIR)_TEST_SRCS := $(wildcard $(patsubst %.cc, %_test.cc, $($(UPPERC_DIR)_SRCS)))
+$(UPPERC_DIR)_TEST_SRCS += $(filter %_test.cc, $($(UPPERC_DIR)_SRCS))
 $(UPPERC_DIR)_TEST_OBJS := $(patsubst %.cc, $(OBJDIR)/%.o, $($(UPPERC_DIR)_TEST_SRCS))
 $(UPPERC_DIR)_TESTS     := $(patsubst %.cc, $(BINDIR)/%, $($(UPPERC_DIR)_TEST_SRCS))
 
@@ -39,7 +40,8 @@ $(OBJDIR)/$(LOWERC_DIR)/%.o: $(SRC_CC_FILES) $(SRC_LINKED_OBJECTS)
 	@mkdir -p $(@D)
 	$(V)$(CXX) $(CXXFLAGS) -o $@ -c $<
 
-$(BINDIR)/$(LOWERC_DIR)/%_test: $(OBJDIR)/$(LOWERC_DIR)/%_test.o $($(UPPERC_DIR)_OBJS) \
+$(BINDIR)/$(LOWERC_DIR)/%_test: $(OBJDIR)/$(LOWERC_DIR)/%_test.o \
+								$(filter-out %_test.o, $($(UPPERC_DIR)_OBJS)) \
                                 $(TEST_LINKED_OBJECTS)
 	@echo + ld $@
 	@mkdir -p $(@D)
