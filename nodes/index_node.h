@@ -24,7 +24,9 @@ class IndexNode : public Node {
 		// buffer pool.
 		void setVariables(Pair<int, PID>* searchArray,
 			int currentSize, 
-			int smallestPID);
+			int smallestPID,
+			int highKey = KEY_NOT_SET,
+			PID siblingPointer = PID_NOT_FOUND);
 
 		// returns the PID of the node to go to next
 		// based on key. This is done via binary search.
@@ -32,6 +34,11 @@ class IndexNode : public Node {
 
 		virtual ~IndexNode();
 	private:
+		// after a split, we can only store or attempt to find
+		// a key lower then of equal to the split key. this is the key.
+		int highKey_;
+		// sibling pointer points to the sibling index node after a split.
+		PID siblingPointer_;
 		// current number of keys in the searchArray_
 		int currentSize_;
 		// the 'left most' pointer

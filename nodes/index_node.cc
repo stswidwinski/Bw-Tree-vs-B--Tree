@@ -13,20 +13,30 @@ IndexNode::IndexNode(int currentSize,
 		searchArray_ = searchArray;
 		currentSize_ = currentSize;
 		smallestPID_ = smallestPID;
+		highKey_ = KEY_NOT_SET;
+		siblingPointer_ = PID_NOT_FOUND;
 }
 
 void IndexNode::setVariables(Pair<int, PID>* searchArray,
 	int currentSize, 
-	int smallestPID) {		
+	int smallestPID,
+	int highKey,
+	PID siblingPointer) {		
 		searchArray_ = searchArray;
 		currentSize_ = currentSize;
 		smallestPID_ = smallestPID;
+		highKey_ = highKey;
+		siblingPointer_ = siblingPointer;
 }
 
 PID IndexNode::nextPid(int key) {
 	// empty node.
 	if(currentSize_ == 0)
 		return -1;
+
+	if(highKey_ != KEY_NOT_SET &&
+		key > highKey)
+		return siblingPointer_;
 
 	// key is smaller then smallest element in search array.
 	if(key < searchArray_[0].key)
