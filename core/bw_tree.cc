@@ -71,7 +71,8 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 					return;
 				}
 				// otherwise, fall through.
-			} else if (type == DELTA_SPLIT) {
+			} else if (type == DELTA_SPLIT ||
+				type == DELTA_INDEX_SPLIT) {
 
 				// following split means taking side pointer
 				if((DeltaNode*)->followSplit(key)) {
@@ -84,9 +85,6 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 				}
 
 				// otherwise, fall through
-			} else if (type == DELTA_INDEX_SPLIT) {
-				// IS THIS CASE DIFFERENT FROM THE ONE ABOVE?
-				// TODO
 			}
 
 			// regular delta following
