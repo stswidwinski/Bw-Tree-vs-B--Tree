@@ -21,9 +21,10 @@
 
 typedef unsigned char byte;
 
-enum searchType {
-  FIND = 0,
-  ADD_DELTA = 1,
+enum queryType {
+  READ,
+  INSERT,
+  UPDATE
 };
 
 
@@ -128,7 +129,7 @@ class BwTree {
 		// find the PID of the data page (or delta insert/update)
 		// node that contains the required key. Returns PID_NOT_FOUND (see common.h)
 		// if none found or if delete node found.
-		Node* findNode(int key, MemoryManager* man);
+		Node* findNode(int key, queryType type, MemoryManager* man);
 		
 		void consolidate(Node* chainStart, PID chainStartPID,
 			MemoryManager* man);

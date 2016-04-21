@@ -16,7 +16,7 @@ In the case of any write (insert/update) we want a pointer to the node that cont
 Hence, we actually need both PID and Node*
 
 */
-Triple<PID, Node*, byte*> BwTree::findNode(int key, searchType type, MemoryManager* man) {
+Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManager* man) {
 	PID firstInChainPID = PID_NOT_FOUND;
 	// pointer to the node that is first in the delta
 	// chain.
