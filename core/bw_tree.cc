@@ -5,15 +5,6 @@
 #include "core/bw_tree.h"
 
 
-
-byte* BwTree::findInPage(int key, Node* node) {
-	byte* resultingValue = NO_RECORD;
-
-	// @TODO
-	return resultingValue;
-}
-
-
 /* both insert/update and get traverse all the way to the 
 node that contains (or should contain if it existed) the key
 
@@ -144,15 +135,6 @@ void BwTree::consolidate(Node* chainStart, PID chainStartPID,
 
 }
 
-// delta updates
-// not much diff between this and inserts
-void BwTree::update(BKey key, byte *pay, unsigned int n, MemoryManager* man) {
-	currentPid = rootPid_;
-	currentNode = root;
-
-	root.findNode()
-
-}
 
 byte* BwTree::get(int key, MemoryManager* man) {
 	
@@ -164,20 +146,47 @@ byte* BwTree::get(int key, MemoryManager* man) {
 	}
 }
 
-byte* BwTree::update(int key, MemoryManager* man) {
+void BwTree::update(int key, byte *value, MemoryManager* man) {
 	
 	currentPid = rootPid_;
 	currentNode = root;
 
 	Triple<PID, Node*, byte*> found = root.findNode(key, 1, man);
-	// create new delta node
+	if (found.record != NO_RECORD) { 
+		// create new delta node
+		DeltaNode* newNode = man.getNode(DELTA_UPDATE);
+		// set new delta to point to found.node 
+		newNode.setVariables(DELTA_UPDATE,
+				Pair<int, byte*>(key, value),
+				found.node);
 
-	// set new delta to point to found.val (the node)
+		// CAS within memory map to point to new delta
+		int success = 0;
+		while (!success) {
+			success = man.CAS(found.key, found.node, newNode);
+		}
+	}
+}
 
-	// CAS within memory map to point to new delta
+void BwTree::insert(int key, byte *value, MemoryManager* man) {
+	
+	currentPid = rootPid_;
+	currentNode = root;
 
+	Triple<PID, Node*, byte*> found = root.findNode(key, 1, man);
+	if (found.record == NO_RECORD) { 
+		// create new delta node
+		DeltaNode* newNode = man.getNode(DELTA_UPDATE);
+		// set new delta to point to found.node 
+		newNode.setVariables(DELTA_UPDATE,
+				Pair<int, byte*>(key, value),
+				found.node);
 
-	return found;
+		// CAS within memory map to point to new delta
+		int success = 0;
+		while (!success) {
+			success = man.CAS(found.key, found.node, newNode);
+		}
 	}
 }
 
