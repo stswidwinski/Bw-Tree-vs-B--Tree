@@ -141,17 +141,18 @@ byte* BwTree::get(int key, MemoryManager* man) {
 	currentPid = rootPid_;
 	currentNode = root;
 
-	Triple<PID, Node*, byte*> found = root.findNode(key, 0, man);
-	return found;
-	}
+	Triple<PID, Node*, byte*> found = root->findNode(key, READ_ONLY, man);
+	return found.record;
 }
+
 
 void BwTree::update(int key, byte *value, MemoryManager* man) {
 	
 	currentPid = rootPid_;
 	currentNode = root;
 
-	Triple<PID, Node*, byte*> found = root.findNode(key, 1, man);
+	Triple<PID, Node*, byte*> found = root->findNode(key, ADD_DELTA, man);
+
 	if (found.record != NO_RECORD) { 
 		// create new delta node
 		DeltaNode* newNode = man.getNode(DELTA_UPDATE);
@@ -173,12 +174,12 @@ void BwTree::insert(int key, byte *value, MemoryManager* man) {
 	currentPid = rootPid_;
 	currentNode = root;
 
-	Triple<PID, Node*, byte*> found = root.findNode(key, 1, man);
+	Triple<PID, Node*, byte*> found = root->findNode(key, ADD_DELTA, man);
 	if (found.record == NO_RECORD) { 
 		// create new delta node
-		DeltaNode* newNode = man.getNode(DELTA_UPDATE);
+		DeltaNode* newNode = man.getNode(DELTA_INSERT);
 		// set new delta to point to found.node 
-		newNode.setVariables(DELTA_UPDATE,
+		newNode.setVariables(DELTA_INSERT,
 				Pair<int, byte*>(key, value),
 				found.node);
 

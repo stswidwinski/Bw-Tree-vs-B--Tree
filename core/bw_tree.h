@@ -21,6 +21,11 @@
 
 typedef unsigned char byte;
 
+enum searchType {
+  FIND = 0,
+  ADD_DELTA = 1,
+};
+
 class BwTree {
 	public:
 		// indexNodeSize is the maximum number of elements
