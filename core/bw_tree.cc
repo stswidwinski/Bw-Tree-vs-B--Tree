@@ -38,16 +38,11 @@ Node* BwTree::findNode(int key, MemoryManager* man)
 			chainLength++;
 
 			if(type == DELTA_INSERT ||
-				type == DELTA_UPDATE || 
-				type == DELTA_DELETE) {
+				type == DELTA_UPDATE) {
 			
 				// does the delta node pertain to sought key
 				if( ((DeltaNode*) currentNode)->getKey() == key) {
-					// for non-deletes, return found node. For delete, -1
-					if(type != DELTA_DELETE)
-						return currentNode;
-					else
-						return nullptr;
+					return currentNode;
 				}
 			} else {
 				// split deltas

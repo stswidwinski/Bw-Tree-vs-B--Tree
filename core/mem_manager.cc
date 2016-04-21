@@ -22,7 +22,6 @@ Node* MemoryManager::getNode(NodeType type) {
 			index_ ++;
 			return dataNodes_->pop();
 		case DELTA_INSERT:
-		case DELTA_DELETE:
 		case DELTA_UPDATE:
 		case DELTA_SPLIT:
 		case DELTA_INDEX_SPLIT:
@@ -45,7 +44,6 @@ LinkedList<Node>* MemoryManager::initialize(NodeType type, int count, int branch
 				result->push(new DataNode(branchFactor, 0, 0, MAX_KEY));
 				break;
 			case DELTA_INSERT:
-			case DELTA_DELETE:
 			case DELTA_UPDATE:
 			case DELTA_SPLIT:
 			case DELTA_INDEX_SPLIT:
