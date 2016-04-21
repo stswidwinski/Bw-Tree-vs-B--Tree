@@ -16,7 +16,7 @@ In the case of any write (insert/update) we want a pointer to the node that cont
 Hence, we actually need both PID and Node*
 
 */
-Triple<PID, Node*, byte*> BwTree::findNode(int key, int update, MemoryManager* man) {
+Triple<PID, Node*, byte*> BwTree::findNode(int key, int type, MemoryManager* man) {
 	PID firstInChainPID = PID_NOT_FOUND;
 	// pointer to the node that is first in the delta
 	// chain.
@@ -32,9 +32,11 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, int update, MemoryManager* m
 	NodeType type;
 
 	// traverse the tree until we have found the data node.
-	while((type = currentNode->getType()) != DATA) {
-		
+	while( true) {
+		type = currentNode->getType();
 		// process by type. Update book-keeping.
+
+		// if index, find next node to traverse, get it and continue back to top of while
 		if(type == INDEX) {
 			chainLength = 0;
 			firstInChain = nullptr;
@@ -42,14 +44,13 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, int update, MemoryManager* m
 			nonDeltaParent = currentNode;
 
 			currentNode = map_->get(currentNode->nextPid(key));
+			continue;
 
 		} else { // have reached a delta or data node
 			if(firstInChain == nullptr) {
 				firstInChainPID = currentPid;
 				firstInChain = currentNode;
 			}
-
-			chainLength++;
 
 			if(type == DELTA_INSERT ||
 				type == DELTA_UPDATE) {
@@ -60,7 +61,8 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, int update, MemoryManager* m
 					resultingPid = currentPid;
 					break;
 				}
-			} else { // split deltas
+			} else if (type == DELTA_SPLIT) { // split deltas
+				chainLength++;
 				if((DeltaNode*)->followSplit(key)) { // if we should follow the split node
 					// follow the split path. get right PID.
 
@@ -70,35 +72,33 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, int update, MemoryManager* m
 					currentNode = map_->get(currentNode->nextPid(key));
 					continue;
 				}
+			} else { // data node in which record should, but does not have to, be
+				if(chainLength > MAX_DELTA_CHAIN) {
+					// consolidate
+					// @TODO
+				}
+
+				resultingValue = resultingNode.getValue(key);
+				// if the key exceeded the max on the page (i.e. page was split) search sibling
+				while (resultingValue == OVER_HIGH) {
+					resultingNode = map_->get(resultingNode->getSibling());
+					resultingValue = resultingNode.getValue(key);
+				}
+
+				if (type == ADD_DELTA) {
+					resultingNode = firstInChain;
+					resultingPid = firstInChainPID;
+				}
+				// @TODO create triple of PID, Node, and Value -- how to do to not allocate memory
+
+				return resultingPid; // @TODO should return that triple
 			} 
 
 			// this gets hit if non-split leg of split node
 			// or other delta node not pertaining to key.
 			currentNode = ((DeltaNode*) currentNode)->getNextNode();
 		}
-
-		if(chainLength > MAX_DELTA_CHAIN) {
-			// consolidate
-			// @TODO
-		}
-	}
-	// broken from while loop -- have found node in which record
-	// exists or should exist
-	resultingValue = resultingNode.getValue(key);
-	// if the key exceeded the max on the page (i.e. page was split) search sibling
-	while (resultingValue == OVER_HIGH) {
-		resultingNode = map_->get(resultingNode->getSibling());
-		resultingValue = resultingNode.getValue(key);
-	}
-
-	if (update) {
-		resultingNode = firstInChain;
-		resultingPid = firstInChainPID;
-	}
-
-	// @TODO create triple of PID, Node, and Value -- how to do to not allocate memory
-
-	return resultingPid; // @TODO should return that triple
+	}	
 }
 
 void BwTree::consolidate(Node* chainStart, PID chainStartPID,
