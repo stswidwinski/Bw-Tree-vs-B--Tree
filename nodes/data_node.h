@@ -59,6 +59,31 @@ class DataNode : public Node {
                     sidePter_ = sidePtr;    
                 };
 
+		void setLowKey(int lowKey) {
+                    lowKey_ = lowKey;    
+                };
+
+		void setHighKey(int highKey) {
+                    highKey_ = highKey;    
+                };
+
+		int getLowKey() {
+                    return lowKey_; 
+                };
+
+		void insertChainData(int key, byte *ptr) {
+                    // linear search to make sure it's not in the damn thing
+                    for (int i = 0; i < dataLength_; i++) {
+                        if (key == data_[i].key) {
+                            return;
+                        }
+                    }
+
+                    data_[dataLength_].key = key;
+                    data_[dataLength_].value = ptr;
+                    dataLength_++;
+                };
+
 	private:
 		// the lowest and highest key that can be stored.
 		// must be consistent with the index nodes above it.

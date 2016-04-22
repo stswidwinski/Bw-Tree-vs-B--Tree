@@ -142,12 +142,19 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
           Node* chainEnd = oldPt;
           NodeType type = chainEnd->getType();
           while((type != DATA) && (type != INDEX)) {
+            // split delta
             if ((kp == -1) && (type == DELTA_SPLIT)) {
                 kp = ((DeltaNode*) chainEnd)->getSplitKey();
-               PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
-              newPt->setSidePter(sideP); // set new to old side pointer
-//                kp =  
-            }
+                PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
+                newPt->setSidePter(sideP); // set new to old side pointer
+                newPt->setLowKey(oldPt->getLowKey());//low key of old
+                newPt->setHighKey(kp);//high key of kp
+            } else if (type == DELTA_INSERT || type == DELTA_UPDATE) {
+                int key = ((DeltaNode*) chainEnd)->getKey();//get key
+                byte * val = ((DeltaNode*) chainEnd)->getValue();//get payload 
+                newPt->insertChainData(key, val);
+            } 
+            // update 
             chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
           }
 }

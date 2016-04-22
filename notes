@@ -10,6 +10,10 @@
 
 2. BwTree onSplit function for K_p  
 
+3. For splitting,
+
+if we see a split delta, then we change kp from -1 to non- -1 number, and this changes the range
+but if not, the range is the same
 
 
   
