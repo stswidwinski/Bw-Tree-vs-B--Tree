@@ -73,6 +73,18 @@ class DataNode : public Node {
                     return lowKey_; 
                 };
 
+		int getDataLength() {
+                    return dataLength_; 
+                };
+
+		int getDataKey(int i) {
+                    return data_[i].key; 
+                };
+
+		byte * getDataVal(int i) {
+                    return data_[i].value; 
+                };
+
 		void insertChainData(int key, byte *ptr) {
                     // linear search to make sure it's not in the damn thing
                     for (int i = 0; i < dataLength_; i++) {
@@ -85,6 +97,15 @@ class DataNode : public Node {
                     data_[dataLength_].value = ptr;
                     dataLength_++;
                 };
+
+                // internal function from old data
+		void insertBaseData(int key, byte *val) {
+                    // linear search to make sure it's not in the damn thing
+                    data_[dataLength_].key = key;
+                    data_[dataLength_].value = val;
+                    dataLength_++;
+                };
+
 
                 byte* getValue(int key) {
                         // binary search on the data_ array.
@@ -105,6 +126,27 @@ class DataNode : public Node {
                         // if nothing found, return null. Else, return what is found.
                         return left < right ? data_[middle].value : nullptr;
                 }
+
+                bool findSub(int key, int bound) {
+                        // binary search on the data_ array.
+                        int left = 0, right = bound, middle = 0, midVal = 0;
+                        while(left <= right) {
+                                middle = left + (right-left)/2;
+                                midVal = data_[middle].key;
+
+                                if(midVal > key) {
+                                        right = middle - 1;
+                                } else if (midVal < key) {
+                                        left = middle + 1;
+                                } else {
+                                        break;
+                                }
+                        }
+
+                        // if nothing found, return null. Else, return what is found.
+                        return left < right ? 1 : 0;
+                }
+
 
 void merge(int low,int mid,int high,int dataLength)
 {

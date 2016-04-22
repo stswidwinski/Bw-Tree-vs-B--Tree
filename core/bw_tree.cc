@@ -161,7 +161,19 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
             chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
           }
           // sort the things already inside newPt (from chain)
-         newPt->getValue(2); 
+         newPt->mergesort();
+
+         // consolidate appropriate values
+          int dataLen = newPt->getDataLength();
+          int oldLen = oldPt->getDataLength();
+          for (int i = 0; i < oldLen; i++) {
+              int key = oldPt->getDataKey(i);
+              if(!(newPt->findSub(key, dataLen))) {
+                  newPt->insertBaseData(key, oldPt->getDataVal(key));
+              } 
+          }
+         // look through P and only add to P' if value is not in P' already
+
           
 }
 
