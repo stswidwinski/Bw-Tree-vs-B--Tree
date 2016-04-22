@@ -20,19 +20,12 @@ class DataNode : public Node {
 		DataNode(int dataLength,
 			PID sidePter,
 			int lowKey,
-			int highKey) : Node(DATA) {
-	
-                        data_ = new  Pair<int, byte*>[dataLength];
-			dataLength_ = dataLength;
-			sidePter_ = sidePter;
-			lowKey_ = lowKey;
-			highKey_ = highKey;
-		}
+			int highKey);
 
 		// initialization for buffer.
-		DataNode() : Node(DATA) {}
-
-        ~DataNode() {}
+		DataNode();
+		
+        ~DataNode();
         
 		// for initialization of node after retrieving from
 		// buffer pool.
@@ -40,14 +33,7 @@ class DataNode : public Node {
 			int dataLength,
 			PID sidePter,
 			int lowKey,
-			int highKey) {
-
-			data_ = data;
-			dataLength_ = dataLength;
-			sidePter_ = sidePter;
-			lowKey_ = lowKey;
-			highKey_ = highKey;
-		}
+			int highKey);
 
 		// Points record to the byte corresponding to key. On error
 		// this is not guaranteed.
@@ -56,6 +42,10 @@ class DataNode : public Node {
 		// returns 0 on success and appropriate error code on error.
 		// see utils for codes -- NOT_FOUND and OVER_HIGH
 		int pointToRecord(int key, byte ** record);
+
+		// returns true if we should split. False otherwise.
+		bool doSplit() override;
+
 		// Get PID of sibling if searched value is too great
 		PID getSibling() {
 			return sidePter_;

@@ -4,6 +4,33 @@
 
 #include "nodes/data_node.h" 
 
+DataNode::DataNode(int dataLength,
+	PID sidePter,
+	int lowKey,
+	int highKey) : Node(DATA) {
+
+    data_ = new  Pair<int, byte*>[dataLength];
+	dataLength_ = dataLength;
+	sidePter_ = sidePter;
+	lowKey_ = lowKey;
+	highKey_ = highKey;
+}
+
+DataNode::DataNode() : Node(DATA) {}
+
+void DataNode::setVariables(Pair<int, byte*>* data,
+	int dataLength,
+	PID sidePter,
+	int lowKey,
+	int highKey) {
+
+	data_ = data;
+	dataLength_ = dataLength;
+	sidePter_ = sidePter;
+	lowKey_ = lowKey;
+	highKey_ = highKey;
+}
+
 int DataNode::pointToRecord(int key, byte ** record) {
 	// binary search on the data_ array.
 	if (key > highKey_) {
@@ -29,3 +56,9 @@ int DataNode::pointToRecord(int key, byte ** record) {
 	*record = nullptr;
 	return NOT_FOUND;
 }
+
+bool DataNode::doSplit() {
+	return (dataLength > MAX_RECORDS);
+}
+
+DataNode::~DataNode() {}
