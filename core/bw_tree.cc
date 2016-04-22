@@ -16,7 +16,7 @@ In the case of any write (insert/update) we want a pointer to the node that cont
 Hence, we actually need both PID and Node*
 
 */
-Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManager* man) {
+Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	PID firstInChainPID = PID_NOT_FOUND;
 	// pointer to the node that is first in the delta
 	// chain.
@@ -100,33 +100,33 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, queryType type, MemoryManage
 
 		} else { 
 			// data node
+			if(firstInChain == nullptr) {
+				firstInChain = currentNode;
+				firstInChainPID = currentPid;
+			}
 
 			// attempt to find the record
-			recordFound = resultingNode->pointToRecord(key, &resultingValue);
+			recordFound = ((DataNode*)resultingNode)->pointToRecord(key, &resultingValue);
 			
-			if (recordFound == OVER_HIGH) {
+			if (recordFound == 0) {
+				// record has been found
+				return Triple<PID, Node*, byte*>(firstInChainPID,
+					currentNode,
+					resultingValue);
+			} else if (recordFound == OVER_HIGH) {
 				// continue search in the sibling
 				chainLength = 0;
-				firstInChain = nullptr;
-				firstInChainPID = resultingNode->getSibling();
+				firstInChainPID = ((DataNode*)resultingNode)->getSibling();
+				firstInChain = map_->get(firstInChainPID);
 
-				currentNode = map_->get(firstInChainPID);
+				currentNode = firstInChain;
 				continue;
 			} else if (recordFound == NOT_FOUND) {
-				// it just doesn't exist
-				// TODO
-				// return the right thing
+				// the record simply does not exist
+				return Triple<PID, Node*, byte*>(firstInChainPID, 
+					currentNode,
+					nullptr);
 			}
-
-			// record has been found 
-			if (type == INSERT ||
-				type == UPDATE) {
-				resultingNode = firstInChain;
-				resultingPid = firstInChainPID;
-			}
-			// @TODO create triple of PID, Node, and Value -- how to do to not allocate memory
-
-			return resultingPid; // @TODO should return that triple
 		}
 	}	
 }

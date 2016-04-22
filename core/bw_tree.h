@@ -21,14 +21,6 @@
 
 typedef unsigned char byte;
 
-enum queryType {
-  READ,
-  INSERT,
-  UPDATE
-};
-
-
-
 class BwTree {
 	public:
 		// indexNodeSize is the maximum number of elements
@@ -126,10 +118,20 @@ class BwTree {
 		int rootPid_;
 		int indexNodeSize_;
 
-		// find the PID of the data page (or delta insert/update)
-		// node that contains the required key. Returns PID_NOT_FOUND (see common.h)
-		// if none found or if delete node found.
-		Node* findNode(int key, queryType type, MemoryManager* man);
+		// attempt to find the node corresponding to key. Returns a 
+		// triple with the pid of the node, node* pointer to the correct
+		// sub-node, and byte* pointer to the record itself.
+		//
+		// If record does not exist, byte* will be a nullptr, Node* will
+		// point to the base page last checked and PID will point to
+		// the page in which the record should be if it existed.
+		//
+		// If record does exist, byte* will point to the current value
+		// of the record, pid will be the PID of the page containing the
+		// record and Node* will point to the node specifying the record
+		// (this can be delta or data node)
+		Triple<PID, Node*, byte*> 
+		findNode(int key, queryType type, MemoryManager* man);
 		
 		void consolidate(Node* chainStart, PID chainStartPID,
 			MemoryManager* man);
