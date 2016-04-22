@@ -46,7 +46,7 @@ LinkedList<Node>* MemoryManager::initialize(NodeType type, int count, int branch
 			case DELTA_UPDATE:
 			case DELTA_SPLIT:
 			case DELTA_INDEX_SPLIT:
-				result->push(new DeltaNode(DELTA_INSERT, 0));
+				result->push(new DeltaNode());
 				break;
 		}
 	}
