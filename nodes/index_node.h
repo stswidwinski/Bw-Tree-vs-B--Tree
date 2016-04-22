@@ -42,6 +42,18 @@ class IndexNode : public Node {
 		// returns highKey_
 		int getHighKey();
 
+		// this should be called only on newly created (obtained)
+		// nodes. It adds to search array and increases the size.
+		//
+		// DO NOT CALL ON ELEMENTS IN MEMORY MAP.
+		void addToSearchArray(int key, PID pid);
+
+		// sets the smallestPID_. Should be called only on newly
+		// created (obtained) nodes. 
+		//
+		// DO NOT CALL ON ELEMENTS IN MEMORY MAP
+		void setSmallestPID(PID pid);
+
 		virtual ~IndexNode();
 	private:
 		// after a split, we can only store or attempt to find

@@ -5,7 +5,9 @@
 */
 #include "nodes/index_node.h"
 
-IndexNode::IndexNode() : Node(INDEX) {};	
+IndexNode::IndexNode() : Node(INDEX) {
+	searchArray_ = new Pair<int, PID>[ARRAYS_KEYS_LENGTH];
+};	
 
 IndexNode::IndexNode(int currentSize,
 	PID smallestPID,
@@ -17,12 +19,10 @@ IndexNode::IndexNode(int currentSize,
 		siblingPointer_ = PID_NOT_FOUND;
 }
 
-void IndexNode::setVariables(Pair<int, PID>* searchArray,
-	int currentSize, 
+void IndexNode::setVariables(int currentSize, 
 	int smallestPID,
 	int highKey,
 	PID siblingPointer) {		
-		searchArray_ = searchArray;
 		currentSize_ = currentSize;
 		smallestPID_ = smallestPID;
 		highKey_ = highKey;
@@ -35,7 +35,7 @@ PID IndexNode::nextPid(int key) {
 		return -1;
 
 	if(highKey_ != KEY_NOT_SET &&
-		key > highKey)
+		key > highKey_)
 		return siblingPointer_;
 
 	// key is smaller then smallest element in search array.
@@ -75,6 +75,19 @@ int IndexNode::getSplittingKey() {
 
 int IndexNode::getHighKey() {
 	return highKey_;
+}
+
+void IndexNode::addToSearchArray(int key, PID pid) {
+	searchArray_[currentSize_].key = key;
+	searchArray_[currentSize_].value = pid;
+	currentSize_++;
+
+	if(currentSize_ > ARRAYS_KEYS_LENGTH)
+		DIE("Overflowing index node array");
+}
+
+void IndexNode::setSmallestPID(PID pid) {
+	smallestPID_ = pid;
 }
 
 IndexNode::~IndexNode(){}
