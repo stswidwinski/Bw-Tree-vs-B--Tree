@@ -138,6 +138,14 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	}	
 }
 
+void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* man) {
+
+}
+
+void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int kp, MemoryManager* man) {
+
+}
+
 void BwTree::consolidate(Node* top, Node * bot, PID topPID,
 	MemoryManager* man) {
     // 1. get type
@@ -145,16 +153,16 @@ void BwTree::consolidate(Node* top, Node * bot, PID topPID,
 	while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
 		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
 	}
-        // should get data or index node
-
-	// find the end of the chain
-	Node* chainEnd = chainStart;
-	while(chainEnd->getType() != DATA ||
-		chainEnd->getType() != INDEX) {
-		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
-	}
-
-}
+        
+        // 2. data
+	Node* newPage = man->getNode(DATA_CONS); 
+        // deal with overflow later
+        // has size branchFactor
+        
+	if(chainEnd->getType() == DATA) {
+		// copy the contents of the old page
+		// PERHAPS STEAL THEM by pointer reference?
+		// TODO
 
 
 byte* BwTree::get(int key, MemoryManager* man) {

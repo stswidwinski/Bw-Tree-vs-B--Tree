@@ -8,7 +8,7 @@
   failed CAS's.... betting on multiple threads being able to complete the consolidation
   which affects the consolidation page size (must allow for some improbably horrible cases)
 
-  
+2. BwTree onSplit function for K_p  
 
 
 
