@@ -169,7 +169,7 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
           for (int i = 0; i < oldLen; i++) {
               int key = oldPt->getDataKey(i);
               if(!(newPt->findSub(key, dataLen))) {
-                  newPt->insertBaseData(key, oldPt->getDataVal(key));
+                  newPt->insertBaseData(key, oldPt->getDataVal(i));
               } 
           }
          // look through P and only add to P' if value is not in P' already
