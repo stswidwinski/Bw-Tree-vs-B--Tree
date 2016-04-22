@@ -27,18 +27,25 @@
 /*
 	Constants necessary for data seek inside index node.
 */
-
+// safety factor for search array size. 
+// key array size = MAX_KEYS + SAFETY_KEYS * MAX_DELTA_CHAIN
+#define SAFETY_KEYS 3
 // flag which means that PID was not found
 #define PID_NOT_FOUND -100
 // maximal number of keys in index nodes
 #define MAX_KEYS 256
+// the length of search array
+#define ARRAY_KEYS_LENGTH MAX_KEYS + SAFETY_KEYS * MAX_DELTA_CHAIN
 
 /*
 	Constants necessary for data seek inside data node.
 */
+// safety factor for records array size. 
+// records array size = MAX_RECORDS + SAFETY_RECORDS * MAX_DELTA_CHAIN
+#define SAFETY_RECORDS 3
 
 // the length of the entry.
-#define ENTRY_LEN 8
+#define LENGTH_RECORDS 8
 // maximal number of data pairs inside data node
 #define MAX_RECORDS 1024
 
@@ -48,6 +55,8 @@
 #define OVER_HIGH -2
 // flag which means that record is found 
 #define FOUND 0
+// the length of the data array
+#define ARRAY_RECORDS_LENGTH
 
 /*
 	Constants necessary for data seek inside index node.
