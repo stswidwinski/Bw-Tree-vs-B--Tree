@@ -210,10 +210,7 @@ void BwTree::update(int key, byte *value, MemoryManager* man) {
 				found.node);
 
 		// CAS within memory map to point to new delta
-		int success = 0;
-		while (!success) {
-			success = man.CAS(found.key, found.node, newNode);
-		}
+		while (!man->CAS(found.pid, found.node, newNode)) {}
 	}
 }
 
@@ -233,11 +230,97 @@ void BwTree::insert(int key, byte *value, MemoryManager* man) {
 				found.node);
 
 		// CAS within memory map to point to new delta
-		int success = 0;
-		while (!success) {
-			success = man.CAS(found.key, found.node, newNode);
-		}
+		while (!man->CAS(found.pid, found.node, newNode)) {}
 	}
+}
+
+Node* split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain) {
+	int Kp = toSplit->getSplittingKey();
+
+	DataNode* newNode = man->getNode(DATA);
+
+	// TODO POPULATE DATA NODE
+	// populate(toSplit, newNode, pid);
+
+	PID newNodePid = map->put(newNode);
+
+	// attempt to put in the split delta.
+	DeltaNode* splitDelta = man->getNode(DELTA_SPLIT);
+	splitDelta->setVariables(DELTA_SPLIT,
+		firstInChain,
+		newNodePid,
+		Kp);
+
+	if(!map_->CAS(pid, firstInChain, splitDelta))
+		return map_->find(pid);
+
+	// delta split installed
+	DeltaNode* indexSplitDelta = man->getNode(DELTA_INDEX_SPLIT);
+
+	// force-install indexSplitDelta
+	Node* firstInParentChain = nullptr;
+	do {
+		firstInParentChain = map_->find(ppid);
+		indexSplitDelta->setVariables(DELTA_INDEX_SPLIT,
+			firstInParentChain,
+			newNodePid,
+			Kp,
+			newNode->getHighKey());
+	} while(!map_->CAS(ppid, firstInParentChain, indexSplitDelta));
+
+	return map_->find(pid);
+}
+
+Node* split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* firstInChain) {
+	IndexNode* newNode = man->getNode(INDEX);
+	int Kp = newNode->getSplittingKey();
+
+	if(ppid == PID_NOT_FOUND) {
+		newNode->setVariables(1, 
+			// left most pointer
+			);
+
+		// TODO
+		// add the pair<int, PID> which would otherwise be the delta
+		// split record.
+
+		// put that into the map_/
+		// attempt CAS
+		// update rootPID if success
+		return;
+	}
+
+	// the split node has a parent
+	// TODO
+	// populate the new node
+	PID newNodePid = map->put(newNode);
+
+	DeltaNode* splitDelta = man->getNode(DELTA_SPLIT);
+	splitDelta->setVariables(DELTA_SPLIT,
+		firstInChain,
+		newNodePid,
+		Kp);
+
+	if(!map_->CAS(pid, firstInChain, splitDelta))
+		return map_->find(pid);
+
+	// delta split installed
+	DeltaNode* indexSplitDelta = man->getNode(DELTA_INDEX_SPLIT);
+
+	// force-install indexSplitDelta
+	Node* firstInParentChain = nullptr;
+	do {
+		firstInParentChain = map_->find(ppid);
+		indexSplitDelta->setVariables(DELTA_INDEX_SPLIT,
+			firstInParentChain,
+			newNodePid,
+			Kp,
+			newNode->getHighKey());
+	} while(!map_->CAS(ppid, firstInParentChain, indexSplitDelta));
+
+	return map_->find(pid);
+
+	return;
 }
 
 
