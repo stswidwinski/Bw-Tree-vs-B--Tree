@@ -55,6 +55,10 @@ class DeltaNode : public Node {
 		// this one is logical.
 		PID nextPid(int key) override;
 
+		PID getSidePtr();
+
+		int getSplitKey();
+
 		Node* getNextNode();
 
 		// returns true if one should follow the split 

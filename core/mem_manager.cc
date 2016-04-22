@@ -40,7 +40,7 @@ LinkedList<Node>* MemoryManager::initialize(NodeType type, int count, int branch
 				result->push(new IndexNode());
 				break;
 			case DATA:
-                result->push(new DataNode());
+				result->push(new DataNode());
 				break;
 			case DELTA_INSERT:
 			case DELTA_UPDATE:

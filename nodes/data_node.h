@@ -46,15 +46,39 @@ class DataNode : public Node {
 		// returns true if we should split. False otherwise.
 		bool doSplit() override;
 
-		// Get PID of sibling if searched value is too great
-		PID getSibling() {
-			return sidePter_;
-		}
-
 		int getSplittingKey();
 
 		int getHighKey();
 
+		int getLowKey();
+
+		PID getSidePtr();
+
+		void setSidePter(PID sidePtr);
+
+		void setLowKey(int lowKey);
+
+		void setHighKey(int highKey);
+
+		int getDataLength();
+
+		int getDataKey(int i);
+
+		byte * getDataVal(int i);
+
+		void insertChainData(int key, byte *ptr);
+
+		// internal function from old data
+		void insertBaseData(int key, byte *val);
+
+        bool findSub(int key, int bound);
+
+		void merge(int low,int mid,int high,int dataLength);
+
+		void merge_sort(int low,int high, int dataLength);
+
+        void mergesort();
+        
 	private:
 		// the lowest and highest key that can be stored.
 		// must be consistent with the index nodes above it.

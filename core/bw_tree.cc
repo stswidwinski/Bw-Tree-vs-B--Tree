@@ -4,7 +4,6 @@
 
 #include "core/bw_tree.h"
 
-
 /* both insert/update and get traverse all the way to the 
 node that contains (or should contain if it existed) the key
 
@@ -20,6 +19,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	// necessary for splits
 	PID parentPid = PID_NOT_FOUND;
 	PID currentPid = rootPid_;
+
 	// pointer to the node that is first in the delta
 	// chain.
 	Node* firstInChain = nullptr;
@@ -123,7 +123,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 			} else if (recordFound == OVER_HIGH) {
 				// continue search in the sibling
 				chainLength = 0;
-				currentPid = ((DataNode*)resultingNode)->getSibling();
+				currentPid = ((DataNode*)resultingNode)->getSidePtr();
 				firstInChain = map_->get(currentPid);
 
 				currentNode = firstInChain;
@@ -138,38 +138,77 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	}	
 }
 
-void BwTree::consolidate(Node* chainStart, PID chainStartPID,
-	MemoryManager* man) {
-	// // find the end of the chain
-	// Node* chainEnd = chainStart;
-	// while(chainEnd->getType() != DATA ||
-	// 	chainEnd->getType() != INDEX) {
-	// 	chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
-	// }
+void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* man) {
+	Node* chainEnd = oldPt;
+	NodeType type = chainEnd->getType();
+	
+	while(type != DATA) {
+	// split delta
+	if ((kp == -1) && (type == DELTA_SPLIT)) { 
+	    // if spit, low key and high key are different
+	    // so is the side pointer
+	    kp = ((DeltaNode*) chainEnd)->getSplitKey();
+	    PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
+	    newPt->setSidePter(sideP); // set new to old side pointer
+	    newPt->setLowKey(oldPt->getLowKey());//low key of old
+	    newPt->setHighKey(kp);//high key of kp
+	} else if (type == DELTA_INSERT || type == DELTA_UPDATE) {
+	    int key = ((DeltaNode*) chainEnd)->getKey();//get key
+	    byte * val = ((DeltaNode*) chainEnd)->getValue();//get payload 
+	    if (kp == -1 || (key < kp)) {
+	        newPt->insertChainData(key, val);
+	    }
+	} 
+	// go to next node
+	//
+	chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+	}
+	// sort the things already inside newPt (from chain)
+	newPt->mergesort();
 
-	// Node* newPage = man->getNode(chainEnd->getType());
-	// if(chainEnd->getType() == DATA) {
-	// 	// copy the contents of the old page
-	// 	// PERHAPS STEAL THEM by pointer reference?
-	// 	// TODO
+	// consolidate appropriate values
+	int dataLen = newPt->getDataLength();
+	int oldLen = oldPt->getDataLength();
+	for (int i = 0; i < oldLen; i++) {
+	  int key = oldPt->getDataKey(i);
+	  // if didn't find in P', then add key/val record from P to P' (P' new, P old)
+	  // P sorted
+	  if (kp != -1 && key >= kp) { 
+	      break;
+	  }
 
-	// 	// collect changes from within the chain.
-	// 	//		0) updates
-	// 	// 		1) the highest / smallest split key
-	// 	//		2) the deleted records
-	// 	//
-	// 	// All of this can be easily done in two passes.
-	// 	// Not sure about one pass.
-	// } else if(chainEnd->getType() == INDEX) {
-	// 	// copy the contents of the old page. Index deltas are
-	// 	// only split deltas. So we must add stuff to the array.
-	// 	// this is why we actually need the low and high key.
-	// 	//
-	// 	// Can we have duplicates? Consider it.
-	// } else {
-	// 	DIE("Should not happen!.");
-	// }
+	  if(!(newPt->findSub(key, dataLen))) {
+	      newPt->insertBaseData(key, oldPt->getDataVal(i));
+	  } 
+	}
+	// look through P and only add to P' if value is not in P' already
+	// sort all
+	newPt->mergesort();
+	if (kp == -1) {
+	    newPt->setSidePter(oldPt->getSidePtr()); // set new to old side pointer
+	    newPt->setLowKey(oldPt->getLowKey());//low key of old
+	    newPt->setHighKey(oldPt->getHighKey());//high key of kp
+	}
+}
 
+void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int kp, MemoryManager* man) {
+
+}
+
+void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) {
+    // 1. get type
+	Node* chainEnd = bot;
+	while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
+		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+	}
+    NodeType type = chainEnd->getType();
+        
+    // 2. data
+	if (type == DATA) {
+  		Node* newPage = (DataNode*) man->getNode(DATA); 
+     	populate((DataNode*) top, (DataNode*) newPage, -1, man);
+     	map_->CAS(topPID, top, newPage);//might need to screw with this
+    }
 }
 
 
@@ -313,7 +352,6 @@ Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, N
 
 	return map_->get(pid);
 }
-
 
 // byte* BwTree::get(int key) {
 	

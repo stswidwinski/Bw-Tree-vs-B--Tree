@@ -1,0 +1,21 @@
+1. Node * to to the top of the chain
+
+  Node * to the bottom of the chain (for the type)
+
+  PID corresponding to top of delta chain (for CAS)
+
+  Actual thing you could consolidate could be longer than system threshold due to
+  failed CAS's.... betting on multiple threads being able to complete the consolidation
+  which affects the consolidation page size (must allow for some improbably horrible cases)
+
+2. BwTree onSplit function for K_p  
+
+3. For splitting,
+
+if we see a split delta, then we change kp from -1 to non- -1 number, and this changes the range
+but if not, the range is the same
+
+
+4. For sorting, allocate some new stuff?? for sorting
+  
+, physical pointer
