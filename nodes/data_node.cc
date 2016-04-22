@@ -9,14 +9,18 @@ DataNode::DataNode(int dataLength,
 	int lowKey,
 	int highKey) : Node(DATA) {
 
-    data_ = new  Pair<int, byte*>[dataLength];
+    data_ = new Pair<int, byte*>[dataLength];
 	dataLength_ = dataLength;
 	sidePter_ = sidePter;
 	lowKey_ = lowKey;
 	highKey_ = highKey;
 }
 
-DataNode::DataNode() : Node(DATA) {}
+DataNode::DataNode() : Node(DATA) {
+	data_ = new Pair<int, byte*>[ARRAY_RECORDS_LENGTH];
+	for(int i = 0; i < ARRAY_RECORDS_LENGTH; i++)
+		data_[i].value = new byte[LENGTH_RECORDS];
+}
 
 void DataNode::setVariables(Pair<int, byte*>* data,
 	int dataLength,
@@ -48,7 +52,7 @@ int DataNode::pointToRecord(int key, byte ** record) {
 		} else if (midVal < key) {
 			left = middle + 1;
 		} else {
-			*record = midVal;
+			*record = data_[middle].value;
 			return 0;
 		}
 	}
