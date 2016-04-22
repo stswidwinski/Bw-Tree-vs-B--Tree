@@ -168,12 +168,19 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
           int oldLen = oldPt->getDataLength();
           for (int i = 0; i < oldLen; i++) {
               int key = oldPt->getDataKey(i);
+              // if didn't find in P', then add key/val record from P to P' (P' new, P old)
+              // P sorted
+              if (kp != -1 && key >= kp) { 
+                  break;
+              }
+
               if(!(newPt->findSub(key, dataLen))) {
                   newPt->insertBaseData(key, oldPt->getDataVal(i));
               } 
           }
          // look through P and only add to P' if value is not in P' already
-
+         // sort all
+         newPt->mergesort();
           
 }
 
