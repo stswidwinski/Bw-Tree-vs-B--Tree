@@ -17,7 +17,9 @@ Hence, we actually need both PID and Node*
 
 */
 Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
-	PID firstInChainPID = PID_NOT_FOUND;
+	// necessary for splits
+	PID parentPid = PID_NOT_FOUND;
+	PID currentPid = rootPid_;
 	// pointer to the node that is first in the delta
 	// chain.
 	Node* firstInChain = nullptr;
@@ -41,9 +43,17 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 		if(type == INDEX) {
 			chainLength = 0;
 			firstInChain = nullptr;
-			firstInChainPID = currentNode->nextPid(key);
+			parentPid = currentPid;
+			
+			if(currentNode->doSplit()) {
+				// split
+				// as in data node.
+				// TODO
+			}
 
-			currentNode = map_->get(firstInChainPID);
+			currentPid = currentNode->nextPid(key);
+
+			currentNode = map_->get(currentPid);
 			continue;
 
 		} else if (type == DELTA_INSERT ||
@@ -53,7 +63,6 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 
 			// book-keeping
 			if(firstInChain == nullptr) {
-				firstInChainPID = currentPid;
 				firstInChain = currentNode;
 			}
 
@@ -65,10 +74,11 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 					// set found values that pertain to key
 					resultingNode = currentNode;
 					resultingPid = currentPid;
-					foundRecord = resultingNode->getValue(&resultingValue);
-					// TODO 
-					// set the right return value
-					return;
+					resultingValue = ((DeltaNode*)resultingNode)->getValue();
+
+					return Triple<PID, Node*, byte*>(currentPid,
+						currentNode,
+						resultingValue);
 				}
 				// otherwise, fall through.
 			} else if (type == DELTA_SPLIT ||
@@ -92,38 +102,45 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 
 			if(chainLength > MAX_DELTA_CHAIN) {
 				// consolidate
+				// pass in currentNode, currentPID and firstInChain
 				// @TODO
+				// reset the chain length, etc. 
+				// saerch for PID again.
+				// continue.
 			}
 
 			currentNode = map_->get(((DeltaNode*) currentNode)->getNextNode());
 			continue;
-
 		} else { 
 			// data node
 			if(firstInChain == nullptr) {
 				firstInChain = currentNode;
-				firstInChainPID = currentPid;
+			}
+
+			if(currentNode->doSplit()) {
+				//TODO
+				// update the currentNode. So we must continue.
 			}
 
 			// attempt to find the record
 			recordFound = ((DataNode*)resultingNode)->pointToRecord(key, &resultingValue);
 			
-			if (recordFound == 0) {
+			if (recordFound == FOUND) {
 				// record has been found
-				return Triple<PID, Node*, byte*>(firstInChainPID,
+				return Triple<PID, Node*, byte*>(currentPid,
 					currentNode,
 					resultingValue);
 			} else if (recordFound == OVER_HIGH) {
 				// continue search in the sibling
 				chainLength = 0;
-				firstInChainPID = ((DataNode*)resultingNode)->getSibling();
-				firstInChain = map_->get(firstInChainPID);
+				currentPid = ((DataNode*)resultingNode)->getSibling();
+				firstInChain = map_->get(currentPid);
 
 				currentNode = firstInChain;
 				continue;
 			} else if (recordFound == NOT_FOUND) {
 				// the record simply does not exist
-				return Triple<PID, Node*, byte*>(firstInChainPID, 
+				return Triple<PID, Node*, byte*>(currentPid, 
 					currentNode,
 					nullptr);
 			}
