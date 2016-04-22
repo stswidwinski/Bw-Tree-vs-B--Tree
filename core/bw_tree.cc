@@ -143,7 +143,9 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
           NodeType type = chainEnd->getType();
           while(type != DATA) {
             // split delta
-            if ((kp == -1) && (type == DELTA_SPLIT)) {
+            if ((kp == -1) && (type == DELTA_SPLIT)) { 
+                // if spit, low key and high key are different
+                // so is the side pointer
                 kp = ((DeltaNode*) chainEnd)->getSplitKey();
                 PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
                 newPt->setSidePter(sideP); // set new to old side pointer
@@ -181,7 +183,11 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
          // look through P and only add to P' if value is not in P' already
          // sort all
          newPt->mergesort();
-          
+         if (kp == -1) {
+                newPt->setSidePter(oldPt->getSidePtr()); // set new to old side pointer
+                newPt->setLowKey(oldPt->getLowKey());//low key of old
+                newPt->setHighKey(oldPt->getHighKey());//high key of kp
+         }
 }
 
 void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int kp, MemoryManager* man) {
@@ -201,9 +207,8 @@ void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) 
 // //Node* chainEnd = top;
         if (type == DATA) {
 	  Node* newPage = (DataNode*) man->getNode(DATA); 
-          // deal with overflow later
-          // has size 2*branchFactor
           populate((DataNode*) top, (DataNode*) newPage, -1, man);
+          map_->CAS(topPID, top, newPage);//might need to screw with this
         }
         
 	if(chainEnd->getType() == DATA) {

@@ -57,6 +57,11 @@ class DataNode : public Node {
 
 		void sort();
 
+		PID getSidePtr() {
+                    return sidePter_;
+                };
+
+
 		void setSidePter(PID sidePtr) {
                     sidePter_ = sidePtr;    
                 };
@@ -72,6 +77,11 @@ class DataNode : public Node {
 		int getLowKey() {
                     return lowKey_; 
                 };
+
+		int getHighKey() {
+                    return highKey_; 
+                };
+
 
 		int getDataLength() {
                     return dataLength_; 
