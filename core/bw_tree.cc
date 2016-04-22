@@ -138,37 +138,21 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	}	
 }
 
-void BwTree::consolidate(Node* chainStart, PID chainStartPID,
+void BwTree::consolidate(Node* top, Node * bot, PID topPID,
 	MemoryManager* man) {
-	// // find the end of the chain
-	// Node* chainEnd = chainStart;
-	// while(chainEnd->getType() != DATA ||
-	// 	chainEnd->getType() != INDEX) {
-	// 	chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
-	// }
+    // 1. get type
+	Node* chainEnd = bot;
+	while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
+		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+	}
+        // should get data or index node
 
-	// Node* newPage = man->getNode(chainEnd->getType());
-	// if(chainEnd->getType() == DATA) {
-	// 	// copy the contents of the old page
-	// 	// PERHAPS STEAL THEM by pointer reference?
-	// 	// TODO
-
-	// 	// collect changes from within the chain.
-	// 	//		0) updates
-	// 	// 		1) the highest / smallest split key
-	// 	//		2) the deleted records
-	// 	//
-	// 	// All of this can be easily done in two passes.
-	// 	// Not sure about one pass.
-	// } else if(chainEnd->getType() == INDEX) {
-	// 	// copy the contents of the old page. Index deltas are
-	// 	// only split deltas. So we must add stuff to the array.
-	// 	// this is why we actually need the low and high key.
-	// 	//
-	// 	// Can we have duplicates? Consider it.
-	// } else {
-	// 	DIE("Should not happen!.");
-	// }
+	// find the end of the chain
+	Node* chainEnd = chainStart;
+	while(chainEnd->getType() != DATA ||
+		chainEnd->getType() != INDEX) {
+		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+	}
 
 }
 
