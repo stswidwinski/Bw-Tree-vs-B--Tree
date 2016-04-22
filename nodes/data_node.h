@@ -24,7 +24,7 @@ class DataNode : public Node {
 
 		// initialization for buffer.
 		DataNode();
-		
+
         ~DataNode();
         
 		// for initialization of node after retrieving from
@@ -50,6 +50,10 @@ class DataNode : public Node {
 		PID getSibling() {
 			return sidePter_;
 		}
+
+		int getSplittingKey();
+
+		int getHighKey();
 
 	private:
 		// the lowest and highest key that can be stored.
