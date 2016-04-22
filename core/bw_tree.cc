@@ -4,7 +4,6 @@
 
 #include "core/bw_tree.h"
 
-
 /* both insert/update and get traverse all the way to the 
 node that contains (or should contain if it existed) the key
 
@@ -20,6 +19,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	// necessary for splits
 	PID parentPid = PID_NOT_FOUND;
 	PID currentPid = rootPid_;
+
 	// pointer to the node that is first in the delta
 	// chain.
 	Node* firstInChain = nullptr;
@@ -139,25 +139,40 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 }
 
 void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* man) {
-
+          Node* chainEnd = oldPt;
+          NodeType type = chainEnd->getType();
+          while((type != DATA) && (type != INDEX)) {
+            if ((kp == -1) && (type == DELTA_SPLIT)) {
+                kp = ((DeltaNode*) chainEnd)->getSplitKey();
+               PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
+              newPt->setSidePter(sideP); // set new to old side pointer
+//                kp =  
+            }
+            chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+          }
 }
 
 void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int kp, MemoryManager* man) {
 
 }
 
-void BwTree::consolidate(Node* top, Node * bot, PID topPID,
-	MemoryManager* man) {
+void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) {
     // 1. get type
 	Node* chainEnd = bot;
 	while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
 		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
 	}
+        NodeType type = chainEnd->getType();
         
         // 2. data
-	Node* newPage = man->getNode(DATA_CONS); 
-        // deal with overflow later
-        // has size branchFactor
+
+// //Node* chainEnd = top;
+        if (type == DATA) {
+	  Node* newPage = (DataNode*) man->getNode(DATA); 
+          // deal with overflow later
+          // has size 2*branchFactor
+          populate((DataNode*) top, (DataNode*) newPage, -1, man);
+        }
         
 	if(chainEnd->getType() == DATA) {
 		// copy the contents of the old page
@@ -305,7 +320,6 @@ Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, N
 
 	return map_->get(pid);
 }
-
 
 // byte* BwTree::get(int key) {
 	

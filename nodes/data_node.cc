@@ -56,7 +56,7 @@ int DataNode::pointToRecord(int key, byte ** record) {
 			return 0;
 		}
 	}
-
+	
 	*record = nullptr;
 	return NOT_FOUND;
 }

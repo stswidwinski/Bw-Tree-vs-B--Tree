@@ -55,6 +55,10 @@ class DataNode : public Node {
 
 		int getHighKey();
 
+		void setSidePter(PID sidePtr) {
+                    sidePter_ = sidePtr;    
+                };
+
 	private:
 		// the lowest and highest key that can be stored.
 		// must be consistent with the index nodes above it.

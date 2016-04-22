@@ -16,7 +16,6 @@
 enum NodeType {
   INDEX,
   DATA,
-  DATA_CONS,
   DELTA_INSERT,
   DELTA_UPDATE,
   DELTA_SPLIT,

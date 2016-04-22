@@ -70,6 +70,15 @@ Node* DeltaNode::getNextNode() {
 	return nextNode_;
 }
 
+PID DeltaNode::getSidePtr() {
+	return pter_;
+}
+
+
+int DeltaNode::getSplitKey() {
+	return splitKey_;
+}
+
 bool DeltaNode::followSplit(int key) {
 	if(Node::type_ == DELTA_SPLIT ||
 		Node::type_ == DELTA_INDEX_SPLIT) {

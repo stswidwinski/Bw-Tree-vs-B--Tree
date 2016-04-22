@@ -47,6 +47,10 @@ class BwTree {
         // inserts a new delta record for a previously not existing key
         void insert(int key, byte *value, MemoryManager* man);
 
+        void populate(DataNode * oldPt, DataNode* newPt, int kp, MemoryManager * man);
+        void populate(IndexNode * oldPt, IndexNode* newPt, int kp, MemoryManager * man);
+        void consolidate(Node* top, Node* bot, PID topPID, MemoryManager * man);
+
 		/*
 			Interface description
 
