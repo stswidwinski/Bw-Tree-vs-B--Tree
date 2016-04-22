@@ -28,11 +28,10 @@ class BwTree {
 		BwTree(int indexNodeSize) {
 			map_ = new MemoryMap<Node>();
 			indexNodeSize_ = indexNodeSize;
-			manager_ = new MemoryManager(10, 10, 10, 4);
-
-			Pair<int, PID>* searchArray  = new Pair<int, PID>(MAX_KEY, dataID);
-			Node* root = new IndexNode(indexNodeSize, dataID, searchArray);
-  	        rootPid_ = map_->put(root);
+			
+			// TODO
+			// INITIALIZE THE BW TREE
+			// rootPid_ = map_->put(root);
 		}
 
 		~BwTree() {
@@ -41,12 +40,12 @@ class BwTree {
 		}
 		
 		// get the PID of the next page to search
-		byte* BwTree::get(int key, MemoryManager* man);
+		byte* get(int key, MemoryManager* man);
 
         // add a delta record with a new value for an existing key
-        void BwTree::update(int key, byte *value, MemoryManager* man);
+        void update(int key, byte *value, MemoryManager* man);
         // inserts a new delta record for a previously not existing key
-        void BwTree::insert(int key, byte *value, MemoryManager* man);
+        void insert(int key, byte *value, MemoryManager* man);
 
 		/*
 			Interface description
@@ -130,7 +129,7 @@ class BwTree {
 		// record and Node* will point to the node specifying the record
 		// (this can be delta or data node)
 		Triple<PID, Node*, byte*> 
-		findNode(int key, queryType type, MemoryManager* man);
+		findNode(int key, MemoryManager* man);
 		
 		void consolidate(Node* chainStart, PID chainStartPID,
 			MemoryManager* man);

@@ -34,7 +34,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	NodeType type;
 
 	// flag to signify if record was found in page
-	int recordFound = NO_RECORD;
+	int recordFound;
 
 	// traverse the tree until we have found the data node.
 	while(true) {
@@ -67,7 +67,6 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 				if( ((DeltaNode*) currentNode)->getKey() == key) {
 					// set found values that pertain to key
 					resultingNode = currentNode;
-					resultingPid = currentPid;
 					resultingValue = ((DeltaNode*)resultingNode)->getValue();
 
 					return Triple<PID, Node*, byte*>(currentPid,
@@ -79,12 +78,12 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 				type == DELTA_INDEX_SPLIT) {
 
 				// following split means taking side pointer
-				if((DeltaNode*)->followSplit(key)) {
+				if(((DeltaNode*)currentNode)->followSplit(key)) {
 					chainLength = 0;
 					firstInChain = nullptr;
-					firstInChainPID = currentNode->nextPid(key);
+					currentPid = currentNode->nextPid(key);
 					
-					currentNode = map_->get(firstInChainPID);
+					currentNode = map_->get(currentPid);
 					continue;
 				}
 
@@ -101,9 +100,11 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 				// reset the chain length, etc. 
 				// saerch for PID again.
 				// continue.
+				if(parentPid == 0)
+					continue;
 			}
 
-			currentNode = map_->get(((DeltaNode*) currentNode)->getNextNode());
+			currentNode = ((DeltaNode*) currentNode)->getNextNode();
 			continue;
 		} else { 
 			// data node
@@ -139,117 +140,118 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 
 void BwTree::consolidate(Node* chainStart, PID chainStartPID,
 	MemoryManager* man) {
-	// find the end of the chain
-	Node* chainEnd = chainStart;
-	while(chainEnd->getType() != DATA ||
-		chainEnd->getType() != INDEX) {
-		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
-	}
+	// // find the end of the chain
+	// Node* chainEnd = chainStart;
+	// while(chainEnd->getType() != DATA ||
+	// 	chainEnd->getType() != INDEX) {
+	// 	chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+	// }
 
-	Node* newPage = man->getNode(chainEnd->getType());
-	if(chainEnd->getType() == DATA) {
-		// copy the contents of the old page
-		// PERHAPS STEAL THEM by pointer reference?
-		// TODO
+	// Node* newPage = man->getNode(chainEnd->getType());
+	// if(chainEnd->getType() == DATA) {
+	// 	// copy the contents of the old page
+	// 	// PERHAPS STEAL THEM by pointer reference?
+	// 	// TODO
 
-		// collect changes from within the chain.
-		//		0) updates
-		// 		1) the highest / smallest split key
-		//		2) the deleted records
-		//
-		// All of this can be easily done in two passes.
-		// Not sure about one pass.
-	} else if(chainEnd->getType() == INDEX) {
-		// copy the contents of the old page. Index deltas are
-		// only split deltas. So we must add stuff to the array.
-		// this is why we actually need the low and high key.
-		//
-		// Can we have duplicates? Consider it.
-	} else {
-		DIE("Should not happen!.");
-	}
+	// 	// collect changes from within the chain.
+	// 	//		0) updates
+	// 	// 		1) the highest / smallest split key
+	// 	//		2) the deleted records
+	// 	//
+	// 	// All of this can be easily done in two passes.
+	// 	// Not sure about one pass.
+	// } else if(chainEnd->getType() == INDEX) {
+	// 	// copy the contents of the old page. Index deltas are
+	// 	// only split deltas. So we must add stuff to the array.
+	// 	// this is why we actually need the low and high key.
+	// 	//
+	// 	// Can we have duplicates? Consider it.
+	// } else {
+	// 	DIE("Should not happen!.");
+	// }
 
 }
 
 
 byte* BwTree::get(int key, MemoryManager* man) {
 	
-	currentPid = rootPid_;
-	currentNode = root;
+	// currentPid = rootPid_;
+	// currentNode = map_->find(rootPid_);
 
-	Triple<PID, Node*, byte*> found = root->findNode(key, READ_ONLY, man);
-	return found.record;
+	// Triple<PID, Node*, byte*> found = root_->findNode(key, READ_ONLY, man);
+	// return found.record;
+	return nullptr;
 }
 
 
 void BwTree::update(int key, byte *value, MemoryManager* man) {
 	
-	currentPid = rootPid_;
-	currentNode = root;
+	// currentPid = rootPid_;
+	// currentNode = root_;
 
-	Triple<PID, Node*, byte*> found = root->findNode(key, ADD_DELTA, man);
+	// Triple<PID, Node*, byte*> found = root_->findNode(key, ADD_DELTA, man);
 
-	// if the record was found, can update
-	if (found.value != nullptr) { 
-		// create new delta node
-		DeltaNode* newNode = man.getNode(DELTA_UPDATE);
-		// set new delta to point to found.node 
-		newNode.setVariables(DELTA_UPDATE,
-				Pair<int, byte*>(key, value),
-				found.node);
+	// // if the record was found, can update
+	// if (found.value != nullptr) { 
+	// 	// create new delta node
+	// 	DeltaNode* newNode = man.getNode(DELTA_UPDATE);
+	// 	// set new delta to point to found.node 
+	// 	newNode.setVariables(DELTA_UPDATE,
+	// 			Pair<int, byte*>(key, value),
+	// 			found.node);
 
-		// CAS within memory map to point to new delta
-		while (!man->CAS(found.pid, found.node, newNode)) {}
-	}
+	// 	// CAS within memory map to point to new delta
+	// 	while (!man->CAS(found.pid, found.node, newNode)) {}
+	// }
 }
 
 void BwTree::insert(int key, byte *value, MemoryManager* man) {
 	
-	currentPid = rootPid_;
-	currentNode = root;
+	// currentPid = rootPid_;
+	// currentNode = root_;
 
-	Triple<PID, Node*, byte*> found = root->findNode(key, ADD_DELTA, man);
-	// if the record was not found, can add it
-	if (found.value == nullptr) { 
-		// create new delta node
-		DeltaNode* newNode = man.getNode(DELTA_INSERT);
-		// set new delta to point to found.node 
-		newNode.setVariables(DELTA_INSERT,
-				Pair<int, byte*>(key, value),
-				found.node);
+	// Triple<PID, Node*, byte*> found = root_->findNode(key, ADD_DELTA, man);
+	// // if the record was not found, can add it
+	// if (found.value == nullptr) { 
+	// 	// create new delta node
+	// 	DeltaNode* newNode = man.getNode(DELTA_INSERT);
+	// 	// set new delta to point to found.node 
+	// 	newNode.setVariables(DELTA_INSERT,
+	// 			Pair<int, byte*>(key, value),
+	// 			found.node);
 
-		// CAS within memory map to point to new delta
-		while (!man->CAS(found.pid, found.node, newNode)) {}
-	}
+	// 	// CAS within memory map to point to new delta
+	// 	while (!man->CAS(found.pid, found.node, newNode)) {}
+	// }
 }
 
-Node* split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain) {
+Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain) {
 	int Kp = toSplit->getSplittingKey();
 
-	DataNode* newNode = man->getNode(DATA);
+	DataNode* newNode = (DataNode*) man->getNode(DATA);
 
 	// TODO POPULATE DATA NODE
 	// populate(toSplit, newNode, pid);
 
-	PID newNodePid = map->put(newNode);
+	PID newNodePid = map_->put(newNode);
 
 	// attempt to put in the split delta.
-	DeltaNode* splitDelta = man->getNode(DELTA_SPLIT);
+	DeltaNode* splitDelta = (DeltaNode*) man->getNode(DELTA_SPLIT);
 	splitDelta->setVariables(DELTA_SPLIT,
 		firstInChain,
 		newNodePid,
 		Kp);
 
 	if(!map_->CAS(pid, firstInChain, splitDelta))
-		return map_->find(pid);
+		return map_->get(pid);
 
 	// delta split installed
-	DeltaNode* indexSplitDelta = man->getNode(DELTA_INDEX_SPLIT);
+	DeltaNode* indexSplitDelta = (DeltaNode*) man->getNode(DELTA_INDEX_SPLIT);
 
 	// force-install indexSplitDelta
 	Node* firstInParentChain = nullptr;
 	do {
-		firstInParentChain = map_->find(ppid);
+		firstInParentChain = map_->get(ppid);
 		indexSplitDelta->setVariables(DELTA_INDEX_SPLIT,
 			firstInParentChain,
 			newNodePid,
@@ -257,16 +259,18 @@ Node* split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firs
 			newNode->getHighKey());
 	} while(!map_->CAS(ppid, firstInParentChain, indexSplitDelta));
 
-	return map_->find(pid);
+	return map_->get(pid);
 }
 
-Node* split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* firstInChain) {
-	IndexNode* newNode = man->getNode(INDEX);
+Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* firstInChain) {
+	IndexNode* newNode = (IndexNode*) man->getNode(INDEX);
 	int Kp = newNode->getSplittingKey();
 
 	if(ppid == PID_NOT_FOUND) {
 		newNode->setVariables(1, 
+			0
 			// left most pointer
+			// TODO
 			);
 
 		// TODO
@@ -276,30 +280,30 @@ Node* split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* fir
 		// put that into the map_/
 		// attempt CAS
 		// update rootPID if success
-		return;
+		return nullptr;
 	}
 
 	// the split node has a parent
 	// TODO
 	// populate the new node
-	PID newNodePid = map->put(newNode);
+	PID newNodePid = map_->put(newNode);
 
-	DeltaNode* splitDelta = man->getNode(DELTA_SPLIT);
+	DeltaNode* splitDelta = (DeltaNode*) man->getNode(DELTA_SPLIT);
 	splitDelta->setVariables(DELTA_SPLIT,
 		firstInChain,
 		newNodePid,
 		Kp);
 
 	if(!map_->CAS(pid, firstInChain, splitDelta))
-		return map_->find(pid);
+		return map_->get(pid);
 
 	// delta split installed
-	DeltaNode* indexSplitDelta = man->getNode(DELTA_INDEX_SPLIT);
+	DeltaNode* indexSplitDelta = (DeltaNode*) man->getNode(DELTA_INDEX_SPLIT);
 
 	// force-install indexSplitDelta
 	Node* firstInParentChain = nullptr;
 	do {
-		firstInParentChain = map_->find(ppid);
+		firstInParentChain = map_->get(ppid);
 		indexSplitDelta->setVariables(DELTA_INDEX_SPLIT,
 			firstInParentChain,
 			newNodePid,
@@ -307,9 +311,7 @@ Node* split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* fir
 			newNode->getHighKey());
 	} while(!map_->CAS(ppid, firstInParentChain, indexSplitDelta));
 
-	return map_->find(pid);
-
-	return;
+	return map_->get(pid);
 }
 
 

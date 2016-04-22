@@ -30,8 +30,9 @@ class DeltaNode : public Node {
 
 		// set values -- update, insert, delete.
 		void setVariables(NodeType type,
-			Pair<int, byte*>* newValue,
-			Node* nextNode);
+			Node* nextNode,
+			int newKey,
+			byte* newByte);
 
 		// set values -- splits
 		void setVariables(NodeType type,

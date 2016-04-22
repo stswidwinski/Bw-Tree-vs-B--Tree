@@ -56,7 +56,7 @@
 // flag which means that record is found 
 #define FOUND 0
 // the length of the data array
-#define ARRAY_RECORDS_LENGTH
+#define ARRAY_RECORDS_LENGTH MAX_RECORDS + SAFETY_RECORDS * MAX_DELTA_CHAIN
 
 /*
 	Constants necessary for data seek inside index node.

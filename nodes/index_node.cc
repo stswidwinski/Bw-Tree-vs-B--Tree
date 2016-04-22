@@ -6,8 +6,8 @@
 #include "nodes/index_node.h"
 
 IndexNode::IndexNode() : Node(INDEX) {
-	searchArray_ = new Pair<int, PID>[ARRAYS_KEYS_LENGTH];
-};	
+	searchArray_ = new Pair<int, PID>[ARRAY_KEYS_LENGTH];
+}
 
 IndexNode::IndexNode(int currentSize,
 	PID smallestPID,
@@ -82,7 +82,7 @@ void IndexNode::addToSearchArray(int key, PID pid) {
 	searchArray_[currentSize_].value = pid;
 	currentSize_++;
 
-	if(currentSize_ > ARRAYS_KEYS_LENGTH)
+	if(currentSize_ > ARRAY_KEYS_LENGTH)
 		DIE("Overflowing index node array");
 }
 
