@@ -137,12 +137,12 @@ bool DataNode::findSub(int key, int bound) {
             } else if (midVal < key) {
                     left = middle + 1;
             } else {
-                    break;
+                    return true;
             }
     }
 
     // if nothing found, return null. Else, return what is found.
-    return (left < right);
+    return false;
 }
 
 void DataNode::merge(int low, int mid, int high, int dataLength) {
