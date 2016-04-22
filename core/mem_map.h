@@ -51,8 +51,11 @@ class MemoryMap {
 				// print error. Mallocing memory is slow. Should not happen.
 			}
 
-			PID key = currentKey_;
-			currentKey_++;
+			// obtain the next key in a latch-free manner.
+			PID key;
+			do {
+				key = currentKey_;
+			} while (!cmp_and_swap((uint64_t*) &currentKey_, (uint64_t) key, (uint64_t) key + 1));
 
 			map_[key] = payload;
 			return key;
