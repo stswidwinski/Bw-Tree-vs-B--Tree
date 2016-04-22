@@ -13,12 +13,12 @@ class Triple {
 	public:
 		Triple() {};
 		Triple(Key k, Node v, Record r) {
-			key = k;
+			pid = k;
 			node = v; 
 			record = r;
 		}
 
-		Key key;
+		Key pid;
 		Node node;
 		Record record;
 };
