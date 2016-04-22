@@ -14,7 +14,8 @@ class DeltaNode : public Node {
 	public:
 		// full initialization -- update, insert, delete.
 		DeltaNode(NodeType type,
-			Pair<int, byte*>* newValue,
+			int key,
+			byte* byteVal,
 			Node* nextNode);
 
 		// full initialization -- split deltas.

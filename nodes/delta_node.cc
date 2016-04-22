@@ -4,12 +4,19 @@
 
 #include "nodes/delta_node.h"
 
-DeltaNode::DeltaNode () : Node(DELTA_INSERT) {}
+DeltaNode::DeltaNode () : Node(DELTA_INSERT) {
+	newValue = new Pair<int, byte*>;
+	newValue.value = new byte[LENGTH_RECORDS];
+}
 
 DeltaNode::DeltaNode (NodeType type,
-		Pair<int, byte*>* newValue,
+		int key,
+		byte* byteVal,
 		Node* nextNode) : Node(type) {
-	setVariables(type, newValue, nextNode);
+
+	newValue = new Pair<int, byte*>;
+	newValue.value = new byte[LENGTH_RECORDS];
+	setVariables(type, nextNode, key, byteVal, nextNode);
 }
 
 DeltaNode::DeltaNode (NodeType type,
@@ -21,10 +28,16 @@ DeltaNode::DeltaNode (NodeType type,
 }
 
 void DeltaNode::setVariables (NodeType type,
-		Pair<int, byte*>* newValue,
-		Node* nextNode) {
+		Node* nextNode,
+		int newKey,
+		byte* newByte) {
 	Node::type_ = type;
-	newValue_ = newValue;
+
+	// set the new value tuple
+	newValue_.key = newKey;
+	for(int i = 0; i < LENGTH_RECORDS; i++)
+		newValue_.value[i] = newByte[i];
+
 	nextNode_ = nextNode;
 	// those are not used.
 	pter_ = -1;
