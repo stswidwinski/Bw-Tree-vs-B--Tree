@@ -34,7 +34,12 @@ class Node {
 		virtual ~Node(){};
 
 		virtual PID nextPid(int key) {
-			DIE("nextPID called on wrong node");
+			DIE("nextPID called on wrong node type");
+			return -1;
+		}
+
+		virtual bool doSplit() {
+			DIE("doSplit called on wrong node type");
 			return -1;
 		}
 
