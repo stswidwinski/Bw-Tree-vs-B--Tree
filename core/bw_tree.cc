@@ -141,7 +141,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* man) {
           Node* chainEnd = oldPt;
           NodeType type = chainEnd->getType();
-          while((type != DATA) && (type != INDEX)) {
+          while(type != DATA) {
             // split delta
             if ((kp == -1) && (type == DELTA_SPLIT)) {
                 kp = ((DeltaNode*) chainEnd)->getSplitKey();
@@ -152,11 +152,17 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
             } else if (type == DELTA_INSERT || type == DELTA_UPDATE) {
                 int key = ((DeltaNode*) chainEnd)->getKey();//get key
                 byte * val = ((DeltaNode*) chainEnd)->getValue();//get payload 
-                newPt->insertChainData(key, val);
+                if (kp == -1 || (key < kp)) {
+                    newPt->insertChainData(key, val);
+                }
             } 
-            // update 
+            // go to next node
+            //
             chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
           }
+          // sort the things already inside newPt (from chain)
+         newPt->getValue(2); 
+          
 }
 
 void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int kp, MemoryManager* man) {

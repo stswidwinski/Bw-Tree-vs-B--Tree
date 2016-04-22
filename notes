@@ -16,5 +16,6 @@ if we see a split delta, then we change kp from -1 to non- -1 number, and this c
 but if not, the range is the same
 
 
+4. For sorting, allocate some new stuff?? for sorting
   
 , physical pointer
