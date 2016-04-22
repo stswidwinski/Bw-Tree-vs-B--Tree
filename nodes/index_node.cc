@@ -68,5 +68,13 @@ bool IndexNode::doSplit() {
 	return currentSize_ > MAX_KEYS;
 }
 
+int IndexNode::getSplittingKey() {
+	int index = currentSize_/2;
+	return ((searchArray_[index].key + searchArray_[index+1].key)/2);
+}
+
+int IndexNode::getHighKey() {
+	return highKey_;
+}
 
 IndexNode::~IndexNode(){}

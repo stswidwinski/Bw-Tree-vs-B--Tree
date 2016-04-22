@@ -22,7 +22,7 @@ class IndexNode : public Node {
 
 		// for setting variables after obtaining node from 
 		// buffer pool.
-		void setVariables(Pair<int, PID>* searchArray,
+		void setVariables(
 			int currentSize, 
 			int smallestPID,
 			int highKey = KEY_NOT_SET,
@@ -35,6 +35,12 @@ class IndexNode : public Node {
 		// returns true if the number of keys inside searchArray
 		// is too high. False otherwise.
 		bool doSplit() override;
+
+		// returns the key used to split the node into two nodes.
+		int getSplittingKey();
+
+		// returns highKey_
+		int getHighKey();
 
 		virtual ~IndexNode();
 	private:
