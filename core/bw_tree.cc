@@ -44,12 +44,6 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 			chainLength = 0;
 			firstInChain = nullptr;
 			parentPid = currentPid;
-			
-			if(currentNode->doSplit()) {
-				// split
-				// as in data node.
-				// TODO
-			}
 
 			currentPid = currentNode->nextPid(key);
 
@@ -115,11 +109,6 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 			// data node
 			if(firstInChain == nullptr) {
 				firstInChain = currentNode;
-			}
-
-			if(currentNode->doSplit()) {
-				//TODO
-				// update the currentNode. So we must continue.
 			}
 
 			// attempt to find the record
