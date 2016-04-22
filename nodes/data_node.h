@@ -66,16 +66,18 @@ class DataNode : public Node {
 
 		byte * getDataVal(int i);
 
+		// attempt to insert data into the array while
+		// traversing the delta chain. Ignores data already in 
+		// the array.
 		void insertChainData(int key, byte *ptr);
 
-		// internal function from old data
+		// add data to the array with no checks as the dataLength_
+		// element of the array.
 		void insertBaseData(int key, byte *val);
 
+		// binary search on the subset of array [0, bound] 
+		// for element under key.
         bool findSub(int key, int bound);
-
-		void merge(int low,int mid,int high,int dataLength);
-
-		void merge_sort(int low,int high, int dataLength);
 
         void mergesort();
         
@@ -90,6 +92,11 @@ class DataNode : public Node {
 		Pair<int, byte*>* data_;
 		// length of the data array
 		int dataLength_;
+		// merge step of merge sort
+		void merge(int low,int mid,int high,int dataLength);
+		// merge sort populated with parameters called from mergesort();
+		void mergesortHelper(int low,int high, int dataLength);
+
 };
 
 #endif

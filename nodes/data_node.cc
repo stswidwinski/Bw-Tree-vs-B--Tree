@@ -119,14 +119,13 @@ void DataNode::insertChainData(int key, byte *ptr) {
 };
 
 void DataNode::insertBaseData(int key, byte *val) {
-    // linear search to make sure it's not in the damn thing
     data_[dataLength_].key = key;
     data_[dataLength_].value = val;
     dataLength_++;
 };
 
 bool DataNode::findSub(int key, int bound) {
-    // binary search on the data_ array.
+
     int left = 0, right = bound, middle = 0, midVal = 0;
     while(left <= right) {
             middle = left + (right-left)/2;
@@ -141,8 +140,7 @@ bool DataNode::findSub(int key, int bound) {
             }
     }
 
-    // if nothing found, return null. Else, return what is found.
-    return false;
+	return false;
 }
 
 void DataNode::merge(int low, int mid, int high, int dataLength) {
@@ -178,21 +176,18 @@ void DataNode::merge(int low, int mid, int high, int dataLength) {
 	for(k=low;k<=high;k++)  data_[k].key=b[k];
 }
 
-void DataNode::merge_sort(int low,int high, int dataLength) {
+void DataNode::mergesortHelper(int low,int high, int dataLength) {
 	int mid;
 	if(low<high) {
 	  mid = low + (high-low)/2; //This avoids overflow when low, high are too large
-	  merge_sort(low,mid, dataLength);
-	  merge_sort(mid+1,high, dataLength);
+	  mergesortHelper(low,mid, dataLength);
+	  mergesortHelper(mid+1,high, dataLength);
 	  merge(low,mid,high, dataLength);
 	}
 }
 
 void DataNode::mergesort() {
-	merge_sort(0, dataLength_-1, dataLength_);
-    // binary search on the data_ array.
-//                        int key = 2;
-//                        key++;
+	mergesortHelper(0, dataLength_-1, dataLength_);
 }
 
 DataNode::~DataNode() {}
