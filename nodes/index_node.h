@@ -32,6 +32,10 @@ class IndexNode : public Node {
 		// based on key. This is done via binary search.
 		PID nextPid(int key) override;
 
+		// returns true if the number of keys inside searchArray
+		// is too high. False otherwise.
+		bool doSplit() override;
+
 		virtual ~IndexNode();
 	private:
 		// after a split, we can only store or attempt to find

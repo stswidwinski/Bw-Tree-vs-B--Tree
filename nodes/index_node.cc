@@ -64,5 +64,9 @@ PID IndexNode::nextPid(int key) {
 	return searchArray_[middle].value;
 }
 
+bool IndexNode::doSplit() {
+	return currentSize_ > MAX_KEYS;
+}
+
 
 IndexNode::~IndexNode(){}
