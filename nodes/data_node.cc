@@ -37,7 +37,7 @@ void DataNode::setVariables(Pair<int, byte*>* data,
 
 int DataNode::pointToRecord(int key, byte ** record) {
 	// binary search on the data_ array.
-	if (key > highKey_) {
+	if (key > highKey_ && highKey_ != KEY_NOT_SET) {
 		*record = nullptr;
 		return OVER_HIGH;
 	}
