@@ -8,11 +8,11 @@ BwTree::BwTree() {
 	map_ = new MemoryMap<Node>(MAP_SIZE);
 
 	// first make the two data pages
-	DataNode* rightNode = new DataNode(0, KEY_NOT_SET,
+	DataNode* rightNode = new DataNode(ARRAY_RECORDS_LENGTH, KEY_NOT_SET,
 		-1, KEY_NOT_SET);
 	PID rightNodePid = map_->put(rightNode);
 
-	DataNode* leftNode = new DataNode(0, rightNodePid,
+	DataNode* leftNode = new DataNode(ARRAY_RECORDS_LENGTH, rightNodePid,
 		-1, INIT_KEY_VALUE);
 	PID leftNodePid = map_->put(leftNode);
 
@@ -20,6 +20,7 @@ BwTree::BwTree() {
 	IndexNode* rootNode = new IndexNode();
 	rootNode->insertKeyVal(INIT_KEY_VALUE, rightNodePid);
 	rootNode->setSmallestPID(leftNodePid);
+        rootNode->setHighKey(KEY_NOT_SET);
 
 	// put it into the map
 	rootPid_ = map_->put(rootNode);
@@ -45,6 +46,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	// chain.
 	Node* firstInChain = nullptr;
 	// node we are processing
+        // start from root
 	Node* currentNode = map_->get(rootPid_);
 	// the result. Not set until the end.
 	Node* resultingNode = nullptr;

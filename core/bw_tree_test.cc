@@ -5,7 +5,7 @@
 
 TEST(initTest) {
   BwTree* tree = new BwTree();
-  IndexNode* root = (IndexNode*) tree->map_->get(tree->rootPid_);
+  IndexNode* root = (IndexNode*) tree->map_->get(tree->rootPid_); // initial tree with conventions
   EXPECT_EQ(root->getIndexKey(0), INIT_KEY_VALUE); // right corresponds to PID 0
   EXPECT_EQ(root->getSmallestPID(), 1);  // left corresponds to PID 1
   END;
