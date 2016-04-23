@@ -23,16 +23,7 @@ typedef unsigned char byte;
 
 class BwTree {
 	public:
-		// indexNodeSize is the maximum number of elements
-		// that an index node can have in its searchArray.
-		BwTree(int indexNodeSize) {
-			map_ = new MemoryMap<Node>();
-			indexNodeSize_ = indexNodeSize;
-			
-			// TODO
-			// INITIALIZE THE BW TREE
-			// rootPid_ = map_->put(root);
-		}
+		BwTree();
 
 		~BwTree() {
             // todo fix the mem management... i.e. searchArray and root
@@ -50,6 +41,10 @@ class BwTree {
         void populate(DataNode * oldPt, DataNode* newPt, int kp, MemoryManager * man);
         void populate(IndexNode * oldPt, IndexNode* newPt, int kp, MemoryManager * man);
         void consolidate(Node* top, Node* bot, PID topPID, MemoryManager * man);
+
+        PID getRootPID() {
+        	return rootPid_;
+        }
 
 		/*
 			Interface description
@@ -118,7 +113,6 @@ class BwTree {
 	private:
 		MemoryMap<Node>* map_;
 		int rootPid_;
-		int indexNodeSize_;
 
 		// attempt to find the node corresponding to key. Returns a 
 		// triple with the pid of the node, node* pointer to the correct
