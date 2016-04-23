@@ -4,6 +4,27 @@
 
 #include "core/bw_tree.h"
 
+BwTree:BwTree() {
+	map_ = new map_<Node*>(MAP_SIZE);
+	
+	// first make the two data pages
+	DataNode* rightNode = new DataNode(0, KEY_NOT_SET,
+		-1, KEY_NOT_SET);
+	PID rightNodePid = map_->put(rightNode);
+
+	DataNode* leftNode = new DataNode(0, rightNodePid,
+		-1, 4000);
+	PID leftNodePid = map_->put(leftNode);
+
+	// link the root index node.
+	IndexNode* rootNode = new IndexNode();
+	rootNode->insertKeyVal(4000, rightNodePid);
+	rootNode->setSmallestPID(leftNodePid);
+
+	// put it into the map
+	root_ = map->put(rootNode);
+}
+
 /* both insert/update and get traverse all the way to the 
 node that contains (or should contain if it existed) the key
 
