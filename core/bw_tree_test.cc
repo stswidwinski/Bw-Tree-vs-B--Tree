@@ -66,7 +66,7 @@ TEST(insertTest) {
   val[0] = 1; // simple val
   MemoryManager* man = new MemoryManager(3, 3, 3);
   tree->insert(key, val, man);
-  EXPECT_EQ(((DataNode*)tree->map_->get(1))->getDataKey(0), 1);
+  EXPECT_EQ(((DeltaNode*)tree->map_->get(1))->getKey(), 1);
   END;
 }
 
