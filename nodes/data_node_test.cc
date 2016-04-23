@@ -18,7 +18,7 @@
 		m+=10;
 	}
  	DataNode * node = new DataNode(); 
- 	node->setVariables(dataArray, arrSize, -1, max);
+ 	node->setVariables(dataArray, arrSize, (PID) -1, -1, max);
 
  
  	int found;
@@ -26,7 +26,7 @@
 
  	// search for things in data_ array
  	m = minVal;
- 	for (int j=0; j<searchArrSize; j++) {
+ 	for (int j=0; j<arrSize; j++) {
 		found = node->pointToRecord(m, &record);
 		EXPECT_EQ(0, found);
 		EXPECT_EQ((byte*) j, record);
