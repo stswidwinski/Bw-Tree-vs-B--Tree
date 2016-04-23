@@ -7,16 +7,17 @@
 // the byte* of i^th element in the array is initialized to
 // all (byte) i.
 DataNode* initializeForTest(int arrSize = 100, int highKey = 10000, 
-	int minKey = 10, int stepKey = 2, PID sidePter = PID_NOT_FOUND) {
+	int beginningKey = 10, int stepKey = 2, PID sidePter = PID_NOT_FOUND) {
 	
 	DataNode* node = new DataNode();
 
-	int m = minKey;
+	int m = beginningKey;
 	byte* value = new byte[LENGTH_RECORDS];
 	for(int j = 0; j < arrSize; j++) {
 		for(int i = 0; i < LENGTH_RECORDS; i++)
 			value[i] = (byte) j;
 		node->insertBaseData(m, value);
+		m += stepKey;
 	}
 
 	node->setSidePter(sidePter);
