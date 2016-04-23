@@ -48,7 +48,7 @@ int DataNode::pointToRecord(int key, byte ** record) {
 		midVal = data_[middle].key;
 		
 		if(midVal > key) {
-			right = middle - 1;
+			right = middle;
 		} else if (midVal < key) {
 			left = middle + 1;
 		} else {

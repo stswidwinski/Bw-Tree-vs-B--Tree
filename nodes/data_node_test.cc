@@ -42,6 +42,7 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
  	int m = minKey;
  	for (int j=0; j<arrSize; j++) {
  		found = node->pointToRecord(m, &record);
+		cout << "in found" << found <<" " << j<< "\n"; 
 		EXPECT_EQ(FOUND, found);
 		m+=10;
 	}
@@ -59,6 +60,7 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
  	for (int j=0; j<max; j+=8) {
  		if (m % 10 == 0) continue;
 		found = node->pointToRecord(j, &record);
+		cout << "range found" << found <<" " << j<< "\n"; 
 		EXPECT_EQ(NOT_FOUND, found);
 	}
 
@@ -67,6 +69,7 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
  	for (int j=0; j<minKey; j++) {
  		if (m % 10 == 0) continue;
 		found = node->pointToRecord(j, &record);
+		cout << "lowfound" << found <<" " << j<< "\n"; 
 		EXPECT_EQ(NOT_FOUND, found);
 	}
 
@@ -75,6 +78,7 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
  	for (int j=max; j<max + arrSize; j++) {
  		if (m % 10 == 0) continue;
 		found = node->pointToRecord(j, &record);
+		cout << "highfound" << found <<" " << j<< "\n"; 
 		EXPECT_EQ(OVER_HIGH, found);
 	}
 
