@@ -25,13 +25,16 @@ class BwTree {
 	public:
 		// indexNodeSize is the maximum number of elements
 		// that an index node can have in its searchArray.
-		BwTree(int indexNodeSize) {
-			map_ = new MemoryMap<Node>();
+		BwTree(MemoryMap<Node>* map, int indexNodeSize, PID rootPid) {
+			//map_ = new MemoryMap<Node>();
+			map_ = map,
 			indexNodeSize_ = indexNodeSize;
+			rootPid_ = rootPid;
 			
 			// TODO
 			// INITIALIZE THE BW TREE
-			// rootPid_ = map_->put(root);
+
+			
 		}
 
 		~BwTree() {
@@ -50,6 +53,10 @@ class BwTree {
         void populate(DataNode * oldPt, DataNode* newPt, int kp, MemoryManager * man);
         void populate(IndexNode * oldPt, IndexNode* newPt, int kp, MemoryManager * man);
         void consolidate(Node* top, Node* bot, PID topPID, MemoryManager * man);
+
+        PID getRootPID() {
+        	return rootPid_;
+        }
 
 		/*
 			Interface description

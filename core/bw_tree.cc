@@ -113,7 +113,8 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 			}
 
 			// attempt to find the record
-			recordFound = ((DataNode*)resultingNode)->pointToRecord(key, &resultingValue);
+			//fprintf(stderr, "key %d\n", (DataNode*)currentNode->getHighKey());
+			recordFound = ((DataNode*)currentNode)->pointToRecord(key, &resultingValue);
 			
 			if (recordFound == FOUND) {
 				// record has been found
@@ -123,7 +124,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 			} else if (recordFound == OVER_HIGH) {
 				// continue search in the sibling
 				chainLength = 0;
-				currentPid = ((DataNode*)resultingNode)->getSidePtr();
+				currentPid = ((DataNode*)currentNode)->getSidePtr();
 				firstInChain = map_->get(currentPid);
 
 				currentNode = firstInChain;
@@ -278,12 +279,12 @@ void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) 
 
 byte* BwTree::get(int key, MemoryManager* man) {
 	
-	// currentPid = rootPid_;
-	// currentNode = map_->find(rootPid_);
+	//PID currentPid = rootPid_;
+	//Node * root = map_->get(rootPid_);
 
-	// Triple<PID, Node*, byte*> found = root_->findNode(key, READ_ONLY, man);
-	// return found.record;
-	return nullptr;
+	 Triple<PID, Node*, byte*> found = findNode(key, man);
+	 return found.record;
+	//return nullptr;
 }
 
 
