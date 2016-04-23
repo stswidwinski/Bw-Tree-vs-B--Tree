@@ -114,13 +114,19 @@ void DataNode::insertChainData(int key, byte *ptr) {
     }
 
     data_[dataLength_].key = key;
-    data_[dataLength_].value = ptr;
+
+    // copy the byte value
+    for(int i = 0; i < LENGTH_RECORDS; i++)
+    	data_[dataLength_].value[i] = *(ptr+i);
+
     dataLength_++;
 };
 
 void DataNode::insertBaseData(int key, byte *val) {
     data_[dataLength_].key = key;
-    data_[dataLength_].value = val;
+    // copy the byte value
+    for(int i = 0; i < LENGTH_RECORDS; i++)
+    	data_[dataLength_].value[i] = *(val+i);
     dataLength_++;
 };
 
