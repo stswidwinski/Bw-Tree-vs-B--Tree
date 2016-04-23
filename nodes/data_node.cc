@@ -42,8 +42,8 @@ int DataNode::pointToRecord(int key, byte ** record) {
 		return OVER_HIGH;
 	}
 
-	int left = 0, right = dataLength_, middle = 0, midVal = 0;
-	while(left < right) {
+	int left = 0, right = dataLength_ - 1, middle = 0, midVal = 0;
+	while(left <= right) {
 		middle = left + (right-left)/2;
 		midVal = data_[middle].key;
 		
@@ -53,7 +53,7 @@ int DataNode::pointToRecord(int key, byte ** record) {
 			left = middle + 1;
 		} else {
 			*record = data_[middle].value;
-			return 0;
+			return FOUND;
 		}
 	}
 	
@@ -114,19 +114,25 @@ void DataNode::insertChainData(int key, byte *ptr) {
     }
 
     data_[dataLength_].key = key;
-    data_[dataLength_].value = ptr;
+
+    // copy the byte value
+    for(int i = 0; i < LENGTH_RECORDS; i++)
+    	data_[dataLength_].value[i] = *(ptr+i);
+
     dataLength_++;
 };
 
 void DataNode::insertBaseData(int key, byte *val) {
     data_[dataLength_].key = key;
-    data_[dataLength_].value = val;
+    // copy the byte value
+    for(int i = 0; i < LENGTH_RECORDS; i++)
+    	data_[dataLength_].value[i] = *(val+i);
     dataLength_++;
 };
 
 bool DataNode::findSub(int key, int bound) {
 
-    int left = 0, right = bound, middle = 0, midVal = 0;
+    int left = 0, right = bound - 1, middle = 0, midVal = 0;
     while(left <= right) {
             middle = left + (right-left)/2;
             midVal = data_[middle].key;
