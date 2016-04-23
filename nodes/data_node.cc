@@ -9,7 +9,7 @@ DataNode::DataNode(int dataLength,
 	int lowKey,
 	int highKey) : Node(DATA) {
 
-    data_ = new Pair<int, byte*>[dataLength];
+    data_ = new Pair<int, byte*>[ARRAY_RECORDS_LENGTH];
 	dataLength_ = dataLength;
 	sidePter_ = sidePter;
 	lowKey_ = lowKey;
