@@ -3,61 +3,6 @@
 #include "utils/common.h"
 #include <string>
 
-
-
-DataNode* initializeDataNode(int arrSize = 100, int highKey = 10000, 
-	int beginningKey = 10, int stepKey = 2, PID sidePter = PID_NOT_FOUND) {
-	
-	DataNode* node = new DataNode();
-
-	int m = beginningKey;
-	byte* value = new byte[LENGTH_RECORDS];
-	for(int j = 0; j < arrSize; j++) {
-		for(int i = 0; i < LENGTH_RECORDS; i++)
-			value[i] = (byte) j;
-		node->insertBaseData(m, value);
-		m += stepKey;
-	}
-	delete[] value;
-
-	node->setSidePter(sidePter);
-	node->setLowKey(-1);
-	node->setHighKey(highKey);
- 
- 	return node;
-}
-
-BwTree * initTreeForTest(MemoryMap<Node>* map, int nodeSize = 10 ) {
-	// create tree
-	int firstkey=100;
-	DataNode * right = new DataNode ();
-	right->setVariables(nullptr,
-			0,
-			PID_NOT_FOUND,
-			firstkey,
-			KEY_NOT_SET);
-	PID rightPID = map->put(right);
-	DataNode * left = new DataNode ();
-	left->setVariables(nullptr,
-			0, // size
-			rightPID, // side pointer
-			KEY_NOT_SET, // low
-			firstkey); // high 
-	PID leftPID = map->put(left);
-	IndexNode * root = new IndexNode ();
-	root->setVariables(1, leftPID);
-	root->addToSearchArray(firstkey, rightPID);
-	PID rootPid = map->put(root);
-	fprintf(stderr, "size = %d, %d\n", root->getCurrSize(), rootPid);
-
-	BwTree * tree = new BwTree(map, nodeSize, rootPid);
-
-	
-
-
-	return tree;
-}
-
 TEST(populateTest) {
 	// @TODO
 
