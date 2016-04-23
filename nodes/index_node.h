@@ -42,9 +42,14 @@ class IndexNode : public Node {
 		// returns highKey_
 		int getHighKey();
 
-		void setHighKey(int key);
+		// sets highKey_
+		void setHighKey(int highKey);
 
-		void setSiblingPointer(PID pter);
+		// gets sibling 
+		PID getSibling();
+
+		// sets sibling 
+		void setSibling(PID sibling);
 
 		// this should be called only on newly created (obtained)
 		// nodes. It adds to search array and increases the size.
@@ -54,14 +59,35 @@ class IndexNode : public Node {
 
 		// sets the smallestPID_. Should be called only on newly
 		// created (obtained) nodes. 
-		//
+
+               // returns smallestPid_
+		int getSmallestPID();
+
 		// DO NOT CALL ON ELEMENTS IN MEMORY MAP
 		void setSmallestPID(PID pid);
+
+                // returns currentSize_ 
+		int getCurrSize();
+
+               // returns the key at position i in searchArray 
+		int getIndexKey(int i);
+
+               // returns the PID at position i in searchArray 
+		PID getIndexPID(int i);
+
+                // set into currentSize_ the key and value record corresponding to <sep key, PID>
+		void insertKeyVal(int key, PID val);
+
+                // sort functions
+                void merge(int low, int mid, int high, int currentSize);
+                void merge_sort(int low, int high, int currentSize);
+                void mergesort();
+
 
 		virtual ~IndexNode();
 	private:
 		// after a split, we can only store or attempt to find
-		// a key lower then of equal to the split key. this is the key.
+		// a key lower than the split key. this is the key.
 		int highKey_;
 		// sibling pointer points to the sibling index node after a split.
 		PID siblingPointer_;

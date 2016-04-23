@@ -77,12 +77,30 @@ int IndexNode::getHighKey() {
 	return highKey_;
 }
 
-void IndexNode::setHighKey(int key){
-	highKey_ = key;
+void IndexNode::setHighKey(int highKey) {
+	highKey_ = highKey;
 }
 
-void IndexNode::setSiblingPointer(PID pter) {
-	siblingPointer_ = pter;
+PID IndexNode::getSibling() {
+	return siblingPointer_; 
+}
+
+void IndexNode::setSibling(PID sibling) {
+	siblingPointer_ = sibling;
+}
+
+int IndexNode::getIndexKey(int i) {
+	return searchArray_[i].key;
+}
+
+PID IndexNode::getIndexPID(int i) {
+	return searchArray_[i].value;
+}
+
+void IndexNode::insertKeyVal(int key, PID val) {
+        searchArray_[currentSize_].key = key;
+        searchArray_[currentSize_].value = val;
+        currentSize_++;
 }
 
 void IndexNode::addToSearchArray(int key, PID pid) {
@@ -94,8 +112,64 @@ void IndexNode::addToSearchArray(int key, PID pid) {
 		DIE("Overflowing index node array");
 }
 
+PID IndexNode::getSmallestPID() {
+	return smallestPID_;
+}
+
 void IndexNode::setSmallestPID(PID pid) {
 	smallestPID_ = pid;
 }
+
+int IndexNode::getCurrSize() {
+	return currentSize_;
+}
+
+void IndexNode::merge(int low, int mid, int high, int currentSize) {
+        int h,i,j,b[currentSize],k;
+        h=low;
+        i=low;
+        j=mid+1;
+
+        while((h<=mid)&&(j<=high)) {
+                if(searchArray_[h].key <= searchArray_[j].key) {
+                        b[i]=searchArray_[h].key;
+                        h++;
+                } else {
+                        b[i]=searchArray_[j].key;
+                        j++;
+                }
+                
+                i++;
+        }
+
+        if(h>mid) {
+                for(k=j;k<=high;k++) {
+                        b[i]=searchArray_[k].key;
+                        i++;
+                }
+        } else {
+                for(k=h;k<=mid;k++) {
+                        b[i]= searchArray_[k].key;
+                        i++;
+                }
+        }
+
+        for(k=low;k<=high;k++)  searchArray_[k].key=b[k];
+}
+
+void IndexNode::merge_sort(int low,int high, int currentSize) {
+        int mid;
+        if(low<high) {
+          mid = low + (high-low)/2; //This avoids overflow when low, high are too large
+          merge_sort(low,mid, currentSize);
+          merge_sort(mid+1,high, currentSize);
+          merge(low,mid,high, currentSize);
+        }
+}
+
+void IndexNode::mergesort() {
+        merge_sort(0, currentSize_-1, currentSize_);
+}
+
 
 IndexNode::~IndexNode(){}
