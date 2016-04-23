@@ -29,7 +29,7 @@ IndexNode* initializeForTest() {
 
 	node->setSmallestPID(smallestPID);
 	node->setHighKey(highKey);
-	node->setSiblingPointer(siblingPointer);
+	node->setSibling(siblingPointer);
 
 	return node;
 }

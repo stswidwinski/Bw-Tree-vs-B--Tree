@@ -155,6 +155,9 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
 	} else if (type == DELTA_INSERT || type == DELTA_UPDATE) {
 	    int key = ((DeltaNode*) chainEnd)->getKey();//get key
 	    byte * val = ((DeltaNode*) chainEnd)->getValue();//get payload 
+            // for inserting chain data, we need to make sure 
+            // the key is less than kp if there is a kp to consider in order to add it
+            // otherwise, there is no kp to consider, so we just insert it all
 	    if (kp == -1 || (key < kp)) {
 	        newPt->insertChainData(key, val);
 	    }
@@ -191,7 +194,60 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
 	}
 }
 
-void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int kp, MemoryManager* man) {
+// ks is the key of split of oldPt
+// could be -1 (i.e. didn't split)
+void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager* man) {
+	Node* chainEnd = oldPt;
+	NodeType type = chainEnd->getType();
+	
+        // traversing the delta chain, before hitting the index node
+	while(type != INDEX) {
+	// split delta
+        // if we are not passed the key, and the node is of type split delta 
+        // record the "K_S" that this split delta contains
+        // and make it the K_max of the new page.
+        // remember, this is because we [split] it! 
+        // so there is another node to the right of it already!!
+	  if ((ks == -1) && (type == DELTA_SPLIT)) { 
+            newPt->setHighKey(ks); // set K_max of new page to K_s
+            newPt->setSibling(((DeltaNode*) chainEnd)->getSidePtr()); // set the sibling of the new page to side pointer of split delta
+          } else if (type == DELTA_INDEX_SPLIT)  {
+            // if encountered ISD (index split delta)
+            int kp = ((DeltaNode*) chainEnd)->getSplitKey(); // this is the lower bound of ISD
+            // if didn't split or the kp is valid inside the index split delta, add the thing
+            if ((ks != -1) && (kp < ks)) { 
+                // if split and the kp of ISD is less than split key, 
+                // add the side pointer of ISDdo the new index node
+              newPt->addToSearchArray(kp, ((DeltaNode*) chainEnd)->getSidePtr());
+            }
+          }
+	  chainEnd = ((DeltaNode*)chainEnd)->getNextNode(); // iterate to next thing in chain
+       }
+       // finished chain
+       // extracting information from the old page
+       // traverse all members of the old page and check keys
+        int arrLen = oldPt->getCurrSize();
+	for (int i = 0; i < arrLen; i++) {
+	  int key = oldPt->getIndexKey(i); // get the <sep key, ptr> record from the old index node
+          // if ks is set, and key exceeds ks, we can just stop
+	  if ((ks != -1) && (key >= ks)) { 
+	      break;
+	  }
+          // if ks is not set or key < ks
+          // just add to the new index node
+          newPt->insertKeyVal(key, oldPt->getIndexPID(i));
+	}
+       newPt->setSmallestPID(oldPt->getSmallestPID()); // set smallest PID of new page to smallest PID of old page
+       // sort the array by keys
+       newPt->mergesort();
+       
+       // if did not encounter split page
+       // set sibling to sibling of old page
+       // set high key to high key of old page
+       if (ks == -1) {
+        newPt->setSibling(oldPt->getSibling());
+        newPt->setHighKey(oldPt->getHighKey()); // set K_max of new page to K_s
+       }
 
 }
 
@@ -205,10 +261,18 @@ void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) 
         
     // 2. data
 	if (type == DATA) {
-  		Node* newPage = (DataNode*) man->getNode(DATA); 
-     	populate((DataNode*) top, (DataNode*) newPage, -1, man);
-     	map_->CAS(topPID, top, newPage);//might need to screw with this
+            Node* newPage = (DataNode*) man->getNode(DATA); 
+     	    populate((DataNode*) top, (DataNode*) newPage, -1, man);
+            map_->CAS(topPID, top, newPage);//might need to screw with this
     }
+
+    // 3. index 
+	if (type == INDEX) {
+            Node* newPage = (IndexNode*) man->getNode(INDEX); 
+     	    populate((IndexNode*) top, (IndexNode*) newPage, -1, man);
+     	    map_->CAS(topPID, top, newPage);//might need to screw with this
+    }
+
 }
 
 
