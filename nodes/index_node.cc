@@ -157,18 +157,18 @@ void IndexNode::merge(int low, int mid, int high, int currentSize) {
         for(k=low;k<=high;k++)  searchArray_[k].key=b[k];
 }
 
-void IndexNode::merge_sort(int low,int high, int currentSize) {
+void IndexNode::mergesortHelper(int low,int high, int currentSize) {
         int mid;
         if(low<high) {
           mid = low + (high-low)/2; //This avoids overflow when low, high are too large
-          merge_sort(low,mid, currentSize);
-          merge_sort(mid+1,high, currentSize);
+          mergesortHelper(low,mid, currentSize);
+          mergesortHelper(mid+1,high, currentSize);
           merge(low,mid,high, currentSize);
         }
 }
 
 void IndexNode::mergesort() {
-        merge_sort(0, currentSize_-1, currentSize_);
+        mergesortHelper(0, currentSize_-1, currentSize_);
 }
 
 

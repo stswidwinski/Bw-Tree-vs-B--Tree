@@ -174,7 +174,7 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
  	// check that the values are not sorted and inserted correctly
  	int key = beginningKey;
  	byte* payload;
- 	for(int i = 0; i < 9; i++) {
+ 	for(int i = 0; i < arrSize; i++) {
  		payload = node->getDataVal(i);
  		for(int j = 0; j < LENGTH_RECORDS; j++)
  			EXPECT_EQ((byte) i, *(payload+j));

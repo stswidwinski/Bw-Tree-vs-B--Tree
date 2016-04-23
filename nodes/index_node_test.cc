@@ -3,28 +3,17 @@
 #include "nodes/index_node.h"
 #include <string>
 
-// default values for tests
-int searchArrSize = 100;
-
-// smallest, greatest key in the array and step.
-int minKey = 0;
-int maxKey = 200;
-int keyStep = (maxKey - minKey)/searchArrSize;
-
-// smallest PID pointer, highKey variable
-PID smallestPID = 1234;
-int highKey = maxKey + 100;
-PID siblingPointer = 5001;
-
-IndexNode* initializeForTest() {
+IndexNode* initializeForTest(int arrSize = 100, int highKey = 10000,
+	int beginningKey = 10, int stepKey = 2, PID siblingPointer = 5001,
+	PID smallestPID = 1234) {
 	// make the index node
 	IndexNode* node = new IndexNode();
 
 	// populate the searchArray of index node
-	int m = minKey;
-	for (int j = 0; j < searchArrSize; j++) {
+	int m = beginningKey;
+	for (int j = 0; j < arrSize; j++) {
 		node->addToSearchArray(m, (PID) j);
-		m += keyStep;
+		m += stepKey;
 	}
 
 	node->setSmallestPID(smallestPID);
@@ -35,30 +24,40 @@ IndexNode* initializeForTest() {
 }
 
 TEST(nextPidTestWithHighKey) {
-	IndexNode* node = initializeForTest();
+	int arrSize = 100;
+	int highKey = 10000;
+	int beginningKey = 10;
+	int stepKey = 2;
+	PID siblingPointer = 5001;
+	PID smallestPID = 1234;
+
+	IndexNode* node = initializeForTest(arrSize, highKey, beginningKey,
+		stepKey, siblingPointer, smallestPID);
 
 	// check under the lowest key
-	for (int i = minKey - 10; i < minKey; i++) {
+	for (int i = beginningKey - 10; i < beginningKey; i++) {
 		EXPECT_EQ((PID) smallestPID, node->nextPid(i));
 	}	
 
 	// check keys equal cases
-	int m = minKey;
-	for (int i = 0; i < searchArrSize; i ++) {
+	int m = beginningKey;
+	for (int i = 0; i < arrSize; i ++) {
 		EXPECT_EQ((PID) (i), node->nextPid(m));
-		m += keyStep;
+		m += stepKey;
 	}
 
 	// check in between cases
-	m = minKey + 1;
-	for (int i = 0; i < searchArrSize - 1; i++) {
+	m = beginningKey + 1;
+	for (int i = 0; i < arrSize - 1; i++) {
 		EXPECT_EQ((PID)(i+1), node->nextPid(m));
-		m += keyStep;
+		m += stepKey;
 	}
 
 	// check over maxKey but under highKey
-	for (int i = maxKey; i < maxKey + 10; i++) {
-		EXPECT_EQ(searchArrSize - 1, node->nextPid(i));
+	m = beginningKey + stepKey * arrSize;
+	for (int i = 0; i < 10; i++) {
+		EXPECT_EQ(arrSize - 1, node->nextPid(m));
+		m += 1;
 	}
 
 	// check over highKey
@@ -69,16 +68,84 @@ TEST(nextPidTestWithHighKey) {
 }
 
 TEST(nextPidTestNoHighKey) {
-	IndexNode* node = initializeForTest();
+	int arrSize = 100;
+	int highKey = 10000;
+	int beginningKey = 10;
+	int stepKey = 2;
+	PID siblingPointer = 5001;
+	PID smallestPID = 1234;
+
+	IndexNode* node = initializeForTest(arrSize, highKey, beginningKey,
+		stepKey, siblingPointer, smallestPID);
+
 	node->setHighKey(KEY_NOT_SET);
 	// check over highKey. Since not set, we should
 	// get searchArrSize - 1.
 	for (int i = highKey; i < highKey + 10; i++) {
-		EXPECT_EQ(searchArrSize - 1, node->nextPid(i));
+		EXPECT_EQ(arrSize - 1, node->nextPid(i));
 	}
 
 	END;
 }
+
+
+ TEST(mergesortTest) {
+ 	int arrSize = 100;
+	int highKey = 10000;
+	int beginningKey = 200;
+	int stepKey = -1;
+	PID siblingPointer = 5001;
+	PID smallestPID = 1234;
+
+	IndexNode* node = initializeForTest(arrSize, highKey, beginningKey,
+		stepKey, siblingPointer, smallestPID);
+
+ 	// check that the values are not sorted and inserted correctly
+ 	int key = beginningKey;
+
+ 	for(int i = 0; i < arrSize; i++) {
+ 		EXPECT_EQ(key, node->getIndexKey(i));
+ 		key += stepKey;
+ 	}
+
+ 	node->mergesort();
+	
+	// check that it is sorted.
+	key = beginningKey;
+ 	for(int i = arrSize - 1; i >= 0; i--) {
+ 		EXPECT_EQ(key,  node->getIndexKey(i));
+ 		key += stepKey;
+ 	}
+
+	END;
+ }
+
+ TEST(mergesortTestWeird) {
+ 	int arrSize = 100;
+	int highKey = 10000;
+	int beginningKey = 200;
+	int stepKey = -1;
+	PID siblingPointer = 5001;
+	PID smallestPID = 1234;
+
+ 	IndexNode* node = initializeForTest(arrSize, highKey, beginningKey,
+		stepKey, siblingPointer, smallestPID);
+
+ 	node->insertKeyVal(500, (PID)123);
+ 	node->mergesort();
+
+ 	int key = beginningKey;
+ 	for(int i = arrSize - 1; i >= 0; i--) {
+ 		EXPECT_EQ(key, node->getIndexKey(i));
+ 		key += stepKey;
+ 	}
+
+ 	EXPECT_EQ(500, node->getIndexKey(arrSize));
+ 	EXPECT_EQ((PID) 123, node->getIndexPID(arrSize));
+
+ 	END;
+
+ }
 
 int main(int argc, char** argv) {
   nextPidTestWithHighKey();

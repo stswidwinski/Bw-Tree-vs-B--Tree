@@ -78,10 +78,8 @@ class IndexNode : public Node {
                 // set into currentSize_ the key and value record corresponding to <sep key, PID>
 		void insertKeyVal(int key, PID val);
 
-                // sort functions
-                void merge(int low, int mid, int high, int currentSize);
-                void merge_sort(int low, int high, int currentSize);
-                void mergesort();
+        // sort functions
+        void mergesort();
 
 
 		virtual ~IndexNode();
@@ -98,6 +96,10 @@ class IndexNode : public Node {
 		// array of key values and PID. Used for tree traversal.
 		// the array is sorted.
 		Pair<int, PID>* searchArray_;
+		// merge step of merge sort
+		void merge(int low, int mid, int high, int currentSize);
+        // merge sort populated with parameters from mergesort();
+        void mergesortHelper(int low, int high, int currentSize);
 };
 
 #endif
