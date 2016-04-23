@@ -8,11 +8,11 @@ BwTree::BwTree() {
 	map_ = new MemoryMap<Node>(MAP_SIZE);
 
 	// first make the two data pages
-	DataNode* rightNode = new DataNode(0, KEY_NOT_SET,
+	DataNode* rightNode = new DataNode(ARRAY_RECORDS_LENGTH, KEY_NOT_SET,
 		-1, KEY_NOT_SET);
 	PID rightNodePid = map_->put(rightNode);
 
-	DataNode* leftNode = new DataNode(0, rightNodePid,
+	DataNode* leftNode = new DataNode(ARRAY_RECORDS_LENGTH, rightNodePid,
 		-1, INIT_KEY_VALUE);
 	PID leftNodePid = map_->put(leftNode);
 
