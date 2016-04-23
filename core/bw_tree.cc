@@ -20,6 +20,7 @@ BwTree::BwTree() {
 	IndexNode* rootNode = new IndexNode();
 	rootNode->insertKeyVal(INIT_KEY_VALUE, rightNodePid);
 	rootNode->setSmallestPID(leftNodePid);
+        rootNode->setHighKey(KEY_NOT_SET);
 
 	// put it into the map
 	rootPid_ = map_->put(rootNode);
@@ -45,6 +46,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	// chain.
 	Node* firstInChain = nullptr;
 	// node we are processing
+        // start from root
 	Node* currentNode = map_->get(rootPid_);
 	// the result. Not set until the end.
 	Node* resultingNode = nullptr;
