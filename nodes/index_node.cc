@@ -35,7 +35,7 @@ PID IndexNode::nextPid(int key) {
 		return -1;
 
 	if(highKey_ != KEY_NOT_SET &&
-		key > highKey_)
+		key >= highKey_)
 		return siblingPointer_;
 
 	// key is smaller then smallest element in search array.
@@ -75,6 +75,14 @@ int IndexNode::getSplittingKey() {
 
 int IndexNode::getHighKey() {
 	return highKey_;
+}
+
+void IndexNode::setHighKey(int key){
+	highKey_ = key;
+}
+
+void IndexNode::setSiblingPointer(PID pter) {
+	siblingPointer_ = pter;
 }
 
 void IndexNode::addToSearchArray(int key, PID pid) {

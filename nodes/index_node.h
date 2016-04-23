@@ -42,6 +42,10 @@ class IndexNode : public Node {
 		// returns highKey_
 		int getHighKey();
 
+		void setHighKey(int key);
+
+		void setSiblingPointer(PID pter);
+
 		// this should be called only on newly created (obtained)
 		// nodes. It adds to search array and increases the size.
 		//
