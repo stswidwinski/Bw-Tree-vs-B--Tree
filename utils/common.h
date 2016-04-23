@@ -69,7 +69,7 @@
 */
 
 // maximal length of the delta chain
-#define MAX_DELTA_CHAIN 100
+#define MAX_DELTA_CHAIN 8
 
 #define MAP_SIZE 16777216 // 2^24
 
