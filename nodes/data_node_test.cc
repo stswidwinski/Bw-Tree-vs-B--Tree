@@ -1,18 +1,18 @@
 #include "utils/testing.h"
 #include "core/mem_manager.h"
-#include "node/data_node.h"
+//#include "node/data_node.h"
 #include <string>
 #include <iostream>
 
 DataNode* initializeForTest(int arrSize = 100, int max = 10000, 
-	int minVal = 10, sidePter = PID_NOT_FOUND) {
+	int minVal = 10, PID sidePter = PID_NOT_FOUND) {
 	
 	// make data array
-	Pair<int, PID>* dataArray =  new Pair<int, PID> [arrSize];
+	Pair<int, byte*>* dataArray =  new Pair<int, byte*> [arrSize];
  	int m = minVal;
-	for (int j=0; j<searchArrSize; j++) {
+	for (int j=0; j<arrSize; j++) {
 		dataArray[j].key = m;
-		dataArray[j].value = (PID) j;
+		dataArray[j].value = (byte*) &j;
 		m+=10;
 	}
 	
@@ -34,11 +34,11 @@ DataNode* initializeForTest(int arrSize = 100, int max = 10000,
  	byte * record;
 
  	// search for things in data_ array
- 	m = minVal;
+ 	int m = minVal;
  	for (int j=0; j<arrSize; j++) {
 		found = node->pointToRecord(m, &record);
 		EXPECT_EQ(0, found);
-		EXPECT_EQ((byte*) j, record);
+		EXPECT_EQ((byte*) &j, record);
 		m+=10;
 	}
 
