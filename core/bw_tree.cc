@@ -362,46 +362,50 @@ byte* BwTree::get(int key, MemoryManager* man) {
 	return nullptr;
 }
 
-
-void BwTree::update(int key, byte *value, MemoryManager* man) {
+// return 1 on success
+// return 0 on failure
+int BwTree::update(int key, byte *value, MemoryManager* man) {
 	
-	// currentPid = rootPid_;
-	// currentNode = root_;
+        Triple<PID, Node*, byte*> found = findNode(key, man);
 
-	// Triple<PID, Node*, byte*> found = root_->findNode(key, ADD_DELTA, man);
+	// if the record was found, can update
+	if (found.record != nullptr) { 
+	  // create new delta node
+	  DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_UPDATE);
+	  // set new delta to point to found.node 
+	  newNode->setVariables(DELTA_UPDATE,
+	  found.node,
+          key, value);
 
-	// // if the record was found, can update
-	// if (found.value != nullptr) { 
-	// 	// create new delta node
-	// 	DeltaNode* newNode = man.getNode(DELTA_UPDATE);
-	// 	// set new delta to point to found.node 
-	// 	newNode.setVariables(DELTA_UPDATE,
-	// 			Pair<int, byte*>(key, value),
-	// 			found.node);
-
-	// 	// CAS within memory map to point to new delta
-	// 	while (!man->CAS(found.pid, found.node, newNode)) {}
-	// }
+	  // CAS within memory map to point to new delta
+	  while (!map_->CAS(found.pid, found.node, newNode)) {
+          }
+          return 1;
+	}
+        return 0;
 }
 
-void BwTree::insert(int key, byte *value, MemoryManager* man) {
+// return 1 on success
+// return 0 on failure
+int BwTree::insert(int key, byte *value, MemoryManager* man) {
 	
-	// currentPid = rootPid_;
-	// currentNode = root_;
-
-	// Triple<PID, Node*, byte*> found = root_->findNode(key, ADD_DELTA, man);
+	Triple<PID, Node*, byte*> found = findNode(key, man);
 	// // if the record was not found, can add it
-	// if (found.value == nullptr) { 
-	// 	// create new delta node
-	// 	DeltaNode* newNode = man.getNode(DELTA_INSERT);
-	// 	// set new delta to point to found.node 
-	// 	newNode.setVariables(DELTA_INSERT,
-	// 			Pair<int, byte*>(key, value),
-	// 			found.node);
+	if (found.record == nullptr) { 
+            // create new delta node
+            DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_INSERT);
+            // set new delta to point to found.node 
+            newNode->setVariables(DELTA_INSERT,
+                                 found.node,
+                                 key, value);
 
-	// 	// CAS within memory map to point to new delta
-	// 	while (!man->CAS(found.pid, found.node, newNode)) {}
-	// }
+            // CAS within memory map to point to new delta
+            while (!map_->CAS(found.pid, found.node, newNode)) {
+
+            }
+            return 1;
+	}
+        return 0;
 }
 
 Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain) {

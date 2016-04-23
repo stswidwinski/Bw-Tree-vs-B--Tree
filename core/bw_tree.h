@@ -34,9 +34,9 @@ class BwTree {
 		byte* get(int key, MemoryManager* man);
 
         // add a delta record with a new value for an existing key
-        void update(int key, byte *value, MemoryManager* man);
+        int update(int key, byte *value, MemoryManager* man);
         // inserts a new delta record for a previously not existing key
-        void insert(int key, byte *value, MemoryManager* man);
+        int insert(int key, byte *value, MemoryManager* man);
 
         void populate(DataNode * oldPt, DataNode* newPt, int kp, MemoryManager * man);
         void populate(IndexNode * oldPt, IndexNode* newPt, int kp, MemoryManager * man);
