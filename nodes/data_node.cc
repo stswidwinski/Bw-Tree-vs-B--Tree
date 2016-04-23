@@ -53,7 +53,7 @@ int DataNode::pointToRecord(int key, byte ** record) {
 			left = middle + 1;
 		} else {
 			*record = data_[middle].value;
-			return 0;
+			return FOUND;
 		}
 	}
 	

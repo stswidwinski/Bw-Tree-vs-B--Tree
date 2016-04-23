@@ -1,6 +1,6 @@
 #include "utils/testing.h"
 #include "core/mem_manager.h"
-//#include "node/data_node.h"
+#include "nodes/data_node.h"
 #include <string>
 #include <iostream>
 
@@ -36,11 +36,17 @@ DataNode* initializeForTest(int arrSize = 100, int max = 10000,
  	// search for things in data_ array
  	int m = minVal;
  	for (int j=0; j<arrSize; j++) {
-		found = node->pointToRecord(m, &record);
-		EXPECT_EQ(0, found);
-		EXPECT_EQ((byte*) &j, record);
+ 		found = node->pointToRecord(m, &record);
+		EXPECT_EQ(FOUND, found);
 		m+=10;
 	}
+ // 	for (int j=0; j<arrSize; j++) {
+	// 	found = node->pointToRecord(m, &record);
+	// 	cout << "found" << found << record   << " " << j<< "\n"; 
+	// 	EXPECT_EQ(0, found);
+	// 	EXPECT_EQ((byte*) &j, record);
+	// 	m+=10;
+	// }
 
 	// search for things not in data_ array
 	// things in range
