@@ -141,30 +141,35 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* man) {
 	Node* chainEnd = oldPt;
 	NodeType type = chainEnd->getType();
+
+        bool isSplit = (kp == -1) ? 0 : 1;
 	
 	while(type != DATA) {
 	// split delta
-	if ((kp == -1) && (type == DELTA_SPLIT)) { 
-	    // if spit, low key and high key are different
-	    // so is the side pointer
-	    kp = ((DeltaNode*) chainEnd)->getSplitKey();
-	    PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
-	    newPt->setSidePter(sideP); // set new to old side pointer
-	    newPt->setLowKey(oldPt->getLowKey());//low key of old
-	    newPt->setHighKey(kp);//high key of kp
-	} else if (type == DELTA_INSERT || type == DELTA_UPDATE) {
-	    int key = ((DeltaNode*) chainEnd)->getKey();//get key
-	    byte * val = ((DeltaNode*) chainEnd)->getValue();//get payload 
-            // for inserting chain data, we need to make sure 
-            // the key is less than kp if there is a kp to consider in order to add it
-            // otherwise, there is no kp to consider, so we just insert it all
-	    if (kp == -1 || (key < kp)) {
-	        newPt->insertChainData(key, val);
-	    }
-	} 
-	// go to next node
-	//
-	chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+            if ((kp == -1) && (type == DELTA_SPLIT)) { 
+                // if spit, low key and high key are different
+                // so is the side pointer
+                kp = ((DeltaNode*) chainEnd)->getSplitKey();
+                PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
+                newPt->setSidePter(sideP); // set new to old side pointer
+                newPt->setLowKey(oldPt->getLowKey());//low key of old
+                newPt->setHighKey(kp);//high key of kp
+            } else if (type == DELTA_INSERT || type == DELTA_UPDATE) {
+                int key = ((DeltaNode*) chainEnd)->getKey();//get key
+                byte * val = ((DeltaNode*) chainEnd)->getValue();//get payload 
+                // for inserting chain data, we need to make sure 
+                // the key is less than kp if there is a kp to consider in order to add it
+                // otherwise, there is no kp to consider, so we just insert it all
+                if ((kp == -1 || (key < kp)) && !isSplit) {
+                    newPt->insertChainData(key, val);
+                }
+
+                if (isSplit && (key >= kp)) {
+                    newPt->insertChainData(key, val);
+                }
+            } 
+            // go to next node in chain
+            chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
 	}
 	// sort the things already inside newPt (from chain)
 	newPt->mergesort();
@@ -172,26 +177,51 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
 	// consolidate appropriate values
 	int dataLen = newPt->getDataLength();
 	int oldLen = oldPt->getDataLength();
-	for (int i = 0; i < oldLen; i++) {
-	  int key = oldPt->getDataKey(i);
-	  // if didn't find in P', then add key/val record from P to P' (P' new, P old)
-	  // P sorted
-	  if (kp != -1 && key >= kp) { 
-	      break;
-	  }
+        if (!isSplit) {
+            // this is the consolidate case
+            // we are adding only the keys that are less than kp
+            for (int i = 0; i < oldLen; i++) {
+              int key = oldPt->getDataKey(i);
+              // if didn't find in P', then add key/val record from P to P' (P' new, P old)
+              // P sorted
+              if ((kp != -1) && (key >= kp)) { 
+                  break;
+              }
 
-	  if(!(newPt->findSub(key, dataLen))) {
-	      newPt->insertBaseData(key, oldPt->getDataVal(i));
-	  } 
-	}
-	// look through P and only add to P' if value is not in P' already
-	// sort all
-	newPt->mergesort();
-	if (kp == -1) {
-	    newPt->setSidePter(oldPt->getSidePtr()); // set new to old side pointer
-	    newPt->setLowKey(oldPt->getLowKey());//low key of old
-	    newPt->setHighKey(oldPt->getHighKey());//high key of kp
-	}
+              if(!(newPt->findSub(key, dataLen))) {
+                  newPt->insertBaseData(key, oldPt->getDataVal(i));
+              } 
+            }
+        } else {
+            // this is the split case
+            // we are adding only the keys that are greater than or equal to kp
+            for (int i = oldLen - 1; i >= 0; i--) {
+              int key = oldPt->getDataKey(i);
+              // if didn't find in P', then add key/val record from P to P' (P' new, P old)
+              // P sorted
+              if (key < kp) { 
+                  break;
+              }
+
+              if(!(newPt->findSub(key, dataLen))) {
+                  newPt->insertBaseData(key, oldPt->getDataVal(i));
+              } 
+            }
+        }
+            // look through P and only add to P' if value is not in P' already
+            // sort all
+            newPt->mergesort();
+            if (kp == -1) {
+                newPt->setSidePter(oldPt->getSidePtr()); // set new to old side pointer
+                newPt->setLowKey(oldPt->getLowKey());//low key of old
+                newPt->setHighKey(oldPt->getHighKey());//high key of kp
+            }
+
+            if (isSplit) {
+                newPt->setSidePter(oldPt->getSidePtr()); // set new to old side pointer
+                newPt->setLowKey(kp); //low key is kp 
+                newPt->setHighKey(oldPt->getHighKey());//high key of kp
+            }
 }
 
 // ks is the key of split of oldPt
@@ -199,6 +229,8 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
 void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager* man) {
 	Node* chainEnd = oldPt;
 	NodeType type = chainEnd->getType();
+
+        bool isSplit = (ks == -1) ? 0 : 1;
 	
         // traversing the delta chain, before hitting the index node
 	while(type != INDEX) {
@@ -215,9 +247,14 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
             // if encountered ISD (index split delta)
             int kp = ((DeltaNode*) chainEnd)->getSplitKey(); // this is the lower bound of ISD
             // if didn't split or the kp is valid inside the index split delta, add the thing
-            if ((ks != -1) && (kp < ks)) { 
+            // first branch is for consolidate case
+            if (((ks != -1) && (kp < ks)) && !isSplit) { 
                 // if split and the kp of ISD is less than split key, 
-                // add the side pointer of ISDdo the new index node
+                // add the side pointer of ISD to the new index node
+              newPt->addToSearchArray(kp, ((DeltaNode*) chainEnd)->getSidePtr());
+            } else if (isSplit && (kp >= ks))  {
+                // second branch is for split case
+                // add the side pointer of ISD to the new index node
               newPt->addToSearchArray(kp, ((DeltaNode*) chainEnd)->getSidePtr());
             }
           }
@@ -227,28 +264,46 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
        // extracting information from the old page
        // traverse all members of the old page and check keys
         int arrLen = oldPt->getCurrSize();
-	for (int i = 0; i < arrLen; i++) {
-	  int key = oldPt->getIndexKey(i); // get the <sep key, ptr> record from the old index node
-          // if ks is set, and key exceeds ks, we can just stop
-	  if ((ks != -1) && (key >= ks)) { 
-	      break;
-	  }
-          // if ks is not set or key < ks
-          // just add to the new index node
-          newPt->insertKeyVal(key, oldPt->getIndexPID(i));
-	}
-       newPt->setSmallestPID(oldPt->getSmallestPID()); // set smallest PID of new page to smallest PID of old page
+        if (!isSplit) {
+            for (int i = 0; i < arrLen; i++) {
+              int key = oldPt->getIndexKey(i); // get the <sep key, ptr> record from the old index node
+              // if ks is set, and key exceeds ks, we can just stop
+              if ((ks != -1) && (key >= ks)) { 
+                  break;
+              }
+              // if ks is not set or key < ks
+              // just add to the new index node
+              newPt->insertKeyVal(key, oldPt->getIndexPID(i));
+            }
+            newPt->setSmallestPID(oldPt->getSmallestPID()); // set smallest PID of new page to smallest PID of old page
+        } else {
+            for (int i = arrLen - 1; i >= 0; i--) {
+              int key = oldPt->getIndexKey(i); // get the <sep key, ptr> record from the old index node
+
+              // if ks is set, and key exceeds ks, we can just stop
+              if (key == ks) {
+                newPt->setSmallestPID(oldPt->getIndexPID(i)) ; // set smallest PID of new page to smallest PID of old page
+                break;
+              }
+              // should not encounter any key less than ks, since keys are in order
+              /*if (key < ks) {
+                  break; (shouldn't reach here)
+              }*/
+
+              // if key > ks
+              // just add to the new index node
+              newPt->insertKeyVal(key, oldPt->getIndexPID(i));
+            }
+        }
        // sort the array by keys
        newPt->mergesort();
        
-       // if did not encounter split page
        // set sibling to sibling of old page
        // set high key to high key of old page
-       if (ks == -1) {
+       if (ks == -1 || isSplit) { // if didn't encounter split page in consolidate or if we are splitting
         newPt->setSibling(oldPt->getSibling());
         newPt->setHighKey(oldPt->getHighKey()); // set K_max of new page to K_s
        }
-
 }
 
 void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) {
@@ -334,7 +389,8 @@ Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, No
 	DataNode* newNode = (DataNode*) man->getNode(DATA);
 
 	// TODO POPULATE DATA NODE
-	// populate(toSplit, newNode, pid);
+        // Kp should not be -1
+	populate(toSplit, newNode, Kp, man);
 
 	PID newNodePid = map_->put(newNode);
 
@@ -389,6 +445,9 @@ Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, N
 	// the split node has a parent
 	// TODO
 	// populate the new node
+
+	populate(toSplit, newNode, Kp, man);
+
 	PID newNodePid = map_->put(newNode);
 
 	DeltaNode* splitDelta = (DeltaNode*) man->getNode(DELTA_SPLIT);
