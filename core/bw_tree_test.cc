@@ -17,32 +17,40 @@ TEST(consolidateTest) {
 
 TEST(findNodeTest) {
 // @TODO
-	MemoryManager* man = new MemoryManager(10, 20, 30, 4); // got from mem manager test
-
-
-	MemoryMap<Node> * map = new MemoryMap<Node>(100); 
-	BwTree * tree = initTreeForTest(map);
+	BwTree * tree = new BwTree();
+	//MemoryManager  * man = new MemoryManager(100, 100, 100);
+	
+	// populate tree with some values
 
 	DataNode * child;
-	PID childPID;
-	IndexNode * root = (IndexNode*) map->get(tree->getRootPID());
-	// populate some stuff
-	int key = 200;
-	for (int i =0; i<10; i++) {
-		child = new DataNode ();
-		childPID = map->put(child);
-		root->addToSearchArray(key, childPID);
-		child->setVariables(nullptr,
-			0,
-			PID_NOT_FOUND,
-			key,
-			key+100);
-		key +=100;
-		fprintf(stderr, "key = %d, \n", child->getHighKey());
-	}
-	fprintf(stderr, "size = %d, \n", root->getCurrSize());
+	int pages =2;
+	byte * record;
+	PID next;
 
-	byte * found = tree->get(100, man);
+	// populate data pages
+	IndexNode * root = (IndexNode *) tree->map_->get(tree->rootPid_);
+	int minV = 100;
+	for (int i =0; i< pages; i++ ) { 
+		fprintf(stderr, "%d\n", i);
+		next = root->getIndexPID(i);
+		fprintf(stderr, "next:%d\n",next);
+		child = (DataNode *) tree->map_->get(next);
+		fprintf(stderr, "high %d\n", child->getHighKey());
+		for (int j = minV; j<minV+100; j+=5){
+			fprintf(stderr, "hi\n");
+			child->insertBaseData(j, (byte*)&j);
+			fprintf(stderr, "here\n");
+		}
+		for (int j = minV; j<minV+100; j+=5) {
+			if (!child->pointToRecord(j, &record)) {
+				fprintf(stderr, "not found: %d\n", j);
+			}
+			else fprintf(stderr, "yes\n");
+		}
+		minV += 200;
+	}
+
+	//byte * found = tree->get(100, man);
 
 	// @TODO temp for tests vvvv
 			
@@ -60,7 +68,7 @@ TEST(findNodeTest) {
 	// 	EXPECT_EQ(man, man);
 		EXPECT_EQ(tree, tree);
 	// 	found++;
-	EXPECT_FALSE((found) == nullptr);
+	//EXPECT_FALSE((found) == nullptr);
 	// }
 
 
