@@ -83,18 +83,86 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
 		EXPECT_EQ(OVER_HIGH, found);
 	}
 
-
-
-
 	END;
  }
 
  TEST(insertChainDataTest) {
+ 	int arrSize = 10;
+ 	int highKey = 1000;
+ 	int beginningKey = 10;
+ 	int stepKey = 1;
 
+ 	DataNode* node = initializeForTest(arrSize, highKey, beginningKey, 
+ 		stepKey);
+
+ 	// attempt to add keys already in the array.
+ 	// Once for each
+ 	byte* b = new byte[LENGTH_RECORDS];
+ 	for(int i = 0; i < LENGTH_RECORDS; i++)
+ 		b[i] = (byte) 0;
+
+ 	for(int i = 0; i < arrSize; i++)
+ 		node->insertChainData(i + beginningKey, b);
+
+ 	// count the number of records for a given key. 
+ 	int counter;
+ 	int key;
+ 	for(int i = 0; i < arrSize; i++) {
+ 		counter = 0;
+ 		key = beginningKey + i;
+ 		for(int j = 0; j < arrSize; j++) {
+ 			if(node->getDataKey(j) == key)
+ 				counter++;
+ 		}
+ 		EXPECT_EQ(1, counter);
+ 	}
+
+ 	// attempt to add keys NOT already in the array
+ 	int addedKeys = 5;
+ 	for(int i = 0; i < arrSize; i++)
+ 		node->insertChainData(beginningKey + arrSize*stepKey + i, b);
+
+ 	// count them all over again.
+	for(int i = 0; i < arrSize + addedKeys; i++) {
+ 		counter = 0;
+ 		key = beginningKey + i;
+ 		for(int j = 0; j < arrSize + addedKeys; j++) {
+ 			if(node->getDataKey(j) == key)
+ 				counter++;
+ 		}
+
+ 		EXPECT_EQ(1, counter);
+ 	}
+	
 	END;
  }
 
  TEST(findSubTest) {
+ 	int arrSize = 20;
+ 	int highKey = 1000;
+ 	int beginningKey = 10;
+ 	int stepKey = 2;
+
+ 	DataNode* node = initializeForTest(arrSize, highKey, beginningKey,
+ 		stepKey);
+
+ 	// check using findSub that all inserted elements exist.
+ 	for(int i = 0; i < arrSize; i++) {
+ 		EXPECT_EQ(true, node->findSub(beginningKey + stepKey*i, arrSize));
+ 	}
+
+ 	// check that lower elements return false
+ 	for(int i = 0; i < beginningKey; i++)
+ 		EXPECT_EQ(false, node->findSub(i, arrSize));
+
+ 	// check that higher elements return false
+ 	int highestKeyInArr = beginningKey + arrSize*stepKey;
+ 	for(int i = 0; i < arrSize; i++) 
+ 		EXPECT_EQ(false, node->findSub(i + highestKeyInArr, arrSize));
+
+ 	// check that 'in-between' elements don't exist
+ 	for(int i = 0; i < arrSize; i += 2)
+ 		EXPECT_EQ(false, node->findSub(beginningKey + 1 + i, arrSize)); 
 
 	END;
  }
@@ -173,4 +241,6 @@ int main(int argc, char** argv) {
   pointToRecordTest();
   mergesortTest();
   mergesortTestWeird();
+  findSubTest();
+  insertChainDataTest();
 }

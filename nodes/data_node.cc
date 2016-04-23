@@ -42,7 +42,7 @@ int DataNode::pointToRecord(int key, byte ** record) {
 		return OVER_HIGH;
 	}
 
-	int left = 0, right = dataLength_, middle = 0, midVal = 0;
+	int left = 0, right = dataLength_ - 1, middle = 0, midVal = 0;
 	while(left <= right) {
 		middle = left + (right-left)/2;
 		midVal = data_[middle].key;
@@ -132,7 +132,7 @@ void DataNode::insertBaseData(int key, byte *val) {
 
 bool DataNode::findSub(int key, int bound) {
 
-    int left = 0, right = bound, middle = 0, midVal = 0;
+    int left = 0, right = bound - 1, middle = 0, midVal = 0;
     while(left <= right) {
             middle = left + (right-left)/2;
             midVal = data_[middle].key;
