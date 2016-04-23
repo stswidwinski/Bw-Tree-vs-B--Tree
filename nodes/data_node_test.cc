@@ -19,6 +19,7 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
 		node->insertBaseData(m, value);
 		m += stepKey;
 	}
+	delete[] value;
 
 	node->setSidePter(sidePter);
 	node->setLowKey(-1);
@@ -89,21 +90,83 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
 	END;
  }
 
- TEST(insertBaseDataTest) {
-
-	END;
- }
-
  TEST(findSubTest) {
 
 	END;
  }
 
  TEST(mergesortTest) {
+ 	int arrSize = 200;
+ 	int highKey = 1000;
+ 	int beginningKey = 200;
+ 	int stepKey = -1;
+
+ 	DataNode* node = initializeForTest(arrSize, highKey, beginningKey,
+ 		stepKey);
+
+ 	// check that the values are not sorted and inserted correctly
+ 	int key = beginningKey;
+ 	byte* payload;
+ 	for(int i = 0; i < 9; i++) {
+ 		payload = node->getDataVal(i);
+ 		for(int j = 0; j < LENGTH_RECORDS; j++)
+ 			EXPECT_EQ((byte) i, *(payload+j));
+ 		EXPECT_EQ(key, node->getDataKey(i));
+ 		key += stepKey;
+ 	}
+
+ 	node->mergesort();
+	
+	// check that it is sorted.
+	key = beginningKey;
+ 	for(int i = arrSize - 1; i >= 0; i--) {
+ 		payload = node->getDataVal(i);
+ 		for(int j = 0; j < LENGTH_RECORDS; j++)
+ 			EXPECT_EQ((byte) i, *(payload+j));
+ 		EXPECT_EQ(key, node->getDataKey(i));
+ 		key += stepKey;
+ 	}
 
 	END;
  }
 
+ TEST(mergesortTestWeird) {
+ 	int arrSize = 200;
+ 	int highKey = 1000;
+ 	int beginningKey = 300;
+ 	int stepKey = -1;
+
+ 	DataNode* node = initializeForTest(arrSize, highKey, beginningKey,
+ 		stepKey);
+
+ 	byte* b = new byte[LENGTH_RECORDS];
+ 	for(int i = 0; i < LENGTH_RECORDS; i++) {
+ 		b[i] = (byte) 123 - i;
+ 	}
+
+ 	node->insertBaseData(500, b);
+ 	delete[] b;
+
+ 	node->mergesort();
+
+ 	int key = beginningKey;
+ 	byte* payload;
+ 	for(int i = arrSize - 1; i >= 0; i--) {
+ 		payload = node->getDataVal(i);
+ 		for(int j = 0; j < LENGTH_RECORDS; j++)
+ 			EXPECT_EQ((byte) i, *(payload+j));
+ 		EXPECT_EQ(key, node->getDataKey(i));
+ 		key += stepKey;
+ 	}
+
+ 	EXPECT_EQ(500, node->getDataKey(arrSize));
+
+ 	END;
+
+ }
+
 int main(int argc, char** argv) {
   pointToRecordTest();
+  mergesortTest();
+  mergesortTestWeird();
 }

@@ -43,7 +43,7 @@ int DataNode::pointToRecord(int key, byte ** record) {
 	}
 
 	int left = 0, right = dataLength_, middle = 0, midVal = 0;
-	while(left < right) {
+	while(left <= right) {
 		middle = left + (right-left)/2;
 		midVal = data_[middle].key;
 		
