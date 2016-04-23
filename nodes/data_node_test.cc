@@ -10,11 +10,11 @@
  	int minVal = 10;
 
  	// create data node
- 	Pair<int, PID>* dataArray =  new Pair<int, PID> [arrSize];
+ 	Pair<int, PID>* dataArray =  new Pair<int, byte*> [arrSize];
  	int m = minVal;
-	for (int j=0; j<searchArrSize; j++) {
+	for (int j=0; j<arrSize; j++) {
 		dataArray[j].key = m;
-		dataArray[j].value = (PID) j;
+		dataArray[j].value = (byte*) j;
 		m+=10;
 	}
  	DataNode * node = new DataNode(); 
