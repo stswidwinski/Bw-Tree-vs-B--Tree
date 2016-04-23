@@ -5,15 +5,15 @@
 #include <iostream>
 
 DataNode* initializeForTest(int arrSize = 100, int max = 10000, 
-	int minVal = 10, PID sidePter = PID_NOT_FOUND) {
+	int minKey = 10, int stepKey = 2, PID sidePter = PID_NOT_FOUND) {
 	
 	// make data array
 	Pair<int, byte*>* dataArray =  new Pair<int, byte*> [arrSize];
- 	int m = minVal;
+ 	int m = minKey;
 	for (int j=0; j<arrSize; j++) {
 		dataArray[j].key = m;
 		dataArray[j].value = (byte*) &j;
-		m+=10;
+		m+=stepKey;
 	}
 	
 	// initialize the node variables.
@@ -26,15 +26,16 @@ DataNode* initializeForTest(int arrSize = 100, int max = 10000,
  TEST(pointToRecordTest) {
  	int arrSize = 10;
  	int max = 10000;
- 	int minVal = 10;
+ 	int minKey = 10;
+ 	int stepKey = 10;
 
- 	DataNode* node = initializeForTest(arrSize, max, minVal);
+ 	DataNode* node = initializeForTest(arrSize, max, minKey, stepKey);
 
  	int found;
  	byte * record;
 
  	// search for things in data_ array
- 	int m = minVal;
+ 	int m = minKey;
  	for (int j=0; j<arrSize; j++) {
  		found = node->pointToRecord(m, &record);
 		EXPECT_EQ(FOUND, found);
@@ -50,7 +51,7 @@ DataNode* initializeForTest(int arrSize = 100, int max = 10000,
 
 	// search for things not in data_ array
 	// things in range
- 	m = minVal;
+ 	m = minKey;
  	for (int j=0; j<max; j+=8) {
  		if (m % 10 == 0) continue;
 		found = node->pointToRecord(j, &record);
@@ -58,15 +59,15 @@ DataNode* initializeForTest(int arrSize = 100, int max = 10000,
 	}
 
 	// things too low
- 	m = minVal;
- 	for (int j=0; j<minVal; j++) {
+ 	m = minKey;
+ 	for (int j=0; j<minKey; j++) {
  		if (m % 10 == 0) continue;
 		found = node->pointToRecord(j, &record);
 		EXPECT_EQ(NOT_FOUND, found);
 	}
 
 	// things too high
- 	m = minVal;
+ 	m = minKey;
  	for (int j=max; j<max + arrSize; j++) {
  		if (m % 10 == 0) continue;
 		found = node->pointToRecord(j, &record);
