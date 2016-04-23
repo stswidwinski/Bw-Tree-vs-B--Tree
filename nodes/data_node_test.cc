@@ -29,57 +29,52 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
 }
 
  TEST(pointToRecordTest) {
- 	int arrSize = 10;
+ 	int arrSize = 20;
  	int max = 10000;
  	int minKey = 10;
- 	int stepKey = 10;
+ 	int stepKey = 2;
 
  	DataNode* node = initializeForTest(arrSize, max, minKey, stepKey);
 
  	int found;
  	byte * record;
 
- 	// search for things in data_ array
+ 	// elements within the data array
  	int m = minKey;
  	for (int j=0; j<arrSize; j++) {
  		found = node->pointToRecord(m, &record);
-		cout << "in found" << found <<" " << j<< "\n"; 
 		EXPECT_EQ(FOUND, found);
-		m+=10;
+		// check the equality of records.
+		for(int i=0; i < LENGTH_RECORDS; i++)
+			EXPECT_EQ((byte) j, *(record+i));
+		m += stepKey;
 	}
- // 	for (int j=0; j<arrSize; j++) {
-	// 	found = node->pointToRecord(m, &record);
-	// 	cout << "found" << found << record   << " " << j<< "\n"; 
-	// 	EXPECT_EQ(0, found);
-	// 	EXPECT_EQ((byte*) &j, record);
-	// 	m+=10;
-	// }
 
-	// search for things not in data_ array
-	// things in range
- 	m = minKey;
- 	for (int j=0; j<max; j+=8) {
- 		if (m % 10 == 0) continue;
-		found = node->pointToRecord(j, &record);
-		cout << "range found" << found <<" " << j<< "\n"; 
+	// search for things not in data_ array but in range
+ 	m = minKey + 1;
+ 	for (int j=0; j<arrSize; j++) {
+		found = node->pointToRecord(m, &record);
 		EXPECT_EQ(NOT_FOUND, found);
+		m += stepKey;
 	}
 
 	// things too low
- 	m = minKey;
  	for (int j=0; j<minKey; j++) {
- 		if (m % 10 == 0) continue;
 		found = node->pointToRecord(j, &record);
-		cout << "lowfound" << found <<" " << j<< "\n"; 
 		EXPECT_EQ(NOT_FOUND, found);
 	}
 
-	// things too high
- 	m = minKey;
- 	for (int j=max; j<max + arrSize; j++) {
- 		if (m % 10 == 0) continue;
+	// things too high -- over highest key, under highKey_
+	m = minKey + arrSize * stepKey;
+	for (int j=0; j<10; j++) {
+		found = node->pointToRecord(m, &record);
+		EXPECT_EQ(NOT_FOUND, found);
+		m += 1;
+	}
+
+	// things too high -- over highKey_
+ 	for (int j=max + 1; j<max + arrSize; j++) {
 		found = node->pointToRecord(j, &record);
-		cout << "highfound" << found <<" " << j<< "\n"; 
 		EXPECT_EQ(OVER_HIGH, found);
 	}
 
