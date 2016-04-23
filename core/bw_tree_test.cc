@@ -3,9 +3,11 @@
 #include "utils/common.h"
 #include <string>
 
-TEST(populateTest) {
-	// @TODO
-
+TEST(initTest) {
+  BwTree* tree = new BwTree();
+  IndexNode* root = (IndexNode*) tree->map_->get(tree->rootPid_); // initial tree with conventions
+  EXPECT_EQ(root->getIndexKey(0), INIT_KEY_VALUE); // right corresponds to PID 0
+  EXPECT_EQ(root->getSmallestPID(), 1);  // left corresponds to PID 1
   END;
 }
 
@@ -57,69 +59,20 @@ TEST(dataNodeInsertConsolidateTest) {
 	END;
 }
 
-TEST(findNodeTest) {
-// @TODO
-	BwTree * tree = new BwTree();
-	//MemoryManager  * man = new MemoryManager(100, 100, 100);
-	
-	// populate tree with some values
-
-	DataNode * child;
-	int pages =2;
-	byte * record;
-	PID next;
-
-	// populate data pages
-	IndexNode * root = (IndexNode *) tree->map_->get(tree->rootPid_);
-	int minV = 100;
-	for (int i =0; i< pages; i++ ) { 
-		fprintf(stderr, "%d\n", i);
-		next = root->getIndexPID(i);
-		fprintf(stderr, "next:%d\n",next);
-		child = (DataNode *) tree->map_->get(next);
-		fprintf(stderr, "high %d\n", child->getHighKey());
-		for (int j = minV; j<minV+100; j+=5){
-			fprintf(stderr, "hi\n");
-			child->insertBaseData(j, (byte*)&j);
-			fprintf(stderr, "here\n");
-		}
-		for (int j = minV; j<minV+100; j+=5) {
-			if (!child->pointToRecord(j, &record)) {
-				fprintf(stderr, "not found: %d\n", j);
-			}
-			else fprintf(stderr, "yes\n");
-		}
-		minV += 200;
-	}
-
-	//byte * found = tree->get(100, man);
-
-	// @TODO temp for tests vvvv
-			
-
-	
-			// replace this whole section ^^^ 
-
-	// // search for things in tree
-	// byte* found;
-	// int maxinTree = 200;
-	// int step = 2;
-
-	// for (int i = 0; i< maxinTree; i+=step) {
-	// 	found = tree->get(i, man);
-	// 	EXPECT_EQ(man, man);
-		EXPECT_EQ(tree, tree);
-	// 	found++;
-	//EXPECT_FALSE((found) == nullptr);
-	// }
-
-
-
-
+TEST(insertTest) {
+  BwTree* tree = new BwTree();
+  int key = 1;
+  byte* val = new byte[1];
+  val[0] = 1; // simple val
+  MemoryManager* man = new MemoryManager(3, 3, 3);
+  tree->insert(key, val, man);
+  EXPECT_EQ(((DataNode*)tree->map_->get(1))->getDataKey(0), 1);
   END;
 }
 
 int main(int argc, char** argv) {
-	dataNodeInsertConsolidateTest();
- 	findNodeTest();
+//dataNodeInsertConsolidateTest();
+ //	findNodeTest();
+        initTest();
+        insertTest();
 }
