@@ -1,26 +1,35 @@
 #include "utils/testing.h"
 #include "core/mem_manager.h"
+#include "node/data_node.h"
 #include <string>
 #include <iostream>
 
+DataNode* initializeForTest(int arrSize = 100, int max = 10000, 
+	int minVal = 10, sidePter = PID_NOT_FOUND) {
+	
+	// make data array
+	Pair<int, PID>* dataArray =  new Pair<int, PID> [arrSize];
+ 	int m = minVal;
+	for (int j=0; j<searchArrSize; j++) {
+		dataArray[j].key = m;
+		dataArray[j].value = (PID) j;
+		m+=10;
+	}
+	
+	// initialize the node variables.
+ 	DataNode * node = new DataNode(); 
+ 	node->setVariables(dataArray, arrSize, (PID) sidePter, -1, max);
+
+ 	return node;
+}
+
  TEST(pointToRecordTest) {
- 	// test binary search on data_ array
  	int arrSize = 10;
  	int max = 10000;
  	int minVal = 10;
 
- 	// create data node
- 	Pair<int, PID>* dataArray =  new Pair<int, byte*> [arrSize];
- 	int m = minVal;
-	for (int j=0; j<arrSize; j++) {
-		dataArray[j].key = m;
-		dataArray[j].value = (byte*) j;
-		m+=10;
-	}
- 	DataNode * node = new DataNode(); 
- 	node->setVariables(dataArray, arrSize, (PID) -1, -1, max);
+ 	DataNode* node = initializeForTest(arrSize, max, minVal);
 
- 
  	int found;
  	byte * record;
 
