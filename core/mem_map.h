@@ -78,7 +78,7 @@ class MemoryMap {
 		}
 
 	private:
-		PID capacity_;
+		int capacity_;
 		Load** map_;
 		PID currentKey_;
 };
