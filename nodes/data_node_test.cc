@@ -4,22 +4,25 @@
 #include <string>
 #include <iostream>
 
-DataNode* initializeForTest(int arrSize = 100, int max = 10000, 
+// the byte* of i^th element in the array is initialized to
+// all (byte) i.
+DataNode* initializeForTest(int arrSize = 100, int highKey = 10000, 
 	int minKey = 10, int stepKey = 2, PID sidePter = PID_NOT_FOUND) {
 	
-	// make data array
-	Pair<int, byte*>* dataArray =  new Pair<int, byte*> [arrSize];
- 	int m = minKey;
-	for (int j=0; j<arrSize; j++) {
-		dataArray[j].key = m;
-		dataArray[j].value = (byte*) &j;
-		m+=stepKey;
-	}
-	
-	// initialize the node variables.
- 	DataNode * node = new DataNode(); 
- 	node->setVariables(dataArray, arrSize, (PID) sidePter, -1, max);
+	DataNode* node = new DataNode();
 
+	int m = minKey;
+	byte* value = new byte[LENGTH_RECORDS];
+	for(int j = 0; j < arrSize; j++) {
+		for(int i = 0; i < LENGTH_RECORDS; i++)
+			value[i] = (byte) j;
+		node->insertBaseData(m, value);
+	}
+
+	node->setSidePter(sidePter);
+	node->setLowKey(-1);
+	node->setHighKey(highKey);
+ 
  	return node;
 }
 
