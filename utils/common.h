@@ -71,6 +71,11 @@
 // maximal length of the delta chain
 #define MAX_DELTA_CHAIN 100
 
+#define MAP_SIZE 16777216 // 2^24
+
+// inside bw_tree for initialization
+#define INIT_KEY_VALUE 4000
+
 
 typedef int PID;
 typedef unsigned char byte;

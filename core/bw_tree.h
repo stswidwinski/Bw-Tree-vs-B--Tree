@@ -23,19 +23,7 @@ typedef unsigned char byte;
 
 class BwTree {
 	public:
-		// indexNodeSize is the maximum number of elements
-		// that an index node can have in its searchArray.
-		BwTree(MemoryMap<Node>* map, int indexNodeSize, PID rootPid) {
-			//map_ = new MemoryMap<Node>();
-			map_ = map,
-			indexNodeSize_ = indexNodeSize;
-			rootPid_ = rootPid;
-			
-			// TODO
-			// INITIALIZE THE BW TREE
-
-			
-		}
+		BwTree();
 
 		~BwTree() {
             // todo fix the mem management... i.e. searchArray and root
@@ -46,9 +34,9 @@ class BwTree {
 		byte* get(int key, MemoryManager* man);
 
         // add a delta record with a new value for an existing key
-        void update(int key, byte *value, MemoryManager* man);
+        int update(int key, byte *value, MemoryManager* man);
         // inserts a new delta record for a previously not existing key
-        void insert(int key, byte *value, MemoryManager* man);
+        int insert(int key, byte *value, MemoryManager* man);
 
         void populate(DataNode * oldPt, DataNode* newPt, int kp, MemoryManager * man);
         void populate(IndexNode * oldPt, IndexNode* newPt, int kp, MemoryManager * man);
@@ -124,8 +112,7 @@ class BwTree {
 
 	private:
 		MemoryMap<Node>* map_;
-		int rootPid_;
-		int indexNodeSize_;
+		PID rootPid_;
 
 		// attempt to find the node corresponding to key. Returns a 
 		// triple with the pid of the node, node* pointer to the correct
