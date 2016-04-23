@@ -59,7 +59,8 @@ TEST(dataNodeInsertConsolidateTest) {
 	END;
 }
 
-TEST(insertTest) {
+// insert 1 record
+TEST(insert1Test) {
   BwTree* tree = new BwTree();
   int key = 1;
   byte* val = new byte[1];
@@ -70,9 +71,45 @@ TEST(insertTest) {
   END;
 }
 
+// two records test
+// 1 goes to left node
+// 40001 goes to right node
+TEST(insert2Test) {
+  BwTree* tree = new BwTree();
+  byte* val = new byte[1];
+  val[0] = 1; // simple val
+  MemoryManager* man = new MemoryManager(3, 3, 3);
+  tree->insert(1, val, man);
+  tree->insert(4001, val, man);
+  EXPECT_EQ(((DeltaNode*)tree->map_->get(1))->getKey(), 1);
+  EXPECT_EQ(((DeltaNode*)tree->map_->get(0))->getKey(), 4001);
+  END;
+}
+
+// insert one record
+// and then update it
+TEST(insertUpdateTest) {
+  // new tree and manager
+  BwTree* tree = new BwTree();
+  MemoryManager* man = new MemoryManager(3, 3, 3);
+
+  //        
+  byte* val1 = new byte[1];
+  val1[0] = 1; // simple val
+  tree->insert(1, val1, man);
+  EXPECT_EQ((((DeltaNode*)tree->map_->get(1))->getValue())[0], 1);
+  byte* val2 = new byte[1];
+  val2[0] = 2; // simple val
+  tree->update(1, val2, man);
+  EXPECT_EQ((((DeltaNode*)tree->map_->get(1))->getValue())[0], 2);
+  END;
+}
+
 int main(int argc, char** argv) {
 //dataNodeInsertConsolidateTest();
  //	findNodeTest();
         initTest();
-        insertTest();
+        insert1Test();
+        insert2Test();
+        insertUpdateTest();
 }
