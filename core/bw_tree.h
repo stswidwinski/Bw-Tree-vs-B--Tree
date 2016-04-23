@@ -112,7 +112,7 @@ class BwTree {
 
 	private:
 		MemoryMap<Node>* map_;
-		int rootPid_;
+		PID rootPid_;
 
 		// attempt to find the node corresponding to key. Returns a 
 		// triple with the pid of the node, node* pointer to the correct

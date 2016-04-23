@@ -4,9 +4,9 @@
 
 #include "core/bw_tree.h"
 
-BwTree:BwTree() {
-	map_ = new map_<Node*>(MAP_SIZE);
-	
+BwTree::BwTree() {
+	map_ = new MemoryMap<Node>(MAP_SIZE);
+
 	// first make the two data pages
 	DataNode* rightNode = new DataNode(0, KEY_NOT_SET,
 		-1, KEY_NOT_SET);
@@ -22,7 +22,7 @@ BwTree:BwTree() {
 	rootNode->setSmallestPID(leftNodePid);
 
 	// put it into the map
-	root_ = map->put(rootNode);
+	rootPid_ = map_->put(rootNode);
 }
 
 /* both insert/update and get traverse all the way to the 
