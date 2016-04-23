@@ -13,12 +13,12 @@ BwTree::BwTree() {
 	PID rightNodePid = map_->put(rightNode);
 
 	DataNode* leftNode = new DataNode(0, rightNodePid,
-		-1, 4000);
+		-1, INIT_KEY_VALUE);
 	PID leftNodePid = map_->put(leftNode);
 
 	// link the root index node.
 	IndexNode* rootNode = new IndexNode();
-	rootNode->insertKeyVal(4000, rightNodePid);
+	rootNode->insertKeyVal(INIT_KEY_VALUE, rightNodePid);
 	rootNode->setSmallestPID(leftNodePid);
 
 	// put it into the map
