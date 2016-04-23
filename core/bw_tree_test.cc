@@ -3,72 +3,26 @@
 #include "utils/common.h"
 #include <string>
 
-TEST(populateTest) {
-	// @TODO
-
+TEST(initTest) {
+  BwTree* tree = new BwTree();
+  IndexNode* root = (IndexNode*) tree->map_->get(tree->rootPid_);
+  EXPECT_EQ(root->getIndexKey(0), INIT_KEY_VALUE); // right corresponds to PID 0
+  EXPECT_EQ(root->getSmallestPID(), 1);  // left corresponds to PID 1
   END;
 }
 
-TEST(consolidateTest) {
-
-
-	END;
-}
-
-TEST(findNodeTest) {
-// @TODO
-	MemoryManager* man = new MemoryManager(10, 20, 30, 4); // got from mem manager test
-
-
-	MemoryMap<Node> * map = new MemoryMap<Node>(100); 
-	BwTree * tree = initTreeForTest(map);
-
-	DataNode * child;
-	PID childPID;
-	IndexNode * root = (IndexNode*) map->get(tree->getRootPID());
-	// populate some stuff
-	int key = 200;
-	for (int i =0; i<10; i++) {
-		child = new DataNode ();
-		childPID = map->put(child);
-		root->addToSearchArray(key, childPID);
-		child->setVariables(nullptr,
-			0,
-			PID_NOT_FOUND,
-			key,
-			key+100);
-		key +=100;
-		fprintf(stderr, "key = %d, \n", child->getHighKey());
-	}
-	fprintf(stderr, "size = %d, \n", root->getCurrSize());
-
-	byte * found = tree->get(100, man);
-
-	// @TODO temp for tests vvvv
-			
-
-	
-			// replace this whole section ^^^ 
-
-	// // search for things in tree
-	// byte* found;
-	// int maxinTree = 200;
-	// int step = 2;
-
-	// for (int i = 0; i< maxinTree; i+=step) {
-	// 	found = tree->get(i, man);
-	// 	EXPECT_EQ(man, man);
-		EXPECT_EQ(tree, tree);
-	// 	found++;
-	EXPECT_FALSE((found) == nullptr);
-	// }
-
-
-
-
+TEST(insertTest) {
+  BwTree* tree = new BwTree();
+  int key = 1;
+  byte* val = new byte[1];
+  val[0] = 1; // simple val
+  MemoryManager* man = new MemoryManager(3, 3, 3);
+  tree->insert(key, val, man);
+  EXPECT_EQ(((DataNode*)tree->map_->get(1))->getDataKey(0), 1);
   END;
 }
 
 int main(int argc, char** argv) {
-  findNodeTest();
+    initTest();
+    insertTest();
 }
