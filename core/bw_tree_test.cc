@@ -136,8 +136,9 @@ TEST(findNodeTest) {
 TEST(insert1Test) {
   BwTree* tree = new BwTree();
   int key = 1;
-  byte* val = new byte[1];
-  val[0] = 1; // simple val
+  byte* val = new byte[LENGTH_RECORDS];
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+  	val[i] = i;
   MemoryManager* man = new MemoryManager(3, 3, 3);
   tree->insert(key, val, man);
   EXPECT_EQ(((DeltaNode*)tree->map_->get(1))->getKey(), 1);
@@ -149,8 +150,9 @@ TEST(insert1Test) {
 // 4001 goes to right node
 TEST(insert2Test) {
   BwTree* tree = new BwTree();
-  byte* val = new byte[1];
-  val[0] = 1; // simple val
+  byte* val = new byte[LENGTH_RECORDS];
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+  	val[i] = i;
   MemoryManager* man = new MemoryManager(3, 3, 3);
   tree->insert(1, val, man);
   tree->insert(4001, val, man);
@@ -168,15 +170,26 @@ TEST(insertUpdateTest) {
 
   // same key 1
   // insert val1 and see if the payload is 1
-  byte* val1 = new byte[1];
-  val1[0] = 1; // simple val
+  byte* val1 = new byte[LENGTH_RECORDS];
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+  	val1[i] = i;
+  
   tree->insert(1, val1, man);
-  EXPECT_EQ((((DeltaNode*)tree->map_->get(1))->getValue())[0], 1);
+  byte* retrievedValue = ((DeltaNode*)tree->map_->get(1))->getValue();
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+	EXPECT_EQ(i, retrievedValue[i]);
+
   // update val1 with val2 see if the payload is 2
-  byte* val2 = new byte[1];
-  val2[0] = 2; // simple val
+  byte* val2 = new byte[LENGTH_RECORDS];
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+  	val2[i] = i+1;
   tree->update(1, val2, man);
-  EXPECT_EQ((((DeltaNode*)tree->map_->get(1))->getValue())[0], 2);
+ 
+  // expect the correct value
+  retrievedValue = ((DeltaNode*)tree->map_->get(1))->getValue();
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+	EXPECT_EQ(i+1, retrievedValue[i]);
+
   END;
 }
 

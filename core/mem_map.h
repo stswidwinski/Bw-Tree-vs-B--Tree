@@ -24,6 +24,9 @@ class MemoryMap {
 			capacity_ = cap;
 			currentKey_ = 0;
 			map_ = new Load*[cap];
+			// initialize values
+			for (int i = 0; i < cap; i++)
+				map_[i] = nullptr;
 		}
 
 		// delegating constructor
