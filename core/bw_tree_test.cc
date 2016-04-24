@@ -66,6 +66,7 @@ TEST(dataNodeInsertConsolidateTest) {
 	// inspect the tree.
 	EXPECT_EQ(t.map_->get(t.rootPid_), root);
 
+	// TODO INSPECT THE TREE AFTER CONSOLIDATION
 	END;
 }
 
