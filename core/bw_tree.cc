@@ -378,17 +378,23 @@ int BwTree::update(int key, byte *value, MemoryManager* man) {
 
 	// if the record was found, can update
 	if (found.record != nullptr) { 
-	  // create new delta node
-	  DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_UPDATE);
-	  // set new delta to point to found.node 
-	  newNode->setVariables(DELTA_UPDATE,
-	  found.node,
-          key, value);
+		// get the physical address of first thing in the chain
+		Node* firstInChain = map_->get(found.pid);
+		// create new delta node
+		DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_UPDATE);
 
-	  // CAS within memory map to point to new delta
-	  while (!map_->CAS(found.pid, found.node, newNode)) {
-          }
-          return 1;
+		// set new delta to point to found.node
+		newNode->setVariables(DELTA_UPDATE,
+				firstInChain,
+				key, value);
+
+	    // CAS within memory map to point to new delta
+        while(!map_->CAS(found.pid, firstInChain, newNode)) {
+        	firstInChain = map_->get(found.pid);
+        	newNode->setNextNode(firstInChain);
+        }
+        
+        return 1;
 	}
         return 0;
 }
