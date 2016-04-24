@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <iostream>
+#include <assert.h>
 
 // debug mode
 #define DEBUG true
@@ -33,6 +34,7 @@
 // flag which means that PID was not found
 #define PID_NOT_FOUND -100
 // maximal number of keys in index nodes
+// MUST BE AT LEAST 3
 #define MAX_KEYS 256
 // the length of search array
 #define ARRAY_KEYS_LENGTH MAX_KEYS + SAFETY_KEYS * MAX_DELTA_CHAIN

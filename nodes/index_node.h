@@ -37,7 +37,7 @@ class IndexNode : public Node {
 		bool doSplit() override;
 
 		// returns the key used to split the node into two nodes.
-		int getSplittingKey();
+		int getSplittingKey() override;
 
 		// returns highKey_
 		int getHighKey();

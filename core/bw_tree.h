@@ -129,14 +129,11 @@ class BwTree {
 		Triple<PID, Node*, byte*> 
 		findNode(int key, MemoryManager* man);
 		
-		void consolidate(Node* chainStart, PID chainStartPID,
-			MemoryManager* man);
-
 		// attempts to split the node. Returns the pointer to the next node
 		// to traverse both in case of failure and success.
-		Node* split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain);
+		void split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain);
 
-		Node* split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* firstInChain);
+		void split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* firstInChain);
 
 };
 

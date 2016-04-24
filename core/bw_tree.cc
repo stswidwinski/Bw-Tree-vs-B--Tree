@@ -115,14 +115,19 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 			chainLength++;
 
 			if(chainLength > MAX_DELTA_CHAIN) {
-				// consolidate
-				// pass in currentNode, currentPID and firstInChain
-				// @TODO
-				// reset the chain length, etc. 
-				// saerch for PID again.
-				// continue.
-				if(parentPid == 0)
-					continue;
+				consolidate(firstInChain, currentNode, currentPid, man);
+
+				currentNode = map_->get(currentPid);
+				if(currentNode->doSplit()) {
+					if(currentNode->getType() == DATA)
+						split(parentPid, currentPid, man, (DataNode*) currentNode, firstInChain);				
+					else
+						split(parentPid, currentPid, man, (IndexNode*) currentNode, firstInChain);
+				}
+
+				currentNode = map_->get(currentPid);
+				chainLength = 0;
+				continue;
 			}
 
 			currentNode = ((DeltaNode*) currentNode)->getNextNode();
@@ -408,13 +413,12 @@ int BwTree::insert(int key, byte *value, MemoryManager* man) {
         return 0;
 }
 
-Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain) {
+void BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain) {
 	int Kp = toSplit->getSplittingKey();
 
 	DataNode* newNode = (DataNode*) man->getNode(DATA);
 
-	// TODO POPULATE DATA NODE
-        // Kp should not be -1
+    // Kp should not be -1
 	populate(toSplit, newNode, Kp, man);
 
 	PID newNodePid = map_->put(newNode);
@@ -427,7 +431,7 @@ Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, No
 		Kp);
 
 	if(!map_->CAS(pid, firstInChain, splitDelta))
-		return map_->get(pid);
+		return;
 
 	// delta split installed
 	DeltaNode* indexSplitDelta = (DeltaNode*) man->getNode(DELTA_INDEX_SPLIT);
@@ -443,37 +447,38 @@ Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, No
 			newNode->getHighKey());
 	} while(!map_->CAS(ppid, firstInParentChain, indexSplitDelta));
 
-	return map_->get(pid);
+	return;
 }
 
-Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* firstInChain) {
+void BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, Node* firstInChain) {
 	IndexNode* newNode = (IndexNode*) man->getNode(INDEX);
-	int Kp = newNode->getSplittingKey();
-
-	if(ppid == PID_NOT_FOUND) {
-		newNode->setVariables(1, 
-			0
-			// left most pointer
-			// TODO
-			);
-
-		// TODO
-		// add the pair<int, PID> which would otherwise be the delta
-		// split record.
-
-		// put that into the map_/
-		// attempt CAS
-		// update rootPID if success
-		return nullptr;
-	}
+	int Kp = toSplit->getSplittingKey();
 
 	// the split node has a parent
-	// TODO
-	// populate the new node
-
 	populate(toSplit, newNode, Kp, man);
 
 	PID newNodePid = map_->put(newNode);
+
+	if(ppid == PID_NOT_FOUND) {
+		assert(pid == rootPid_);
+
+		// assign new PID to the old root
+		PID oldRootPid = map_->put(toSplit);
+
+		IndexNode* newRootNode = new IndexNode();
+		newRootNode->setVariables(0,
+			oldRootPid,
+			KEY_NOT_SET,
+			KEY_NOT_SET);
+
+		newRootNode->addToSearchArray(Kp, newNodePid);
+
+		map_->CAS(pid, firstInChain, newRootNode);
+
+		return;
+	}
+
+	// parent exists.
 
 	DeltaNode* splitDelta = (DeltaNode*) man->getNode(DELTA_SPLIT);
 	splitDelta->setVariables(DELTA_SPLIT,
@@ -482,7 +487,7 @@ Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, N
 		Kp);
 
 	if(!map_->CAS(pid, firstInChain, splitDelta))
-		return map_->get(pid);
+		return;
 
 	// delta split installed
 	DeltaNode* indexSplitDelta = (DeltaNode*) man->getNode(DELTA_INDEX_SPLIT);
@@ -498,7 +503,7 @@ Node* BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, N
 			newNode->getHighKey());
 	} while(!map_->CAS(ppid, firstInParentChain, indexSplitDelta));
 
-	return map_->get(pid);
+	return;
 }
 
 // byte* BwTree::get(int key) {

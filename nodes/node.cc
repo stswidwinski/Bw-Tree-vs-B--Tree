@@ -43,6 +43,11 @@ class Node {
 			return -1;
 		}
 
+		virtual int getSplittingKey() {
+			DIE("getSplittingKey called on wrong node type");
+			return -1;
+		}
+
 		// returns the PID of the next page to search.
 		// NOTE: data node does not implement this method.
 		// virtual int find(int key) {
