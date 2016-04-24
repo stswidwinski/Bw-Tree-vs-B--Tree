@@ -9,11 +9,13 @@ DataNode::DataNode(int dataLength,
 	int lowKey,
 	int highKey) : Node(DATA) {
 
-    data_ = new Pair<int, byte*>[dataLength];
+    data_ = new Pair<int, byte*>[ARRAY_RECORDS_LENGTH];
 	dataLength_ = dataLength;
 	sidePter_ = sidePter;
 	lowKey_ = lowKey;
 	highKey_ = highKey;
+	for(int i = 0; i < ARRAY_RECORDS_LENGTH; i++)
+		data_[i].value = new byte[LENGTH_RECORDS];
 }
 
 DataNode::DataNode() : Node(DATA) {
@@ -126,7 +128,7 @@ void DataNode::insertBaseData(int key, byte *val) {
     data_[dataLength_].key = key;
     // copy the byte value
     for(int i = 0; i < LENGTH_RECORDS; i++)
-    	data_[dataLength_].value[i] = *(val+i);
+        	data_[dataLength_].value[i] = *(val+i);
     dataLength_++;
 };
 

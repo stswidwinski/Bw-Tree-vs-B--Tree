@@ -7,6 +7,7 @@
 
 IndexNode::IndexNode() : Node(INDEX) {
 	searchArray_ = new Pair<int, PID>[ARRAY_KEYS_LENGTH];
+	currentSize_ = 0;
 }
 
 IndexNode::IndexNode(int currentSize,
