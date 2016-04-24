@@ -69,8 +69,7 @@ bool IndexNode::doSplit() {
 }
 
 int IndexNode::getSplittingKey() {
-      int index = currentSize_/2;
-      return searchArray_[index].key;
+	return searchArray_[currentSize_ / 2].key;
 }
 
 int IndexNode::getHighKey() {
@@ -98,9 +97,12 @@ PID IndexNode::getIndexPID(int i) {
 }
 
 void IndexNode::insertKeyVal(int key, PID val) {
-        searchArray_[currentSize_].key = key;
-        searchArray_[currentSize_].value = val;
-        currentSize_++;
+    searchArray_[currentSize_].key = key;
+    searchArray_[currentSize_].value = val;
+    currentSize_++;
+
+	if(currentSize_ > ARRAY_KEYS_LENGTH)
+		DIE("Overflowing index node array");
 }
 
 void IndexNode::addToSearchArray(int key, PID pid) {

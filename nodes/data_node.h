@@ -46,7 +46,7 @@ class DataNode : public Node {
 		// returns true if we should split. False otherwise.
 		bool doSplit() override;
 
-		int getSplittingKey();
+		int getSplittingKey() override;
 
 		int getHighKey();
 
