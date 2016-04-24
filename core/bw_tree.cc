@@ -116,7 +116,8 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 			// regular delta following
 			chainLength++;
 
-			if(chainLength > MAX_DELTA_CHAIN) {
+			// equality also triggers consolidation. This is for reads to consolidate too.
+			if(chainLength >= MAX_DELTA_CHAIN) {
 				consolidate(firstInChain, currentNode, currentPid, man);
 
 				currentNode = map_->get(currentPid);

@@ -57,16 +57,24 @@ TEST(dataNodeInsertConsolidateTest) {
 		currNode = ((DeltaNode*)currNode)->getNextNode();
 	}
 
-	// insert the MAX_DELTA_CHAIN + 1st delta record. Should trigger consolidation.
-	for(int j = 0; j < LENGTH_RECORDS; j++)
-		*(payload + j) = (byte) MAX_DELTA_CHAIN + 1 + j;
+	// attempt to get unexisting record. Should trigger consolidation
+	foundPayload = t.get(MAX_DELTA_CHAIN + 1 + initialKey, &man);
+	
+	// we should get null as the answer.
+	if(foundPayload != nullptr) {
+		EXPECT_EQ(true, false);
+	}
 
-	t.insert(MAX_DELTA_CHAIN + 1 + initialKey, payload, &man);
-
-	// inspect the tree.
+	// inspect the tree
+	// the root should not change
 	EXPECT_EQ(t.map_->get(t.rootPid_), root);
 
+	// the right child should now be a data node
+	firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
+	EXPECT_EQ(DATA, firstInChain->getType());
+
 	// TODO INSPECT THE TREE AFTER CONSOLIDATION
+
 	END;
 }
 
