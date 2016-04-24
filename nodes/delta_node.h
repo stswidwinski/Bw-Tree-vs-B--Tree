@@ -61,6 +61,8 @@ class DeltaNode : public Node {
 
 		Node* getNextNode();
 
+		void setNextNode(Node* node);
+
 		// returns true if one should follow the split 
 		// pointer (call nextPid). Else, gives false (follow)
 		// getNextNode();

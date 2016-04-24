@@ -13,9 +13,10 @@ TEST(initTest) {
 
 TEST(dataNodeInsertConsolidateTest) {
 	BwTree t = BwTree();
-	// give memory manager only data nodes.
-	MemoryManager man = MemoryManager(MAX_DELTA_CHAIN,
-		0, 0);
+	// give memory manager only 1 data node and MAX_DELTA_CHAIN + 1
+	// delta nodes
+	MemoryManager man = MemoryManager(1,
+		0, MAX_DELTA_CHAIN + 1);
 
 	// insert only to the initial right kid.
 	int initialKey = INIT_KEY_VALUE + 1;
@@ -35,7 +36,7 @@ TEST(dataNodeInsertConsolidateTest) {
 	// MAX_DELTA_CHAIN insert deltas.
 	//
 	// get the first in chain as indicated by findNode.
-	Node* currNode = t.findNode(MAX_DELTA_CHAIN - 1,
+	Node* currNode = t.findNode(initialKey + MAX_DELTA_CHAIN - 1,
 		&man).node;
 
 	// check that it is the correct node.
@@ -48,13 +49,22 @@ TEST(dataNodeInsertConsolidateTest) {
 		// every node in chain must be a insert delta
 		EXPECT_EQ(NodeType::DELTA_INSERT, currNode->getType());
 		// every node must contain the right key and payload
-		EXPECT_EQ(i, ((DeltaNode*) currNode)->getKey());
+		EXPECT_EQ(i + initialKey, ((DeltaNode*) currNode)->getKey());
 		foundPayload = ((DeltaNode*) currNode)->getValue();
 		for(int j = 0; j < LENGTH_RECORDS; j++)
 			EXPECT_EQ((byte) i + j, *(foundPayload + j));
+
+		currNode = ((DeltaNode*)currNode)->getNextNode();
 	}
 
-	// TODO insert the last node that will trigger consolidation.
+	// insert the MAX_DELTA_CHAIN + 1st delta record. Should trigger consolidation.
+	for(int j = 0; j < LENGTH_RECORDS; j++)
+		*(payload + j) = (byte) MAX_DELTA_CHAIN + 1 + j;
+
+	t.insert(MAX_DELTA_CHAIN + 1 + initialKey, payload, &man);
+
+	// inspect the tree.
+	EXPECT_EQ(t.map_->get(t.rootPid_), root);
 
 	END;
 }
@@ -194,7 +204,7 @@ TEST(insertUpdateTest) {
 }
 
 int main(int argc, char** argv) {
-	//dataNodeInsertConsolidateTest();
+	dataNodeInsertConsolidateTest();
  	findNodeTest();
         initTest();
         insert1Test();

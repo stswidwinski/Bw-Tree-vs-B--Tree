@@ -31,7 +31,6 @@ class MemoryManager {
 	private:
 		// arrays of nodes
 		LinkedList<Node>* dataNodes_;
-		LinkedList<Node>* dataConsNodes_;
 		LinkedList<Node>* indexNodes_;
 		LinkedList<Node>* deltaNodes_;
 

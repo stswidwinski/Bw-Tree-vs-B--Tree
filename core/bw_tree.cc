@@ -400,17 +400,22 @@ int BwTree::insert(int key, byte *value, MemoryManager* man) {
 	Triple<PID, Node*, byte*> found = findNode(key, man);
 	// // if the record was not found, can add it
 	if (found.record == nullptr) { 
+			// get the physical address of first thing in the chain
+			Node* firstInChain = map_->get(found.pid);
+
             // create new delta node
             DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_INSERT);
             // set new delta to point to found.node 
             newNode->setVariables(DELTA_INSERT,
-                                 found.node,
+                                 firstInChain,
                                  key, value);
 
             // CAS within memory map to point to new delta
-            while (!map_->CAS(found.pid, found.node, newNode)) {
-
+            while(!map_->CAS(found.pid, firstInChain, newNode)) {
+            	firstInChain = map_->get(found.pid);
+            	newNode->setNextNode(firstInChain);
             }
+
             return 1;
 	}
         return 0;

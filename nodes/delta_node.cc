@@ -71,6 +71,10 @@ Node* DeltaNode::getNextNode() {
 	return nextNode_;
 }
 
+void DeltaNode::setNextNode(Node* node) {
+	nextNode_ = node;
+}
+
 PID DeltaNode::getSidePtr() {
 	return pter_;
 }
