@@ -22,6 +22,7 @@ DataNode::DataNode() : Node(DATA) {
 	data_ = new Pair<int, byte*>[ARRAY_RECORDS_LENGTH];
 	for(int i = 0; i < ARRAY_RECORDS_LENGTH; i++)
 		data_[i].value = new byte[LENGTH_RECORDS];
+	dataLength_=0;
 }
 
 void DataNode::setVariables(Pair<int, byte*>* data,
