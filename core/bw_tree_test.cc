@@ -73,7 +73,16 @@ TEST(dataNodeInsertConsolidateTest) {
 	firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
 	EXPECT_EQ(DATA, firstInChain->getType());
 
-	// TODO INSPECT THE TREE AFTER CONSOLIDATION
+	// inspect contents of the data node. Should contain MAX_CHAIN_LENGTH
+	// records with keys and payloads as set above.
+	for(int i = 0; i < MAX_DELTA_CHAIN; i ++) {
+		EXPECT_EQ(i + initialKey, ((DataNode*) firstInChain)->getDataKey(i));
+		foundPayload = ((DataNode*) firstInChain)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++) 
+			EXPECT_EQ((byte) i + j, foundPayload[j]);
+
+	}
+	// // TODO INSPECT THE TREE AFTER CONSOLIDATION
 
 	END;
 }

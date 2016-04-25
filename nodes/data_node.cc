@@ -153,6 +153,7 @@ bool DataNode::findSub(int key, int bound) {
 
 void DataNode::merge(int low, int mid, int high, int dataLength) {
 	int h,i,j,b[dataLength],k;
+	byte* payload[dataLength];
 	h=low;
 	i=low;
 	j=mid+1;
@@ -160,9 +161,11 @@ void DataNode::merge(int low, int mid, int high, int dataLength) {
 	while((h<=mid)&&(j<=high)) {
 		if(data_[h].key <= data_[j].key) {
 			b[i]=data_[h].key;
+			payload[i] = data_[h].value;
 			h++;
 		} else {
 			b[i]=data_[j].key;
+			payload[i] = data_[j].value;
 			j++;
 		}
 		
@@ -172,16 +175,21 @@ void DataNode::merge(int low, int mid, int high, int dataLength) {
 	if(h>mid) {
 		for(k=j;k<=high;k++) {
 			b[i]=data_[k].key;
+			payload[i] = data_[k].value;
 			i++;
 		}
 	} else {
 		for(k=h;k<=mid;k++) {
 			b[i]= data_[k].key;
+			payload[i] = data_[k].value;
 			i++;
 		}
 	}
 
-	for(k=low;k<=high;k++)  data_[k].key=b[k];
+	for(k=low;k<=high;k++) {
+		data_[k].key=b[k];
+		data_[k].value = payload[k];
+	}
 }
 
 void DataNode::mergesortHelper(int low,int high, int dataLength) {

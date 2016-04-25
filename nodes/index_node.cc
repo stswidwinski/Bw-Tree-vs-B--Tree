@@ -128,36 +128,44 @@ int IndexNode::getCurrSize() {
 }
 
 void IndexNode::merge(int low, int mid, int high, int currentSize) {
-        int h,i,j,b[currentSize],k;
-        h=low;
-        i=low;
-        j=mid+1;
+	int h,i,j,b[currentSize],k;
+	PID values[currentSize];
+	h=low;
+	i=low;
+	j=mid+1;
 
-        while((h<=mid)&&(j<=high)) {
-                if(searchArray_[h].key <= searchArray_[j].key) {
-                        b[i]=searchArray_[h].key;
-                        h++;
-                } else {
-                        b[i]=searchArray_[j].key;
-                        j++;
-                }
-                
-                i++;
-        }
+	while((h<=mid)&&(j<=high)) {
+		if(searchArray_[h].key <= searchArray_[j].key) {
+			b[i]=searchArray_[h].key;
+			values[i] = searchArray_[h].value;
+			h++;
+		} else {
+			b[i]=searchArray_[j].key;
+			values[i] = searchArray_[j].value;
+			j++;
+		}
+		
+		i++;
+	}
 
-        if(h>mid) {
-                for(k=j;k<=high;k++) {
-                        b[i]=searchArray_[k].key;
-                        i++;
-                }
-        } else {
-                for(k=h;k<=mid;k++) {
-                        b[i]= searchArray_[k].key;
-                        i++;
-                }
-        }
+	if(h>mid) {
+		for(k=j;k<=high;k++) {
+			b[i]=searchArray_[k].key;
+			values[i] = searchArray_[k].value;
+			i++;
+		}
+	} else {
+		for(k=h;k<=mid;k++) {
+			b[i]= searchArray_[k].key;
+			values[i] = searchArray_[k].value;
+			i++;
+		}
+	}
 
-        for(k=low;k<=high;k++)  searchArray_[k].key=b[k];
+	for(k=low;k<=high;k++) {
+		searchArray_[k].key=b[k];
+		searchArray_[k].value = values[k];
+	}
 }
 
 void IndexNode::mergesortHelper(int low,int high, int currentSize) {

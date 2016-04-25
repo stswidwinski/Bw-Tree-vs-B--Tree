@@ -105,16 +105,18 @@ TEST(nextPidTestNoHighKey) {
 
  	for(int i = 0; i < arrSize; i++) {
  		EXPECT_EQ(key, node->getIndexKey(i));
+ 		EXPECT_EQ(i, node->getIndexPID(i));
  		key += stepKey;
  	}
 
  	node->mergesort();
-	
+ 	
+	key -= stepKey;
 	// check that it is sorted.
-	key = beginningKey;
- 	for(int i = arrSize - 1; i >= 0; i--) {
+ 	for(int i = 0; i < arrSize; i++) {
  		EXPECT_EQ(key,  node->getIndexKey(i));
- 		key += stepKey;
+ 		EXPECT_EQ(arrSize - i - 1, node->getIndexPID(i));
+ 		key -= stepKey;
  	}
 
 	END;
@@ -135,9 +137,10 @@ TEST(nextPidTestNoHighKey) {
  	node->mergesort();
 
  	int key = beginningKey;
- 	for(int i = arrSize - 1; i >= 0; i--) {
+ 	for(int i = 0; i < 0; i--) {
  		EXPECT_EQ(key, node->getIndexKey(i));
- 		key += stepKey;
+ 		EXPECT_EQ(arrSize - i -1, node->getIndexPID(i));
+ 		key -= stepKey;
  	}
 
  	EXPECT_EQ(500, node->getIndexKey(arrSize));
@@ -150,4 +153,6 @@ TEST(nextPidTestNoHighKey) {
 int main(int argc, char** argv) {
   nextPidTestWithHighKey();
   nextPidTestNoHighKey();
+  mergesortTest();
+  mergesortTestWeird();
 }
