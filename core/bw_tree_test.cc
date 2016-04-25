@@ -11,88 +11,6 @@ TEST(initTest) {
   END;
 }
 
-// insert MAX_CHAIN deltas. Inspect the delta chain. 
-// attempt to get a record, which triggers consolidation.
-// inspect the tree after consolidation. 
-TEST(dataNodeInsertConsolidateTest) {
-	BwTree t = BwTree();
-	// give memory manager only 1 data node and MAX_DELTA_CHAIN + 1
-	// delta nodes
-	MemoryManager man = MemoryManager(1,
-		0, MAX_DELTA_CHAIN + 1);
-
-	// insert only to the initial right kid.
-	int initialKey = INIT_KEY_VALUE + 1;
-
-	// payload has monotinically increasing 
-	// value from i to i+LENGTH_RECORDS
-	byte* payload = new byte[LENGTH_RECORDS];
-
-	// insert up to MAX_DELTA_CHAIN into the chain
-	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
-		for(int j = 0; j < LENGTH_RECORDS; j++)
-			*(payload + j) = (byte) i + j;
-		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
-	}
-
-	// check the whole damn thing. We should have 
-	// MAX_DELTA_CHAIN insert deltas.
-	//
-	// get the first in chain as indicated by findNode.
-	Node* currNode = t.findNode(initialKey + MAX_DELTA_CHAIN - 1,
-		&man).node;
-
-	// check that it is the correct node.
-	Node* root = t.map_->get(t.rootPid_);
-	Node* firstInChain = t.map_->get(((IndexNode*) root)->getIndexPID(0));
-	EXPECT_EQ(firstInChain, currNode);
-
-	byte* foundPayload;
-	for(int i = MAX_DELTA_CHAIN - 1; i >= 0; i--) {
-		// every node in chain must be a insert delta
-		EXPECT_EQ(NodeType::DELTA_INSERT, currNode->getType());
-		// every node must contain the right key and payload
-		EXPECT_EQ(i + initialKey, ((DeltaNode*) currNode)->getKey());
-		foundPayload = ((DeltaNode*) currNode)->getValue();
-		for(int j = 0; j < LENGTH_RECORDS; j++)
-			EXPECT_EQ((byte) i + j, *(foundPayload + j));
-
-		currNode = ((DeltaNode*)currNode)->getNextNode();
-	}
-
-	// attempt to get unexisting record. Should trigger consolidation
-	foundPayload = t.get(MAX_DELTA_CHAIN + 1 + initialKey, &man);
-	
-	// we should get null as the answer.
-	if(foundPayload != nullptr) {
-		EXPECT_EQ(true, false);
-	}
-
-	// inspect the tree
-	// the root should not change
-	EXPECT_EQ(t.map_->get(t.rootPid_), root);
-
-	// the right child should now be a data node
-	firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
-	EXPECT_EQ(DATA, firstInChain->getType());
-
-	// inspect contents of the data node. Should contain MAX_CHAIN_LENGTH
-	// records with keys and payloads as set above.
-	for(int i = 0; i < MAX_DELTA_CHAIN; i ++) {
-		EXPECT_EQ(i + initialKey, ((DataNode*) firstInChain)->getDataKey(i));
-		foundPayload = ((DataNode*) firstInChain)->getDataVal(i);
-		for(int j = 0; j < LENGTH_RECORDS; j++) 
-			EXPECT_EQ((byte) i + j, foundPayload[j]);
-
-	}
-
-	END;
-}
-
-TEST(dataNodeMultipleConsolidateTest) {
-	END;
-}
-
 TEST(findNodeTest) {
 // @TODO
 	BwTree * tree = new BwTree();
@@ -280,8 +198,214 @@ TEST(updateNonExistent) {
   	END;
 }
 
+// insert MAX_DELTA_CHAIN insert deltas via BwTree::Insert.
+// inspect the chain.
+TEST(chainInsert) {
+	BwTree t = BwTree();
+	MemoryManager man = MemoryManager(0, 0, MAX_DELTA_CHAIN);
+
+	// only insert to the right kid. 
+	int initialKey = INIT_KEY_VALUE + 1;
+
+	// payload has monotinically increasing 
+	// value from i to i+LENGTH_RECORDS
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	// insert up to MAX_DELTA_CHAIN into the chain
+	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) i + j;
+		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
+	}
+
+	// inspect the chain
+	// get the first in chain as indicated by findNode.
+	Node* currNode = t.findNode(initialKey + MAX_DELTA_CHAIN - 1,
+		&man).node;
+
+	// check that it is the correct node.
+	Node* root = t.map_->get(t.rootPid_);
+	Node* firstInChain = t.map_->get(((IndexNode*) root)->getIndexPID(0));
+	EXPECT_EQ(firstInChain, currNode);
+
+	// check that the delta nodes have the correct values set.
+	byte* foundPayload;
+	for(int i = MAX_DELTA_CHAIN - 1; i >= 0; i--) {
+		// every node in chain must be a insert delta
+		EXPECT_EQ(NodeType::DELTA_INSERT, currNode->getType());
+		// every node must contain the right key and payload
+		EXPECT_EQ(i + initialKey, ((DeltaNode*) currNode)->getKey());
+		foundPayload = ((DeltaNode*) currNode)->getValue();
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			EXPECT_EQ((byte) i + j, *(foundPayload + j));
+
+		currNode = ((DeltaNode*)currNode)->getNextNode();
+	}
+
+	END;
+}
+
+// insert a single value via BwTree.insert and update is MAX_DELTA_CHAIN-1
+// times. Inspect the resulting delta chain.
+TEST(chainUpdate) {
+	BwTree t = BwTree();
+	MemoryManager man = MemoryManager(0, 0, MAX_DELTA_CHAIN);
+
+	// only insert to the right kid. 
+	int initialKey = INIT_KEY_VALUE + 1;
+
+	// payload has monotinically increasing 
+	// value from i to i+LENGTH_RECORDS
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	// insert a single element and update it MAX_DELTA_CHAIN times.
+	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) i + j;
+		if(i == 0)
+			EXPECT_EQ(1, t.insert(initialKey, payload, &man));
+		else
+			EXPECT_EQ(1, t.update(initialKey, payload, &man));
+	}
+
+	// inspect the chain
+	// get the first in chain as indicated by findNode.
+	Node* currNode = t.findNode(initialKey,
+		&man).node;
+
+	// check that it is the correct node.
+	Node* root = t.map_->get(t.rootPid_);
+	Node* firstInChain = t.map_->get(((IndexNode*) root)->getIndexPID(0));
+	EXPECT_EQ(firstInChain, currNode);
+
+	// check that the delta nodes have the correct values set.
+	byte* foundPayload;
+	for(int i = MAX_DELTA_CHAIN - 1; i >= 0; i--) {
+		if(i == 0)
+			EXPECT_EQ(NodeType::DELTA_INSERT, currNode->getType());
+		else 
+			EXPECT_EQ(NodeType::DELTA_UPDATE, currNode->getType());
+		// every node must contain the right key and payload
+		EXPECT_EQ(initialKey, ((DeltaNode*) currNode)->getKey());
+		foundPayload = ((DeltaNode*) currNode)->getValue();
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			EXPECT_EQ((byte) i + j, *(foundPayload + j));
+
+		currNode = ((DeltaNode*)currNode)->getNextNode();
+	}
+
+	END;
+}
+
+// insert MAX_CHAIN deltas. Attempt to get a
+// non-existing record, which triggers consolidation.
+// inspect the tree after consolidation. 
+TEST(dataNodeInsertConsolidateTest) {
+	BwTree t = BwTree();
+	Node* root = t.map_->get(t.rootPid_);
+	// give memory manager only 2 data nodes and MAX_DELTA_CHAIN * 2
+	// delta nodes
+	MemoryManager man = MemoryManager(2,
+		0, 2*MAX_DELTA_CHAIN);
+
+	// insert only to the initial right kid.
+	int initialKey = INIT_KEY_VALUE + 1;
+
+	// payload has monotinically increasing 
+	// value from i to i+LENGTH_RECORDS
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	// insert up to MAX_DELTA_CHAIN into the chain
+	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) i + j;
+		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
+	}
+
+	// attempt to get unexisting record. Should trigger consolidation
+	byte* foundPayload = t.get(MAX_DELTA_CHAIN + 1 + initialKey, &man);
+	
+	// we should get null as the answer.
+	if(foundPayload != nullptr) {
+		EXPECT_EQ(true, false);
+	}
+
+	// inspect the tree
+	// the root should not change
+	EXPECT_EQ(t.map_->get(t.rootPid_), root);
+
+	// the right child should now be a data node
+	Node* firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
+	EXPECT_EQ(DATA, firstInChain->getType());
+
+	// inspect contents of the data node. Should contain MAX_CHAIN_LENGTH
+	// records with keys and payloads as set above.
+	for(int i = 0; i < MAX_DELTA_CHAIN; i ++) {
+		EXPECT_EQ(i + initialKey, ((DataNode*) firstInChain)->getDataKey(i));
+		foundPayload = ((DataNode*) firstInChain)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++) 
+			EXPECT_EQ((byte) i + j, foundPayload[j]);
+	}
+
+	END;
+}
+
+// insert a single value, update is MAX_DELTA_CHAIN - 1
+// times. Attempt to get non-existent value to trigger consolidation.
+// inspect the tree.
+TEST(dataNodeUpdateConsolidateTest) {
+	BwTree t = BwTree();
+	Node* root = t.map_->get(t.rootPid_);
+	// give memory manager only 2 data nodes and MAX_DELTA_CHAIN * 2
+	// delta nodes
+	MemoryManager man = MemoryManager(2,
+		0, 2*MAX_DELTA_CHAIN);
+
+	// insert only to the initial right kid.
+	int initialKey = INIT_KEY_VALUE + 1;
+
+	// payload has monotinically increasing 
+	// value from i to i+LENGTH_RECORDS
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	// insert up to MAX_DELTA_CHAIN into the chain
+	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) i + j;
+		if(i == 0)
+			EXPECT_EQ(1, t.insert(initialKey, payload, &man));
+		else 
+			EXPECT_EQ(1, t.update(initialKey, payload, &man));
+	}
+
+	// attempt to get unexisting record. Should trigger consolidation
+	byte* foundPayload = t.get(MAX_DELTA_CHAIN + 1 + initialKey, &man);
+	
+	// we should get null as the answer.
+	if(foundPayload != nullptr) {
+		EXPECT_EQ(true, false);
+	}
+
+	// inspect the tree
+	// the root should not change
+	EXPECT_EQ(t.map_->get(t.rootPid_), root);
+
+	// the right child should now be a data node
+	Node* firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
+	EXPECT_EQ(DATA, firstInChain->getType());
+
+	// the data node should have only one data element.
+	// it should be the most recent one.
+	DataNode* dNode = (DataNode*) firstInChain;
+	EXPECT_EQ(1, dNode->getDataLength());
+	EXPECT_EQ(initialKey, dNode->getDataKey(0));
+	for(int j = 0; j < LENGTH_RECORDS; j++)
+		EXPECT_EQ((byte) MAX_DELTA_CHAIN - 1 + j, dNode->getDataVal(0)[j]);
+
+	END;
+}
+
 int main(int argc, char** argv) {
-	dataNodeInsertConsolidateTest();
  	findNodeTest();
     initTest();
     insert1Test();
@@ -290,4 +414,8 @@ int main(int argc, char** argv) {
     insert1Get1();
     insertUpdateGetTest();
     updateNonExistent();
+    chainInsert();
+    chainUpdate();
+    dataNodeInsertConsolidateTest();
+    dataNodeUpdateConsolidateTest();
 }
