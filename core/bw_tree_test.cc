@@ -96,7 +96,7 @@ TEST(findNodeTest) {
 	// populate tree with some values
 
 	DataNode * child;
-	int pages =2;
+	int pages =5;
 	//byte * record;
 	PID next;
 	byte* toWrite = new byte[LENGTH_RECORDS];
@@ -105,12 +105,14 @@ TEST(findNodeTest) {
 
 	// populate data pages
 	IndexNode * root = (IndexNode *) tree->map_->get(tree->rootPid_);
+	child = (DataNode*) tree->map_->get(root->getSmallestPID());
 	int minV = 100;
 	for (int i =0; i< pages; i++ ) { 
 		next = root->getIndexPID(i);
+		child->setSidePter(next);
 		child = (DataNode *) tree->map_->get(next);
 
-		int m = minV;
+		int m = minV + i*100;
 		byte* value = new byte[LENGTH_RECORDS];
 		for(int j = 0; j < 10; j++) {
 			for(int i = 0; i < LENGTH_RECORDS; i++)
@@ -119,42 +121,19 @@ TEST(findNodeTest) {
 			m += 10;
 		}
 		delete[] value;
-
-		// for (int j = minV; j<minV+100; j+=5){
-		// 	fprintf(stderr, "%d\n", child->getDataLength());
-		// 	child->insertBaseData(j, toWrite);
-		// 	fprintf(stderr, "here\n");
-		// }
-
-		// for (int j = minV; j<minV+100; j+=5) {
-		// 	if (!child->pointToRecord(j, &record)) {
-		// 		fprintf(stderr, "not found: %d\n", j);
-		// 	}
-		// 	else fprintf(stderr, "yes\n");
-		// }
-		// minV += 200;
 	}
 
-	//byte * found = tree->get(100, man);
+	// search for things in tree
+	byte* found;
+ 	int maxinTree = 700;
+	int step = 5;
 
-	// @TODO temp for tests vvvv
-			
-
-	
-			// replace this whole section ^^^ 
-
-	// // search for things in tree
-	// byte* found;
-	// int maxinTree = 200;
-	// int step = 2;
-
-	// for (int i = 0; i< maxinTree; i+=step) {
-	// 	found = tree->get(i, man);
-	// 	EXPECT_EQ(man, man);
-		EXPECT_EQ(tree, tree);
+	for (int i = 100; i< maxinTree; i+=step) {
+		found = tree->get(i, man);
+		EXPECT_EQ(man, man);
 	// 	found++;
 	//EXPECT_FALSE((found) == nullptr);
-	// }
+	 }
 	END;
 }
 
@@ -221,6 +200,60 @@ TEST(insertUpdateTest) {
   END;
 }
 
+// insert 1 record
+// check if the key is 1 on the left node
+TEST(insert1Get1) {
+  BwTree* tree = new BwTree();
+  int key = 1;
+  byte* val = new byte[LENGTH_RECORDS];
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+  	val[i] = i;
+  MemoryManager* man = new MemoryManager(3, 3, 3);
+  tree->insert(key, val, man);
+  byte * found = tree->get(key, man);
+  for (int j=0; j<LENGTH_RECORDS; j++) 
+  	EXPECT_EQ(found[j], val[j]);
+
+  found = tree->get(key+1, man);
+  EXPECT_TRUE(found==nullptr);
+  END;
+}
+
+// insert one record
+// and then update it
+// then find updated version
+TEST(insertUpdateGetTest) {
+  // new tree and manager
+  BwTree* tree = new BwTree();
+  MemoryManager* man = new MemoryManager(3, 3, 3);
+
+  // same key 1
+  // insert val1 and see if the payload is 1
+  byte* val1 = new byte[LENGTH_RECORDS];
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+  	val1[i] = i;
+  
+  tree->insert(1, val1, man);
+  byte * found = tree->get(1, man);
+  for (int j=0; j<LENGTH_RECORDS; j++) 
+  	EXPECT_EQ(found[j], val1[j]);
+
+  // update val1 with val2 see if the payload is 2
+  byte* val2 = new byte[LENGTH_RECORDS];
+  for(int i = 0; i < LENGTH_RECORDS; i++)
+  	val2[i] = i+1;
+  tree->update(1, val2, man);
+
+  found = tree->get(1, man);
+  for (int j=0; j<LENGTH_RECORDS; j++) 
+  	EXPECT_EQ(found[j], val2[j]);
+ 
+ 
+
+  END;
+}
+
+
 int main(int argc, char** argv) {
 	dataNodeInsertConsolidateTest();
  	findNodeTest();
@@ -228,4 +261,6 @@ int main(int argc, char** argv) {
         insert1Test();
         insert2Test();
         insertUpdateTest();
+        insert1Get1();
+        insertUpdateGetTest();
 }
