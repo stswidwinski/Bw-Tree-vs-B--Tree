@@ -61,7 +61,7 @@ class IndexNode : public Node {
 		// created (obtained) nodes. 
 
                // returns smallestPid_
-		int getSmallestPID();
+		PID getSmallestPID();
 
 		// DO NOT CALL ON ELEMENTS IN MEMORY MAP
 		void setSmallestPID(PID pid);

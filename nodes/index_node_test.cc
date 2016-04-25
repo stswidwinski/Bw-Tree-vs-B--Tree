@@ -24,7 +24,7 @@ IndexNode* initializeForTest(int arrSize = 100, int highKey = 10000,
 }
 
 TEST(nextPidTestWithHighKey) {
-	int arrSize = 100;
+	uint64_t arrSize = 100;
 	int highKey = 10000;
 	int beginningKey = 10;
 	int stepKey = 2;
@@ -41,14 +41,14 @@ TEST(nextPidTestWithHighKey) {
 
 	// check keys equal cases
 	int m = beginningKey;
-	for (int i = 0; i < arrSize; i ++) {
+	for (unsigned int i = 0; i < arrSize; i ++) {
 		EXPECT_EQ((PID) (i), node->nextPid(m));
 		m += stepKey;
 	}
 
 	// check in between cases
 	m = beginningKey + 1;
-	for (int i = 0; i < arrSize - 1; i++) {
+	for (unsigned int i = 0; i < arrSize - 1; i++) {
 		EXPECT_EQ((PID)(i+1), node->nextPid(m));
 		m += stepKey;
 	}
@@ -68,7 +68,7 @@ TEST(nextPidTestWithHighKey) {
 }
 
 TEST(nextPidTestNoHighKey) {
-	int arrSize = 100;
+	uint64_t arrSize = 100;
 	int highKey = 10000;
 	int beginningKey = 10;
 	int stepKey = 2;
@@ -90,7 +90,7 @@ TEST(nextPidTestNoHighKey) {
 
 
  TEST(mergesortTest) {
- 	int arrSize = 100;
+ 	uint64_t arrSize = 100;
 	int highKey = 10000;
 	int beginningKey = 200;
 	int stepKey = -1;
@@ -103,7 +103,7 @@ TEST(nextPidTestNoHighKey) {
  	// check that the values are not sorted and inserted correctly
  	int key = beginningKey;
 
- 	for(int i = 0; i < arrSize; i++) {
+ 	for(unsigned int i = 0; i < arrSize; i++) {
  		EXPECT_EQ(key, node->getIndexKey(i));
  		EXPECT_EQ(i, node->getIndexPID(i));
  		key += stepKey;
@@ -113,7 +113,7 @@ TEST(nextPidTestNoHighKey) {
  	
 	key -= stepKey;
 	// check that it is sorted.
- 	for(int i = 0; i < arrSize; i++) {
+ 	for(unsigned int i = 0; i < arrSize; i++) {
  		EXPECT_EQ(key,  node->getIndexKey(i));
  		EXPECT_EQ(arrSize - i - 1, node->getIndexPID(i));
  		key -= stepKey;
@@ -123,7 +123,7 @@ TEST(nextPidTestNoHighKey) {
  }
 
  TEST(mergesortTestWeird) {
- 	int arrSize = 100;
+ 	uint64_t arrSize = 100;
 	int highKey = 10000;
 	int beginningKey = 200;
 	int stepKey = -1;
