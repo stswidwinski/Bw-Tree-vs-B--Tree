@@ -300,6 +300,9 @@ TEST(chainUpdate) {
 // insert MAX_CHAIN deltas. Attempt to get a
 // non-existing record, which triggers consolidation.
 // inspect the tree after consolidation. 
+// Add more data and trigger consolidation in the same way again.
+// This guarantees that we are copying the data existing in the
+// node at consolidation.
 TEST(dataNodeInsertConsolidateTest) {
 	BwTree t = BwTree();
 	Node* root = t.map_->get(t.rootPid_);
@@ -387,6 +390,9 @@ TEST(dataNodeInsertConsolidateTest) {
 // insert a single value, update is MAX_DELTA_CHAIN - 1
 // times. Attempt to get non-existent value to trigger consolidation.
 // inspect the tree.
+// Add more updates and trigger consolidation in the same way again.
+// This guarantees that we are copying the data existing in the
+// node at consolidation.
 TEST(dataNodeUpdateConsolidateTest) {
 	BwTree t = BwTree();
 	Node* root = t.map_->get(t.rootPid_);
