@@ -207,12 +207,12 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
 
 	// consolidate appropriate values
 	int dataLen = newPt->getDataLength();
-	int oldLen = oldPt->getDataLength();
+	int oldLen = ((DataNode*) chainEnd)->getDataLength();
         if (!isSplit) {
             // this is the consolidate case
             // we are adding only the keys that are less than kp
             for (int i = 0; i < oldLen; i++) {
-              int key = oldPt->getDataKey(i);
+              int key = ((DataNode*) chainEnd)->getDataKey(i);
               // if didn't find in P', then add key/val record from P to P' (P' new, P old)
               // P sorted
               if ((kp != -1) && (key >= kp)) { 
@@ -220,14 +220,14 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
               }
 
               if(!(newPt->findSub(key, dataLen))) {
-                  newPt->insertBaseData(key, oldPt->getDataVal(i));
+                  newPt->insertBaseData(key, ((DataNode*) chainEnd)->getDataVal(i));
               } 
             }
         } else {
             // this is the split case
             // we are adding only the keys that are greater than or equal to kp
             for (int i = oldLen - 1; i >= 0; i--) {
-              int key = oldPt->getDataKey(i);
+              int key = ((DataNode*) chainEnd)->getDataKey(i);
               // if didn't find in P', then add key/val record from P to P' (P' new, P old)
               // P sorted
               if (key < kp) { 
@@ -235,7 +235,7 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
               }
 
               if(!(newPt->findSub(key, dataLen))) {
-                  newPt->insertBaseData(key, oldPt->getDataVal(i));
+                  newPt->insertBaseData(key, ((DataNode*) chainEnd)->getDataVal(i));
               } 
             }
         }
@@ -243,15 +243,15 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
             // sort all
             newPt->mergesort();
             if (kp == -1) {
-                newPt->setSidePter(oldPt->getSidePtr()); // set new to old side pointer
-                newPt->setLowKey(oldPt->getLowKey());//low key of old
-                newPt->setHighKey(oldPt->getHighKey());//high key of kp
+                newPt->setSidePter(((DataNode*) chainEnd)->getSidePtr()); // set new to old side pointer
+                newPt->setLowKey(((DataNode*) chainEnd)->getLowKey());//low key of old
+                newPt->setHighKey(((DataNode*) chainEnd)->getHighKey());//high key of kp
             }
 
             if (isSplit) {
-                newPt->setSidePter(oldPt->getSidePtr()); // set new to old side pointer
+                newPt->setSidePter(((DataNode*) chainEnd)->getSidePtr()); // set new to old side pointer
                 newPt->setLowKey(kp); //low key is kp 
-                newPt->setHighKey(oldPt->getHighKey());//high key of kp
+                newPt->setHighKey(((DataNode*) chainEnd)->getHighKey());//high key of kp
             }
 }
 
@@ -295,26 +295,26 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
        // finished chain
        // extracting information from the old page
        // traverse all members of the old page and check keys
-        int arrLen = oldPt->getCurrSize();
+        int arrLen = ((IndexNode*) chainEnd)->getCurrSize();
         if (!isSplit) {
             for (int i = 0; i < arrLen; i++) {
-              int key = oldPt->getIndexKey(i); // get the <sep key, ptr> record from the old index node
+              int key = ((IndexNode*) chainEnd)->getIndexKey(i); // get the <sep key, ptr> record from the old index node
               // if ks is set, and key exceeds ks, we can just stop
               if ((ks != -1) && (key >= ks)) { 
                   break;
               }
               // if ks is not set or key < ks
               // just add to the new index node
-              newPt->insertKeyVal(key, oldPt->getIndexPID(i));
+              newPt->insertKeyVal(key, ((IndexNode*) chainEnd)->getIndexPID(i));
             }
-            newPt->setSmallestPID(oldPt->getSmallestPID()); // set smallest PID of new page to smallest PID of old page
+            newPt->setSmallestPID(((IndexNode*) chainEnd)->getSmallestPID()); // set smallest PID of new page to smallest PID of old page
         } else {
             for (int i = arrLen - 1; i >= 0; i--) {
-              int key = oldPt->getIndexKey(i); // get the <sep key, ptr> record from the old index node
+              int key = ((IndexNode*) chainEnd)->getIndexKey(i); // get the <sep key, ptr> record from the old index node
 
               // if ks is set, and key exceeds ks, we can just stop
               if (key == ks) {
-                newPt->setSmallestPID(oldPt->getIndexPID(i)) ; // set smallest PID of new page to smallest PID of old page
+                newPt->setSmallestPID(((IndexNode*) chainEnd)->getIndexPID(i)) ; // set smallest PID of new page to smallest PID of old page
                 break;
               }
               // should not encounter any key less than ks, since keys are in order
@@ -324,7 +324,7 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
 
               // if key > ks
               // just add to the new index node
-              newPt->insertKeyVal(key, oldPt->getIndexPID(i));
+              newPt->insertKeyVal(key, ((IndexNode*) chainEnd)->getIndexPID(i));
             }
         }
        // sort the array by keys
@@ -333,8 +333,8 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
        // set sibling to sibling of old page
        // set high key to high key of old page
        if (ks == -1 || isSplit) { // if didn't encounter split page in consolidate or if we are splitting
-        newPt->setSibling(oldPt->getSibling());
-        newPt->setHighKey(oldPt->getHighKey()); // set K_max of new page to K_s
+        newPt->setSibling(((IndexNode*) chainEnd)->getSibling());
+        newPt->setHighKey(((IndexNode*) chainEnd)->getHighKey()); // set K_max of new page to K_s
        }
 }
 

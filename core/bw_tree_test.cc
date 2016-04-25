@@ -347,6 +347,40 @@ TEST(dataNodeInsertConsolidateTest) {
 			EXPECT_EQ((byte) i + j, foundPayload[j]);
 	}
 
+	// insert more records for second consolidation to test that the existing
+	// elements in the data node are copied as necessary.
+	// insert up to MAX_DELTA_CHAIN into the chain
+	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) i + j + MAX_DELTA_CHAIN;
+		EXPECT_EQ(1, t.insert(i + initialKey + MAX_DELTA_CHAIN, payload, &man));
+	}
+
+	// attempt to get unexisting record. Should trigger consolidation
+	foundPayload = t.get(initialKey + 2*MAX_DELTA_CHAIN + 1, &man);
+	
+	// we should get null as the answer.
+	if(foundPayload != nullptr) {
+		EXPECT_EQ(true, false);
+	}
+
+	// inspect the tree
+	// the root should not change
+	EXPECT_EQ(t.map_->get(t.rootPid_), root);
+
+	// the right child should now be a data node (again)
+	firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
+	EXPECT_EQ(DATA, firstInChain->getType());
+
+	// inspect contents of the data node. Should contain MAX_CHAIN_LENGTH
+	// records with keys and payloads as set above.
+	for(int i = 0; i < 2 * MAX_DELTA_CHAIN; i ++) {
+		EXPECT_EQ(i + initialKey, ((DataNode*) firstInChain)->getDataKey(i));
+		foundPayload = ((DataNode*) firstInChain)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++) 
+			EXPECT_EQ((byte) i + j, foundPayload[j]);
+	}
+
 	END;
 }
 
@@ -404,6 +438,10 @@ TEST(dataNodeUpdateConsolidateTest) {
 
 	END;
 }
+
+// TEST() {
+
+// }
 
 int main(int argc, char** argv) {
  	findNodeTest();
