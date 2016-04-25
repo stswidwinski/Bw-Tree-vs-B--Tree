@@ -11,6 +11,9 @@ TEST(initTest) {
   END;
 }
 
+// insert MAX_CHAIN deltas. Inspect the delta chain. 
+// attempt to get a record, which triggers consolidation.
+// inspect the tree after consolidation. 
 TEST(dataNodeInsertConsolidateTest) {
 	BwTree t = BwTree();
 	// give memory manager only 1 data node and MAX_DELTA_CHAIN + 1
@@ -29,7 +32,7 @@ TEST(dataNodeInsertConsolidateTest) {
 	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
 		for(int j = 0; j < LENGTH_RECORDS; j++)
 			*(payload + j) = (byte) i + j;
-		t.insert(i + initialKey, payload, &man);
+		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
 	}
 
 	// check the whole damn thing. We should have 
@@ -82,16 +85,18 @@ TEST(dataNodeInsertConsolidateTest) {
 			EXPECT_EQ((byte) i + j, foundPayload[j]);
 
 	}
-	// // TODO INSPECT THE TREE AFTER CONSOLIDATION
 
 	END;
 }
 
+TEST(dataNodeMultipleConsolidateTest) {
+	END;
+}
 
 TEST(findNodeTest) {
 // @TODO
 	BwTree * tree = new BwTree();
-	//MemoryManager  * man = new MemoryManager(100, 100, 100);
+	MemoryManager  * man = new MemoryManager(100, 100, 100);
 	
 	// populate tree with some values
 
@@ -131,12 +136,11 @@ TEST(findNodeTest) {
 	for (int i = 100; i< maxinTree; i+=step) {
 		found = tree->get(i, man);
 		EXPECT_EQ(man, man);
-	// 	found++;
-	//EXPECT_FALSE((found) == nullptr);
+		found++;
+	EXPECT_FALSE((found) == nullptr);
 	 }
 	END;
 }
-
 
 // insert 1 record
 // check if the key is 1 on the left node
@@ -253,14 +257,37 @@ TEST(insertUpdateGetTest) {
   END;
 }
 
+// attempt to update non-existent record.
+// Fail. Do not change the tree in any way.
+TEST(updateNonExistent) {
+	BwTree t = BwTree();
+	MemoryManager man = MemoryManager(0, 0, 0);
+
+	// attempt to update non-existent key.
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	// to the left
+	EXPECT_EQ(0, t.update(INIT_KEY_VALUE - 1, payload, &man));
+
+	// to the right
+	EXPECT_EQ(0, t.update(INIT_KEY_VALUE + 1, payload, &man));
+
+	// inspect the tree
+	IndexNode* root = (IndexNode*) t.map_->get(t.rootPid_); // initial tree with conventions
+  	EXPECT_EQ(root->getIndexKey(0), INIT_KEY_VALUE); // right corresponds to PID 0
+  	EXPECT_EQ(root->getSmallestPID(), 1);  // left corresponds to PID 1
+
+  	END;
+}
 
 int main(int argc, char** argv) {
 	dataNodeInsertConsolidateTest();
  	findNodeTest();
-        initTest();
-        insert1Test();
-        insert2Test();
-        insertUpdateTest();
-        insert1Get1();
-        insertUpdateGetTest();
+    initTest();
+    insert1Test();
+    insert2Test();
+    insertUpdateTest();
+    insert1Get1();
+    insertUpdateGetTest();
+    updateNonExistent();
 }

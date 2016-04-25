@@ -377,7 +377,7 @@ byte* BwTree::get(int key, MemoryManager* man) {
 // return 0 on failure
 int BwTree::update(int key, byte *value, MemoryManager* man) {
 	
-        Triple<PID, Node*, byte*> found = findNode(key, man);
+    Triple<PID, Node*, byte*> found = findNode(key, man);
 
 	// if the record was found, can update
 	if (found.record != nullptr) { 
@@ -399,7 +399,7 @@ int BwTree::update(int key, byte *value, MemoryManager* man) {
         
         return 1;
 	}
-        return 0;
+    return 0;
 }
 
 // return 1 on success
