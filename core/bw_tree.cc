@@ -121,6 +121,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 				consolidate(firstInChain, currentNode, currentPid, man);
 
 				currentNode = map_->get(currentPid);
+				firstInChain = map_->get(currentPid);
 				if(currentNode->doSplit()) {
 					if(currentNode->getType() == DATA)
 						split(parentPid, currentPid, man, (DataNode*) currentNode, firstInChain);				
@@ -129,6 +130,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 				}
 
 				currentNode = map_->get(currentPid);
+				firstInChain = nullptr;
 				chainLength = 0;
 				continue;
 			}
