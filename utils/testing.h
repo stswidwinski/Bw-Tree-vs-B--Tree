@@ -74,6 +74,18 @@ bool __failed_;
     }                                                            \
   } while (0)
 
+#define EXPECT_UNEQ(A,B)                                           \
+  do {                                                           \
+    if ((A) == (B)) {                                            \
+      __failed_ = true;                                          \
+      cout << "EXPECT_EQ(" << #A << ", " << #B                   \
+           << ") \033[1;31mfailed\033[0m at "                    \
+           << __FILE__ << ":" << __LINE__ << "\n"                \
+           << "Expected:\n" << A  << "\n"                        \
+           << "Actual:\n" << B << "\n" << flush;                 \
+    }                                                            \
+  } while (0)
+
 #define TEST(TESTNAME)                               \
 void TESTNAME() {                                    \
   __failed_ = false;                                 \
