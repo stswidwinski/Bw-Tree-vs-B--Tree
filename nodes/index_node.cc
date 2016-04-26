@@ -66,7 +66,7 @@ PID IndexNode::nextPid(int key) {
 }
 
 bool IndexNode::doSplit() {
-	return currentSize_ > MAX_KEYS;
+	return currentSize_ >= MAX_KEYS;
 }
 
 int IndexNode::getSplittingKey() {

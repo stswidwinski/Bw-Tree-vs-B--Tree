@@ -65,7 +65,7 @@ int DataNode::pointToRecord(int key, byte ** record) {
 }
 
 bool DataNode::doSplit() {
-	return (dataLength_ > MAX_RECORDS);
+	return (dataLength_ >= MAX_RECORDS);
 }
 
 int DataNode::getSplittingKey() {
