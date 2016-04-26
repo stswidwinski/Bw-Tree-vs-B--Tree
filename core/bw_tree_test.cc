@@ -13,51 +13,85 @@ TEST(initTest) {
 
 TEST(findNodeTest) {
 // @TODO
+	int minValue = INIT_KEY_VALUE - 100;
+	int minV = minValue;
+
 	BwTree * tree = new BwTree();
 	MemoryManager  * man = new MemoryManager(100, 100, 100);
 	
-	// populate tree with some values
 
 	DataNode * child;
+	DataNode * newPage;
 	int pages =5;
-	//byte * record;
+	int step = 10;
 	PID next;
+
+	// byte to write into all records
 	byte* toWrite = new byte[LENGTH_RECORDS];
 	for(int i = 0; i < LENGTH_RECORDS; i++)
  		toWrite[i] = (byte) 0;
 
 	// populate data pages
 	IndexNode * root = (IndexNode *) tree->map_->get(tree->rootPid_);
+
+
 	child = (DataNode*) tree->map_->get(root->getSmallestPID());
-	int minV = 100;
+	
+	//insert 10 records to each node
+	for(int m = minV; m < minV+100; m+=step) {
+		child->insertBaseData(m, toWrite);
+	}
+	minV += 100;
+	int frec;
+	byte * record;
+	next = root->nextPid(INIT_KEY_VALUE);
+
 	for (int i =0; i< pages; i++ ) { 
-		next = root->getIndexPID(i);
+		// set side pointer of current child before switching to it
 		child->setSidePter(next);
 		child = (DataNode *) tree->map_->get(next);
 
-		int m = minV + i*100;
+		// insert records to new page
+		int m = minV;
+		
 		byte* value = new byte[LENGTH_RECORDS];
-		for(int j = 0; j < 10; j++) {
+		for(int j = 0; j < 10; j++) { // insert byte j into 10 records
 			for(int i = 0; i < LENGTH_RECORDS; i++)
 				value[i] = (byte) j;
 			child->insertBaseData(m, value);
-			m += 10;
+			m += step;
+		}
+		m=minV;
+		for (int j =0; j< 10; j++) {
+			frec = child->pointToRecord(m, &record);
+			EXPECT_EQ(FOUND, frec);
+			m += step;
 		}
 		delete[] value;
+
+		child->setHighKey(minV+100);
+
+
+		newPage = new DataNode(0, KEY_NOT_SET, -1, KEY_NOT_SET);
+		next = tree->map_->put(newPage);
+		root->insertKeyVal(minV+200, next);
+
+		minV += 100;
 	}
 
 	// search for things in tree
-	byte* found;
- 	int maxinTree = 700;
-	int step = 5;
+	Triple<PID, Node*, byte*> found;
+ 	int maxinTree = minV;
 
-	for (int i = 100; i< maxinTree; i+=step) {
-		found = tree->get(i, man);
-		EXPECT_EQ(man, man);
-		found++;
-	EXPECT_FALSE((found) == nullptr);
-	 }
+
+	for (int key = minValue; key< maxinTree; key+=step) {
+		found = tree->findNode(key, man);
+		EXPECT_FALSE((found.record == nullptr));
+
+	}
 	END;
+
+
 }
 
 // insert 1 record
@@ -593,7 +627,7 @@ TEST(dataNodeSplitTest) {
 }
 
 int main(int argc, char** argv) {
- 	findNodeTest();
+ 	//findNodeTest();
     initTest();
     insert1Test();
     insert2Test();
