@@ -306,7 +306,7 @@ TEST(chainUpdate) {
 TEST(dataNodeInsertConsolidateTest) {
 	BwTree t = BwTree();
 	Node* root = t.map_->get(t.rootPid_);
-	// give memory manager only 2 data nodes and MAX_DELTA_CHAIN * 2
+	// give memory manager only 2 data nodes and 2*MAX_DELTA_CHAIN
 	// delta nodes
 	MemoryManager man = MemoryManager(2,
 		0, 2*MAX_DELTA_CHAIN);
@@ -387,6 +387,63 @@ TEST(dataNodeInsertConsolidateTest) {
 	END;
 }
 
+// insert MAX_CHAIN deltas. Attempt to insert another one. 
+// This triggers consolidation. After consolidation a delta
+// should still be appended to the newly created node.
+//
+// this will give us reasonable certainty that all nodes
+// are appended correctly after consolidation.
+TEST(dataNodeInsertConsolidateByInsertTest) {
+	BwTree t = BwTree();
+	Node* root = t.map_->get(t.rootPid_);
+	// give memory manager only 2 data nodes and MAX_DELTA_CHAIN * 2
+	// delta nodes
+	MemoryManager man = MemoryManager(1,
+		0, MAX_DELTA_CHAIN + 1);
+
+	// insert only to the initial right kid.
+	int initialKey = INIT_KEY_VALUE + 1;
+
+	// payload has monotinically increasing 
+	// value from i to i+LENGTH_RECORDS
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	// insert up to MAX_DELTA_CHAIN into the chain
+	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) i + j;
+		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
+	}
+
+	// insert one more delta record. Should trigger consolidation.
+	t.insert(MAX_DELTA_CHAIN + 1 + initialKey, payload, &man);
+
+	// inspect the tree
+	// the root should not change
+	EXPECT_EQ(t.map_->get(t.rootPid_), root);
+
+	// the right child should now be a delta node
+	Node* firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
+	EXPECT_EQ(DELTA_INSERT, firstInChain->getType());
+	EXPECT_EQ(MAX_DELTA_CHAIN + 1 + initialKey, ((DeltaNode*) firstInChain)->getKey());
+	byte* foundPayload = ((DeltaNode*) firstInChain)->getValue();
+
+	for(int i  = 0; i < LENGTH_RECORDS; i++)
+		EXPECT_EQ((byte) i + MAX_DELTA_CHAIN - 1, foundPayload[i]);
+
+	firstInChain = ((DeltaNode*) firstInChain)->getNextNode();
+	// inspect contents of the data node. Should contain MAX_CHAIN_LENGTH
+	// records with keys and payloads as set above.
+	for(int i = 0; i < MAX_DELTA_CHAIN; i ++) {
+		EXPECT_EQ(i + initialKey, ((DataNode*) firstInChain)->getDataKey(i));
+		foundPayload = ((DataNode*) firstInChain)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++) 
+			EXPECT_EQ((byte) i + j, foundPayload[j]);
+	}
+
+	END;
+}
+
 // insert a single value, update is MAX_DELTA_CHAIN - 1
 // times. Attempt to get non-existent value to trigger consolidation.
 // inspect the tree.
@@ -396,7 +453,7 @@ TEST(dataNodeInsertConsolidateTest) {
 TEST(dataNodeUpdateConsolidateTest) {
 	BwTree t = BwTree();
 	Node* root = t.map_->get(t.rootPid_);
-	// give memory manager only 2 data nodes and MAX_DELTA_CHAIN * 2
+	// give memory manager only 1 data nodes and 2*MAX_DELTA_CHAIN
 	// delta nodes
 	MemoryManager man = MemoryManager(2,
 		0, 2*MAX_DELTA_CHAIN);
@@ -478,8 +535,30 @@ TEST(dataNodeUpdateConsolidateTest) {
 	END;
 }
 
-// TEST() {
+// insert elements into a data node until a split it triggered. 
+// inspect the two resulting nodes, the split delta node and 
+// the index split delta node.
+// TEST(dataNodeSplitTest) {
+// 	BwTree t = BwTree();
+// 	Node* root = t.map_->get(t.rootPid_);
+// 	// give memory manager only 2 data nodes and MAX_DELTA_CHAIN * 2
+// 	// delta nodes
+// 	MemoryManager man = MemoryManager(2,
+// 		0, 2*MAX_DELTA_CHAIN);
 
+// 	// insert only to the initial right kid.
+// 	int initialKey = INIT_KEY_VALUE + 1;
+
+// 	// payload has monotinically increasing 
+// 	// value from i to i+LENGTH_RECORDS
+// 	byte* payload = new byte[LENGTH_RECORDS];
+
+// 	// insert up to MAX_DELTA_CHAIN into the chain
+// 	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
+// 		for(int j = 0; j < LENGTH_RECORDS; j++)
+// 			*(payload + j) = (byte) i + j;
+// 		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
+// 	}
 // }
 
 int main(int argc, char** argv) {
@@ -494,5 +573,6 @@ int main(int argc, char** argv) {
     chainInsert();
     chainUpdate();
     dataNodeInsertConsolidateTest();
+    dataNodeInsertConsolidateByInsertTest();
     dataNodeUpdateConsolidateTest();
 }
