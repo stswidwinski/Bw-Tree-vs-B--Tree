@@ -575,12 +575,19 @@ TEST(dataNodeSplitTest) {
 	EXPECT_UNEQ(newRoot, oldRoot);
 	EXPECT_EQ(DELTA_INDEX_SPLIT, newRoot->getType());
 	// the side pointer is set and Kp, Kq are set.
-	// EXPECT_EQ();
-	EXPECT_EQ(oldRoot, ((DeltaNode*) newRoot)->getNextNode());
+	EXPECT_EQ(3, ((DeltaNode*) newRoot)->getSidePtr());
+	EXPECT_EQ(initialKey + MAX_RECORDS/2, ((DeltaNode*) newRoot)->getSplitKey());
+	EXPECT_EQ(KEY_NOT_SET, ((DeltaNode*) newRoot)->getBorderKey());
 
-	// the right child should now be a data node
-	// Node* firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
-	// EXPECT_EQ(DATA, firstInChain->getType());
+	// continue on the chain to the actual index node.
+	newRoot = ((DeltaNode*) newRoot)->getNextNode();
+	EXPECT_EQ(oldRoot, newRoot);
+	EXPECT_EQ(INDEX, newRoot->getType());
+	EXPECT_EQ(1, ((IndexNode*)newRoot)->getCurrSize());
+
+	// inspect the 'left-over' (old) node.
+
+	// inspect the brand new node. 
 
 	END;
 }

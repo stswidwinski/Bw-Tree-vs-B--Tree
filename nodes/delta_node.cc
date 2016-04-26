@@ -84,6 +84,9 @@ int DeltaNode::getSplitKey() {
 	return splitKey_;
 }
 
+int DeltaNode::getBorderKey() {
+	return borderKey_;
+}
 
 bool DeltaNode::followSplit(int key) {
 	if(Node::type_ == DELTA_SPLIT ||

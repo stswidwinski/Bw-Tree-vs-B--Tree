@@ -23,7 +23,7 @@ class DeltaNode : public Node {
 			Node* nextNode,
 			PID pter,
 			int splitKey,
-			int borderKey = -1);
+			int borderKey = KEY_NOT_SET);
 
 		// for buffer initialization
 		DeltaNode();
@@ -39,7 +39,7 @@ class DeltaNode : public Node {
 			Node* nextNode,
 			PID pter,
 			int splitKey,
-			int borderKey = -1);
+			int borderKey = KEY_NOT_SET);
 
 		// for insert, update, delete
 		int getKey() {
@@ -58,6 +58,8 @@ class DeltaNode : public Node {
 		PID getSidePtr();
 
 		int getSplitKey();
+
+		int getBorderKey();
 
 		Node* getNextNode();
 
@@ -84,10 +86,11 @@ class DeltaNode : public Node {
 		PID pter_;
 
 		// for split deltas -- splits P and Q (see paper)
-		// for index split deltas -- same.
+		// for index split deltas -- same. Kp.
 		int splitKey_;
 
 		// for index split deltas -- deliminates Q. (see paper)
+		// Kq
 		int borderKey_;
 };
 
