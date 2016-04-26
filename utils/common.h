@@ -49,6 +49,7 @@
 // the length of the entry.
 #define LENGTH_RECORDS 8
 // maximal number of data pairs inside data node
+// should be a power of 2.
 #define MAX_RECORDS 1024
 
 // flag which means that record was not found
@@ -71,6 +72,7 @@
 */
 
 // maximal length of the delta chain
+// should be a power of 2.
 #define MAX_DELTA_CHAIN 8
 
 #define MAP_SIZE 16777216 // 2^24

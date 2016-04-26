@@ -538,28 +538,52 @@ TEST(dataNodeUpdateConsolidateTest) {
 // insert elements into a data node until a split it triggered. 
 // inspect the two resulting nodes, the split delta node and 
 // the index split delta node.
-// TEST(dataNodeSplitTest) {
-// 	BwTree t = BwTree();
-// 	Node* root = t.map_->get(t.rootPid_);
-// 	// give memory manager only 2 data nodes and MAX_DELTA_CHAIN * 2
-// 	// delta nodes
-// 	MemoryManager man = MemoryManager(2,
-// 		0, 2*MAX_DELTA_CHAIN);
+TEST(dataNodeSplitTest) {
+	BwTree t = BwTree();
+	Node* oldRoot = t.map_->get(t.rootPid_);
+	// data node for every consolidation needed and for another split.
+	// delta node for every insertion, split delta and index split delta.
+	// MAX_RECORDS and MAX_DELTA_CHAIN are powers 2 of so the division
+	// is valid. 
+	MemoryManager man = MemoryManager(MAX_RECORDS / MAX_DELTA_CHAIN + 2,
+		0, MAX_RECORDS + 2);
 
-// 	// insert only to the initial right kid.
-// 	int initialKey = INIT_KEY_VALUE + 1;
+	// insert only to the initial right kid.
+	int initialKey = INIT_KEY_VALUE + 1;
 
-// 	// payload has monotinically increasing 
-// 	// value from i to i+LENGTH_RECORDS
-// 	byte* payload = new byte[LENGTH_RECORDS];
+	// payload has monotinically increasing 
+	// value from i to i+LENGTH_RECORDS
+	byte* payload = new byte[LENGTH_RECORDS];
 
-// 	// insert up to MAX_DELTA_CHAIN into the chain
-// 	for(int i = 0; i < MAX_DELTA_CHAIN; i++){
-// 		for(int j = 0; j < LENGTH_RECORDS; j++)
-// 			*(payload + j) = (byte) i + j;
-// 		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
-// 	}
-// }
+	// insert up to MAX_DELTA_CHAIN into the chain
+	for(int i = 0; i < MAX_RECORDS; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) i + j;
+		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
+	}
+
+	// trigger split
+	byte* foundPayload = t.get(initialKey, &man);
+
+	// the payload should return valid values
+	for(int i = 0; i < LENGTH_RECORDS; i++)
+		EXPECT_EQ((byte) i, foundPayload[i]);
+
+	// inspect the tree
+	// the root should change.
+	Node* newRoot = t.map_->get(t.rootPid_);
+	EXPECT_UNEQ(newRoot, oldRoot);
+	EXPECT_EQ(DELTA_INDEX_SPLIT, newRoot->getType());
+	// the side pointer is set and Kp, Kq are set.
+	// EXPECT_EQ();
+	EXPECT_EQ(oldRoot, ((DeltaNode*) newRoot)->getNextNode());
+
+	// the right child should now be a data node
+	// Node* firstInChain = t.map_->get(((IndexNode*) root) -> getIndexPID(0));
+	// EXPECT_EQ(DATA, firstInChain->getType());
+
+	END;
+}
 
 int main(int argc, char** argv) {
  	findNodeTest();
@@ -575,4 +599,5 @@ int main(int argc, char** argv) {
     dataNodeInsertConsolidateTest();
     dataNodeInsertConsolidateByInsertTest();
     dataNodeUpdateConsolidateTest();
+    dataNodeSplitTest();
 }
