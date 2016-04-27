@@ -5,8 +5,9 @@
 #include <iostream>
 
 TEST(initTest) {
-  BwTree* tree = new BwTree();
-  IndexNode* root = (IndexNode*) tree->map_->get(tree->rootPid_); // initial tree with conventions
+  BwTree tree = BwTree();
+  EXPECT_EQ(INDEX, tree.map_->get(tree.rootPid_)->getType());
+  IndexNode* root = (IndexNode*) tree.map_->get(tree.rootPid_); // initial tree with conventions
   EXPECT_EQ(root->getIndexKey(0), INIT_KEY_VALUE); // right corresponds to PID 0
   EXPECT_EQ(root->getSmallestPID(), 1);  // left corresponds to PID 1
   END;
@@ -120,30 +121,35 @@ TEST(findNodeTest) {
 // insert 1 record
 // check if the key is 1 on the left node
 TEST(insert1Test) {
-  BwTree* tree = new BwTree();
-  int key = 1;
+  BwTree tree = BwTree();
   byte* val = new byte[LENGTH_RECORDS];
   for(int i = 0; i < LENGTH_RECORDS; i++)
   	val[i] = i;
-  MemoryManager* man = new MemoryManager(3, 3, 3);
-  tree->insert(key, val, man);
-  EXPECT_EQ(((DeltaNode*)tree->map_->get(1))->getKey(), 1);
+  MemoryManager man = MemoryManager(3, 3, 3);
+
+  EXPECT_EQ(1, tree.insert(INIT_KEY_VALUE-1, val, &man));
+  EXPECT_EQ(DELTA_INSERT, tree.map_->get(1)->getType());
+  EXPECT_EQ(((DeltaNode*)tree.map_->get(1))->getKey(), INIT_KEY_VALUE-1);
   END;
 }
 
 // insert two records test
-// 1 goes to left node
-// 4001 goes to right node
+// INIT_KEY_VALUE - 1 goes to left node
+// INIT_KEY_VALUE goes to right node
 TEST(insert2Test) {
-  BwTree* tree = new BwTree();
+  BwTree tree = BwTree();
   byte* val = new byte[LENGTH_RECORDS];
   for(int i = 0; i < LENGTH_RECORDS; i++)
-  	val[i] = i;
-  MemoryManager* man = new MemoryManager(3, 3, 3);
-  tree->insert(1, val, man);
-  tree->insert(4001, val, man);
-  EXPECT_EQ(((DeltaNode*)tree->map_->get(1))->getKey(), 1);
-  EXPECT_EQ(((DeltaNode*)tree->map_->get(0))->getKey(), 4001);
+  	val[i] = (byte) i;
+  MemoryManager man = MemoryManager(0, 0, 2);
+  
+  EXPECT_EQ(1, tree.insert(INIT_KEY_VALUE - 1, val, &man));
+  EXPECT_EQ(1, tree.insert(INIT_KEY_VALUE, val, &man));
+  
+  EXPECT_EQ(DELTA_INSERT, tree.map_->get(1)->getType());
+  EXPECT_EQ(DELTA_INSERT, tree.map_->get(0)->getType());
+  EXPECT_EQ(((DeltaNode*)tree.map_->get(1))->getKey(), INIT_KEY_VALUE - 1);
+  EXPECT_EQ(((DeltaNode*)tree.map_->get(0))->getKey(), INIT_KEY_VALUE);
   END;
 }
 
@@ -151,8 +157,8 @@ TEST(insert2Test) {
 // and then update it
 TEST(insertUpdateTest) {
   // new tree and manager
-  BwTree* tree = new BwTree();
-  MemoryManager* man = new MemoryManager(3, 3, 3);
+  BwTree tree = BwTree();
+  MemoryManager man = MemoryManager(0, 0, 2);
 
   // same key 1
   // insert val1 and see if the payload is 1
@@ -160,8 +166,9 @@ TEST(insertUpdateTest) {
   for(int i = 0; i < LENGTH_RECORDS; i++)
   	val1[i] = i;
   
-  tree->insert(1, val1, man);
-  byte* retrievedValue = ((DeltaNode*)tree->map_->get(1))->getValue();
+  EXPECT_EQ(1, tree.insert(1, val1, &man));
+  EXPECT_EQ(DELTA_INSERT, tree.map_->get(1)->getType());
+  byte* retrievedValue = ((DeltaNode*)tree.map_->get(1))->getValue();
   for(int i = 0; i < LENGTH_RECORDS; i++)
 	EXPECT_EQ(i, retrievedValue[i]);
 
@@ -169,10 +176,11 @@ TEST(insertUpdateTest) {
   byte* val2 = new byte[LENGTH_RECORDS];
   for(int i = 0; i < LENGTH_RECORDS; i++)
   	val2[i] = i+1;
-  tree->update(1, val2, man);
+  EXPECT_EQ(1, tree.update(1, val2, &man));
  
+  EXPECT_EQ(DELTA_UPDATE, tree.map_->get(1)->getType());
   // expect the correct value
-  retrievedValue = ((DeltaNode*)tree->map_->get(1))->getValue();
+  retrievedValue = ((DeltaNode*)tree.map_->get(1))->getValue();
   for(int i = 0; i < LENGTH_RECORDS; i++)
 	EXPECT_EQ(i+1, retrievedValue[i]);
 
@@ -182,18 +190,22 @@ TEST(insertUpdateTest) {
 // insert 1 record
 // check if the key is 1 on the left node
 TEST(insert1Get1) {
-  BwTree* tree = new BwTree();
-  int key = 1;
+  BwTree tree = BwTree();
   byte* val = new byte[LENGTH_RECORDS];
+
   for(int i = 0; i < LENGTH_RECORDS; i++)
   	val[i] = i;
-  MemoryManager* man = new MemoryManager(3, 3, 3);
-  tree->insert(key, val, man);
-  byte * found = tree->get(key, man);
+  
+  MemoryManager man = MemoryManager(0, 0, 1);
+  // see, here you don't have to do EXPECT_EQ since
+  // this is not what the test checks.
+  tree.insert(INIT_KEY_VALUE - 1, val, &man);
+  
+  byte * found = tree.get(INIT_KEY_VALUE - 1, &man);
   for (int j=0; j<LENGTH_RECORDS; j++) 
   	EXPECT_EQ(found[j], val[j]);
 
-  found = tree->get(key+1, man);
+  found = tree.get(INIT_KEY_VALUE, &man);
   EXPECT_TRUE(found==nullptr);
   END;
 }
@@ -203,8 +215,8 @@ TEST(insert1Get1) {
 // then find updated version
 TEST(insertUpdateGetTest) {
   // new tree and manager
-  BwTree* tree = new BwTree();
-  MemoryManager* man = new MemoryManager(3, 3, 3);
+  BwTree tree = BwTree();
+  MemoryManager man = MemoryManager(0, 0, 2);
 
   // same key 1
   // insert val1 and see if the payload is 1
@@ -212,8 +224,8 @@ TEST(insertUpdateGetTest) {
   for(int i = 0; i < LENGTH_RECORDS; i++)
   	val1[i] = i;
   
-  tree->insert(1, val1, man);
-  byte * found = tree->get(1, man);
+  tree.insert(INIT_KEY_VALUE - 1, val1, &man);
+  byte * found = tree.get(INIT_KEY_VALUE - 1, &man);
   for (int j=0; j<LENGTH_RECORDS; j++) 
   	EXPECT_EQ(found[j], val1[j]);
 
@@ -221,13 +233,11 @@ TEST(insertUpdateGetTest) {
   byte* val2 = new byte[LENGTH_RECORDS];
   for(int i = 0; i < LENGTH_RECORDS; i++)
   	val2[i] = i+1;
-  tree->update(1, val2, man);
+  tree.update(INIT_KEY_VALUE - 1, val2, &man);
 
-  found = tree->get(1, man);
+  found = tree.get(INIT_KEY_VALUE - 1, &man);
   for (int j=0; j<LENGTH_RECORDS; j++) 
   	EXPECT_EQ(found[j], val2[j]);
- 
- 
 
   END;
 }
@@ -653,13 +663,13 @@ TEST(dataNodeSplitTest) {
 	EXPECT_EQ(DATA, currentNode->getType());
 	EXPECT_EQ(MAX_RECORDS, ((DataNode*)currentNode)->getDataLength());
 	// side pointer set to the 'right' node
-	EXPECT_EQ(0, ((IndexNode*)newRoot)->getIndexPID(0));
+	EXPECT_EQ(((IndexNode*)newRoot)->getIndexPID(0), ((DataNode*)currentNode)->getSidePtr());
 	// should contain at least the first half of the keys.
 	for (int i = 0; i <= MAX_RECORDS/2; i++) {
 		EXPECT_EQ(initialKey + i, ((DataNode*)currentNode)->getDataKey(i));
 		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
 		for(int j = 0; j < LENGTH_RECORDS; j++)
-			EXPECT_EQ((byte) (i + j), foundPayload[j]);
+			EXPECT_EQ((byte) (i + j + initialKey), foundPayload[j]);
 	}
 
 	// inspect the newly created node. 
@@ -674,7 +684,7 @@ TEST(dataNodeSplitTest) {
 		EXPECT_EQ(initialKey + i + MAX_RECORDS/2, ((DataNode*)currentNode)->getDataKey(i));
 		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
 		for(int j = 0; j < LENGTH_RECORDS; j++)
-			EXPECT_EQ((byte) (i + j), foundPayload[j]);
+			EXPECT_EQ((byte) (i + j + MAX_RECORDS/2 + initialKey), foundPayload[j]);
 	}
 
 	END;
@@ -693,9 +703,7 @@ TEST(consolidateSplitDataNode) {
 	MemoryManager man = MemoryManager(MAX_RECORDS / MAX_DELTA_CHAIN + 2 + 1,
 		0, MAX_RECORDS + 2 + MAX_DELTA_CHAIN - 1);
 
-	// well, this kind of assumes that the initial key is at least 2 MAX_RECORDS
-	// away from 0. That should be ok I suppose.
-	int initialKey = INIT_KEY_VALUE / 2;
+	int initialKey = MAX_DELTA_CHAIN - 1;
 
 	// payload has monotinically increasing 
 	// value from i to i+LENGTH_RECORDS
@@ -704,7 +712,7 @@ TEST(consolidateSplitDataNode) {
 	// insert up to MAX_DELTA_CHAIN into the chain
 	for(int i = 0; i < MAX_RECORDS; i++){
 		for(int j = 0; j < LENGTH_RECORDS; j++)
-			*(payload + j) = (byte) (i + j);
+			*(payload + j) = (byte) (i + j + initialKey);
 		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
 	}
 
@@ -713,7 +721,7 @@ TEST(consolidateSplitDataNode) {
 
 	// the payload should return valid value
 	for(int i = 0; i < LENGTH_RECORDS; i++)
-		EXPECT_EQ((byte) i, foundPayload[i]);
+		EXPECT_EQ((byte) (i + initialKey), foundPayload[i]);
 
 	// continue insertion from key 0 now
 	for(int i = 0; i < MAX_DELTA_CHAIN - 1; i++){
@@ -727,12 +735,38 @@ TEST(consolidateSplitDataNode) {
 
 	// the payload should return valid value
 	for(int i = 0; i < LENGTH_RECORDS; i++)
-		EXPECT_EQ((byte) i, foundPayload[i]);
+		EXPECT_EQ((byte) (i + initialKey), foundPayload[i]);
 
-	// inspect the tree -- ignore the structure above the root node and its chain.
-	//Node* currentNode = t.map_->get(1);
+	// inspect the tree 
 
-	// TODO
+	// Start with the consolidated node. 
+	Node* currentNode = t.map_->get( ((IndexNode*) ((DeltaNode*)t.map_->get(t.rootPid_))->getNextNode())->getSmallestPID());
+	EXPECT_EQ(DATA, currentNode->getType());
+	EXPECT_EQ(MAX_RECORDS/2 + MAX_DELTA_CHAIN - 1, ((DataNode*)currentNode)->getDataLength());
+	// side pointer set to the 'right' node
+	EXPECT_EQ(3, ((DataNode*)currentNode)->getSidePtr());
+	// should contain the first half of the keys plus the inserted MAX_CHAIN - 1.
+	for (int i = 0; i < MAX_RECORDS/2 + MAX_DELTA_CHAIN - 1; i++) {
+		EXPECT_EQ(i, ((DataNode*)currentNode)->getDataKey(i));
+		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			EXPECT_EQ((byte) (i + j), foundPayload[j]);
+	}
+
+	// inspect the newly created node. 
+	// get the pointer pointed to by the index split delta.
+	currentNode = t.map_->get(((DeltaNode*)t.map_->get(t.rootPid_))->getSidePtr());
+	EXPECT_EQ(DATA, currentNode->getType());
+	EXPECT_EQ(MAX_RECORDS/2, ((DataNode*)currentNode)->getDataLength());
+	EXPECT_EQ(0, ((DataNode*)currentNode)->getSidePtr());
+
+	// should contain all records greater then MAX_RECORDS/2
+	for (int i = 0; i < MAX_RECORDS/2; i++) {
+		EXPECT_EQ(initialKey + i + MAX_RECORDS/2, ((DataNode*)currentNode)->getDataKey(i));
+		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			EXPECT_EQ((byte) (i + j + initialKey + MAX_RECORDS/2), foundPayload[j]);
+	}
 
 	END;
 }

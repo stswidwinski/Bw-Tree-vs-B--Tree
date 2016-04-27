@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <assert.h>
+#include <limits.h>
 
 // debug mode
 #define DEBUG true
@@ -78,7 +79,7 @@
 #define MAP_SIZE 16777216 // 2^24
 
 // inside bw_tree for initialization
-#define INIT_KEY_VALUE 4000
+#define INIT_KEY_VALUE 65536
 
 
 typedef uint64_t PID;
