@@ -66,7 +66,15 @@ PID IndexNode::nextPid(int key) {
         // only arises if doesn't reach equality, since that is handled by the third branch above 
         // in the case that hashes to leftmost node, return the leftmost; otherwise, return the one left to it
         // because middle really returned the thing that is to the right of the node we want
-        return (middle == 0) ? searchArray_[0].value : searchArray_[middle-1].value;
+        if (middle != 0) {
+if (key > searchArray_[middle-1].key) {
+        return searchArray_[middle-1].value;
+} else {
+        return searchArray_[middle].value;
+} 
+} else {
+        return searchArray_[0].value;
+}
 }
 
 bool IndexNode::doSplit() {
