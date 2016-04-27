@@ -44,7 +44,7 @@ PID IndexNode::nextPid(int key) {
 		return smallestPID_;
 
 	// do binary search to find the right bucket
-	// the largest bucket such that given key is smaller than
+	// the largest bucket such that given key is larger than
 	// bucket's key.
         // 
         // some reasoning suffices to show that this is correct:
