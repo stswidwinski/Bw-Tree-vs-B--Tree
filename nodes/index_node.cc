@@ -47,18 +47,17 @@ PID IndexNode::nextPid(int key) {
 	// the largest bucket such that given key is larger then
 	// bucket's key.
 	int left = 0, right = currentSize_ - 1, middle = 0;
-	while(left < right) {
+	while(left <= right) {
 		// avoiding overflow
 		middle = left + (right - left) / 2;
 		if(searchArray_[middle].key > key) {
-			right = middle;
+			right = middle - 1;
+			middle--;
 		} 
-		else if (searchArray_[middle].key < key) {
-			left = middle + 1;
-			middle++; 
-		}
-		else {
-			return searchArray_[middle].value;
+		else if (searchArray_[middle].key <= key) {
+			left =  middle + 1;
+		} else {
+			break;
 		}
 	}
 
@@ -66,7 +65,7 @@ PID IndexNode::nextPid(int key) {
 }
 
 bool IndexNode::doSplit() {
-	return currentSize_ >= MAX_KEYS;
+	return currentSize_ > MAX_KEYS;
 }
 
 int IndexNode::getSplittingKey() {

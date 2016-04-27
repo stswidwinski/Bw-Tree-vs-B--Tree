@@ -49,7 +49,7 @@ TEST(nextPidTestWithHighKey) {
 	// check in between cases
 	m = beginningKey + 1;
 	for (unsigned int i = 0; i < arrSize - 1; i++) {
-		EXPECT_EQ((PID)(i+1), node->nextPid(m));
+		EXPECT_EQ((PID) i, node->nextPid(m));
 		m += stepKey;
 	}
 
