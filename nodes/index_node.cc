@@ -44,6 +44,9 @@ PID IndexNode::nextPid(int key) {
 	if(key < searchArray_[0].key)
 		return smallestPID_;
 
+        //if at edge just return rightmost
+	if(key >= searchArray_[currentSize_-1].key)
+		return searchArray_[currentSize_-1].value;
 
 	// do binary search to find the right bucket
 	// the largest bucket such that given key is larger then
