@@ -56,8 +56,6 @@ PID IndexNode::nextPid(int key) {
 		} 
 		else if (searchArray_[middle].key <= key) {
 			left =  middle + 1;
-		} else {
-			break;
 		}
 	}
 
