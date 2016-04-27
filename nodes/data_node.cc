@@ -3,6 +3,7 @@
 */
 
 #include "nodes/data_node.h" 
+#include<iostream>
 
 DataNode::DataNode(int dataLength,
 	PID sidePter,

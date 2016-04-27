@@ -3,6 +3,7 @@
 */
 
 #include "core/bw_tree.h"
+#include<iostream>
 
 BwTree::BwTree() {
 	map_ = new MemoryMap<Node>(MAP_SIZE);

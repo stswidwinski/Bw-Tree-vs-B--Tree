@@ -4,6 +4,7 @@
 	Implements index_node.h
 */
 #include "nodes/index_node.h"
+#include <iostream>
 
 IndexNode::IndexNode() : Node(INDEX) {
 	searchArray_ = new Pair<int, PID>[ARRAY_KEYS_LENGTH];
@@ -43,6 +44,7 @@ PID IndexNode::nextPid(int key) {
 	if(key < searchArray_[0].key)
 		return smallestPID_;
 
+
 	// do binary search to find the right bucket
 	// the largest bucket such that given key is larger then
 	// bucket's key.
@@ -61,8 +63,10 @@ PID IndexNode::nextPid(int key) {
 			return searchArray_[middle].value;
 		}
 	}
-
-	return searchArray_[middle].value;
+        // only arises if doesn't reach equality, since that is handled by the third branch above 
+        // in the case that hashes to leftmost node, return the leftmost; otherwise, return the one left to it
+        // because middle really returned the thing that is to the right of the node we want
+        return (middle == 0) ? searchArray_[0].value : searchArray_[middle-1].value;
 }
 
 bool IndexNode::doSplit() {
