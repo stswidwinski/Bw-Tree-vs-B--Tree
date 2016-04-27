@@ -630,13 +630,13 @@ TEST(dataNodeSplitTest) {
 	EXPECT_EQ(DATA, currentNode->getType());
 	EXPECT_EQ(MAX_RECORDS, ((DataNode*)currentNode)->getDataLength());
 	// side pointer set to the 'right' node
-	EXPECT_EQ(0, ((IndexNode*)newRoot)->getIndexPID(0));
+	EXPECT_EQ(((IndexNode*)newRoot)->getIndexPID(0), ((DataNode*)currentNode)->getSidePtr());
 	// should contain at least the first half of the keys.
 	for (int i = 0; i <= MAX_RECORDS/2; i++) {
 		EXPECT_EQ(initialKey + i, ((DataNode*)currentNode)->getDataKey(i));
 		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
 		for(int j = 0; j < LENGTH_RECORDS; j++)
-			EXPECT_EQ((byte) (i + j), foundPayload[j]);
+			EXPECT_EQ((byte) (i + j + initialKey), foundPayload[j]);
 	}
 
 	// inspect the newly created node. 
@@ -651,7 +651,7 @@ TEST(dataNodeSplitTest) {
 		EXPECT_EQ(initialKey + i + MAX_RECORDS/2, ((DataNode*)currentNode)->getDataKey(i));
 		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
 		for(int j = 0; j < LENGTH_RECORDS; j++)
-			EXPECT_EQ((byte) (i + j), foundPayload[j]);
+			EXPECT_EQ((byte) (i + j + MAX_RECORDS/2 + initialKey), foundPayload[j]);
 	}
 
 	END;
@@ -670,9 +670,7 @@ TEST(consolidateSplitDataNode) {
 	MemoryManager man = MemoryManager(MAX_RECORDS / MAX_DELTA_CHAIN + 2 + 1,
 		0, MAX_RECORDS + 2 + MAX_DELTA_CHAIN - 1);
 
-	// well, this kind of assumes that the initial key is at least 2 MAX_RECORDS
-	// away from 0. That should be ok I suppose.
-	int initialKey = INIT_KEY_VALUE / 2;
+	int initialKey = MAX_DELTA_CHAIN - 1;
 
 	// payload has monotinically increasing 
 	// value from i to i+LENGTH_RECORDS
@@ -681,7 +679,7 @@ TEST(consolidateSplitDataNode) {
 	// insert up to MAX_DELTA_CHAIN into the chain
 	for(int i = 0; i < MAX_RECORDS; i++){
 		for(int j = 0; j < LENGTH_RECORDS; j++)
-			*(payload + j) = (byte) (i + j);
+			*(payload + j) = (byte) (i + j + initialKey);
 		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
 	}
 
@@ -690,7 +688,7 @@ TEST(consolidateSplitDataNode) {
 
 	// the payload should return valid value
 	for(int i = 0; i < LENGTH_RECORDS; i++)
-		EXPECT_EQ((byte) i, foundPayload[i]);
+		EXPECT_EQ((byte) (i + initialKey), foundPayload[i]);
 
 	// continue insertion from key 0 now
 	for(int i = 0; i < MAX_DELTA_CHAIN - 1; i++){
@@ -704,12 +702,38 @@ TEST(consolidateSplitDataNode) {
 
 	// the payload should return valid value
 	for(int i = 0; i < LENGTH_RECORDS; i++)
-		EXPECT_EQ((byte) i, foundPayload[i]);
+		EXPECT_EQ((byte) (i + initialKey), foundPayload[i]);
 
-	// inspect the tree -- ignore the structure above the root node and its chain.
-	//Node* currentNode = t.map_->get(1);
+	// inspect the tree 
 
-	// TODO
+	// Start with the consolidated node. 
+	Node* currentNode = t.map_->get( ((IndexNode*) ((DeltaNode*)t.map_->get(t.rootPid_))->getNextNode())->getSmallestPID());
+	EXPECT_EQ(DATA, currentNode->getType());
+	EXPECT_EQ(MAX_RECORDS/2 + MAX_DELTA_CHAIN - 1, ((DataNode*)currentNode)->getDataLength());
+	// side pointer set to the 'right' node
+	EXPECT_EQ(3, ((DataNode*)currentNode)->getSidePtr());
+	// should contain the first half of the keys plus the inserted MAX_CHAIN - 1.
+	for (int i = 0; i < MAX_RECORDS/2 + MAX_DELTA_CHAIN - 1; i++) {
+		EXPECT_EQ(i, ((DataNode*)currentNode)->getDataKey(i));
+		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			EXPECT_EQ((byte) (i + j), foundPayload[j]);
+	}
+
+	// inspect the newly created node. 
+	// get the pointer pointed to by the index split delta.
+	currentNode = t.map_->get(((DeltaNode*)t.map_->get(t.rootPid_))->getSidePtr());
+	EXPECT_EQ(DATA, currentNode->getType());
+	EXPECT_EQ(MAX_RECORDS/2, ((DataNode*)currentNode)->getDataLength());
+	EXPECT_EQ(0, ((DataNode*)currentNode)->getSidePtr());
+
+	// should contain all records greater then MAX_RECORDS/2
+	for (int i = 0; i < MAX_RECORDS/2; i++) {
+		EXPECT_EQ(initialKey + i + MAX_RECORDS/2, ((DataNode*)currentNode)->getDataKey(i));
+		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			EXPECT_EQ((byte) (i + j + initialKey + MAX_RECORDS/2), foundPayload[j]);
+	}
 
 	END;
 }
