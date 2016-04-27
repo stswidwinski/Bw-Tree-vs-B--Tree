@@ -44,8 +44,15 @@ PID IndexNode::nextPid(int key) {
 		return smallestPID_;
 
 	// do binary search to find the right bucket
-	// the largest bucket such that given key is larger then
+	// the largest bucket such that given key is smaller than
 	// bucket's key.
+        // 
+        // some reasoning suffices to show that this is correct:
+        // left > right can only arise in two situations:
+        // if the left moves past the right, or if the 
+        // right moves past the left... in both these cases
+        // we have encountered the bucket that satisfies
+        // above condition
 	int left = 0, right = currentSize_ - 1, middle = 0;
 	while(left <= right) {
 		// avoiding overflow
@@ -53,8 +60,7 @@ PID IndexNode::nextPid(int key) {
 		if(searchArray_[middle].key > key) {
 			right = middle - 1;
 			middle--;
-		} 
-		else if (searchArray_[middle].key <= key) {
+		} else {
 			left =  middle + 1;
 		}
 	}
