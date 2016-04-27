@@ -653,7 +653,64 @@ TEST(dataNodeSplitTest) {
 		for(int j = 0; j < LENGTH_RECORDS; j++)
 			EXPECT_EQ((byte) (i + j), foundPayload[j]);
 	}
-	
+
+	END;
+}
+
+// insert elements into a data node until a split is triggered.
+// insert few more elements into that node until the node is 
+// consolidated. Inspect that node. 
+TEST(consolidateSplitDataNode) {
+	BwTree t = BwTree();
+	// data node for every consolidation needed and for another split.
+	// delta node for every insertion, split delta and index split delta,
+	// and additional few deltas for consolidation sake..
+	// MAX_RECORDS and MAX_DELTA_CHAIN are powers 2 of so the division
+	// is valid. 
+	MemoryManager man = MemoryManager(MAX_RECORDS / MAX_DELTA_CHAIN + 2 + 1,
+		0, MAX_RECORDS + 2 + MAX_DELTA_CHAIN - 1);
+
+	// well, this kind of assumes that the initial key is at least 2 MAX_RECORDS
+	// away from 0. That should be ok I suppose.
+	int initialKey = INIT_KEY_VALUE / 2;
+
+	// payload has monotinically increasing 
+	// value from i to i+LENGTH_RECORDS
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	// insert up to MAX_DELTA_CHAIN into the chain
+	for(int i = 0; i < MAX_RECORDS; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) (i + j);
+		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
+	}
+
+	// trigger split
+	byte* foundPayload = t.get(initialKey, &man);
+
+	// the payload should return valid value
+	for(int i = 0; i < LENGTH_RECORDS; i++)
+		EXPECT_EQ((byte) i, foundPayload[i]);
+
+	// continue insertion from key 0 now
+	for(int i = 0; i < MAX_DELTA_CHAIN - 1; i++){
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) (i + j);
+		EXPECT_EQ(1, t.insert(i, payload, &man));
+	}
+
+	// trigger consolidation
+	foundPayload = t.get(initialKey, &man);
+
+	// the payload should return valid value
+	for(int i = 0; i < LENGTH_RECORDS; i++)
+		EXPECT_EQ((byte) i, foundPayload[i]);
+
+	// inspect the tree -- ignore the structure above the root node and its chain.
+	//Node* currentNode = t.map_->get(1);
+
+	// TODO
+
 	END;
 }
 
@@ -672,4 +729,5 @@ int main(int argc, char** argv) {
     dataNodeInsertConsolidateByInsertTest();
     dataNodeUpdateConsolidateTest();
     dataNodeSplitTest();
+    consolidateSplitDataNode();
 }
