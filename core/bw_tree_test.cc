@@ -582,8 +582,8 @@ TEST(dataNodeSplitTest) {
 	MemoryManager man = MemoryManager(MAX_RECORDS / MAX_DELTA_CHAIN + 2,
 		0, MAX_RECORDS + 2);
 
-	// insert only to the initial right kid.
-	int initialKey = INIT_KEY_VALUE + 1;
+	// insert only to the initial left kid (we want to see side pointers set).
+	int initialKey = 0;
 
 	// payload has monotinically increasing 
 	// value from i to i+LENGTH_RECORDS
@@ -592,14 +592,14 @@ TEST(dataNodeSplitTest) {
 	// insert up to MAX_DELTA_CHAIN into the chain
 	for(int i = 0; i < MAX_RECORDS; i++){
 		for(int j = 0; j < LENGTH_RECORDS; j++)
-			*(payload + j) = (byte) i + j;
+			*(payload + j) = (byte) (i + j);
 		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
 	}
 
 	// trigger split
 	byte* foundPayload = t.get(initialKey, &man);
 
-	// the payload should return valid values
+	// the payload should return valid value
 	for(int i = 0; i < LENGTH_RECORDS; i++)
 		EXPECT_EQ((byte) i, foundPayload[i]);
 
@@ -611,7 +611,7 @@ TEST(dataNodeSplitTest) {
 	// the side pointer is set and Kp, Kq are set.
 	EXPECT_EQ(3, ((DeltaNode*) newRoot)->getSidePtr());
 	EXPECT_EQ(initialKey + MAX_RECORDS/2, ((DeltaNode*) newRoot)->getSplitKey());
-	EXPECT_EQ(KEY_NOT_SET, ((DeltaNode*) newRoot)->getBorderKey());
+	EXPECT_EQ(INIT_KEY_VALUE, ((DeltaNode*) newRoot)->getBorderKey());
 
 	// continue on the chain to the actual index node.
 	newRoot = ((DeltaNode*) newRoot)->getNextNode();
@@ -620,14 +620,45 @@ TEST(dataNodeSplitTest) {
 	EXPECT_EQ(1, ((IndexNode*)newRoot)->getCurrSize());
 
 	// inspect the 'left-over' (old) node.
+	// this is the split delta
+	Node* currentNode = t.map_->get(((IndexNode*)newRoot)->getSmallestPID());
+	EXPECT_EQ(DELTA_SPLIT, currentNode->getType());
+	EXPECT_EQ(3, ((DeltaNode*)currentNode)->getSidePtr());
+	EXPECT_EQ(initialKey + MAX_RECORDS/2, ((DeltaNode*)currentNode)->getSplitKey());
+	// then there is the data node
+	currentNode = ((DeltaNode*)currentNode)->getNextNode();
+	EXPECT_EQ(DATA, currentNode->getType());
+	EXPECT_EQ(MAX_RECORDS, ((DataNode*)currentNode)->getDataLength());
+	// side pointer set to the 'right' node
+	EXPECT_EQ(0, ((IndexNode*)newRoot)->getIndexPID(0));
+	// should contain at least the first half of the keys.
+	for (int i = 0; i <= MAX_RECORDS/2; i++) {
+		EXPECT_EQ(initialKey + i, ((DataNode*)currentNode)->getDataKey(i));
+		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			EXPECT_EQ((byte) (i + j), foundPayload[j]);
+	}
 
-	// inspect the brand new node. 
+	// inspect the newly created node. 
+	// get the pointer pointed to by the index split delta.
+	currentNode = t.map_->get(((DeltaNode*)t.map_->get(t.rootPid_))->getSidePtr());
+	EXPECT_EQ(DATA, currentNode->getType());
+	EXPECT_EQ(MAX_RECORDS/2, ((DataNode*)currentNode)->getDataLength());
+	EXPECT_EQ(0, ((DataNode*)currentNode)->getSidePtr());
 
+	// should contain all records greater then MAX_RECORDS/2
+	for (int i = 0; i < MAX_RECORDS/2; i++) {
+		EXPECT_EQ(initialKey + i + MAX_RECORDS/2, ((DataNode*)currentNode)->getDataKey(i));
+		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			EXPECT_EQ((byte) (i + j), foundPayload[j]);
+	}
+	
 	END;
 }
 
 int main(int argc, char** argv) {
- 	//findNodeTest();
+ 	findNodeTest();
     initTest();
     insert1Test();
     insert2Test();
