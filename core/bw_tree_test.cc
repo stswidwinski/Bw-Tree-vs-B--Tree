@@ -3,6 +3,13 @@
 #include "utils/common.h"
 #include <string>
 
+/* TODO -- TESTS WE SHOULD EVENUALLY WRITE
+
+	1) Insert an element to a page. The insertion triggers consolidation
+	AND then split. Check that the insertion is correct both in case of 
+	insertion to the split page and newly created page.
+*/
+
 TEST(initTest) {
   BwTree tree = BwTree();
   EXPECT_EQ(INDEX, tree.map_->get(tree.rootPid_)->getType());
@@ -770,8 +777,67 @@ TEST(findNodeTest) {
 	END;
 }
 
+// Split the right-most node. Repeat MAX_DELTA_CHAIN times. Inspect the 
+// created chain of index split deltas. Seak for any element in the left
+// most page. This will trigger consolidation. Inspect the index node
+// afterwards. 
+TEST(indexConsolidationTest) {
+	BwTree t = BwTree();
+
+	// For every split of the data node, we need MAX_RECORDS insert
+	// deltas, one split delta and one index split delta. We will
+	// split the node MAX_DELTA_CHAIN times.
+	int necessaryDeltaNodes = MAX_DELTA_CHAIN * (MAX_RECORDS + 2);
+
+	// We need a data node for every:
+	//		1) Split -- there are MAX_DELTA_CHAIN of those
+	//		2) Consolidation.
+	//			a) Until the first split we need MAX_RECORDS / MAX_DELTA_CHAIN
+	//				data nodes.
+	//			b) Every subsequent split needs MAX_RECORDS / (2 MAX_DELTA_CHAIN)
+	//				data nodes
+	//
+	// Note that MAX_RECORDS is divisible by 2 and MAX_RECORDS.
+	int necessaryDataNodes = MAX_RECORDS / 2 +\
+		MAX_RECORDS / (2 * MAX_DELTA_CHAIN) + MAX_DELTA_CHAIN;
+
+	// just one index node. For its consolidation.
+	MemoryManager man = MemoryManager(necessaryDataNodes,
+		1,
+		necessaryDeltaNodes);
+
+	int initialKey = INIT_KEY_VALUE;
+
+	// Add nodes to the right-most page, until we split
+	// for MAX_DELTA_CHAIN times. Every time there should
+	// be a split use a read to trigger it. 
+	int iterations = MAX_RECORDS / 2 * ( MAX_DELTA_CHAIN + 1);
+	byte* foundPayload;
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	for(int i = 1; i <= iterations; i++) {
+		// trigger split for every MAX_RECORDS/2 iterations.
+		if( (i % (MAX_RECORDS/2)) == 0) {
+			// get what just has been inserted.
+			foundPayload = t.get(i + initialKey - 1, &man);
+			// check validity of response.
+			for(int j = 0; j < LENGTH_RECORDS; j++)
+				EXPECT_EQ((byte) (i - 1 + j), foundPayload[j]);
+		}
+
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) (i + j);
+		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
+	}
+
+	// inspect the resulting index delta chain. 
+	// TODO
+
+	END;
+
+}
+
 int main(int argc, char** argv) {
- 	findNodeTest();
     initTest();
     insert1Test();
     insert2Test();
@@ -786,4 +852,6 @@ int main(int argc, char** argv) {
     dataNodeUpdateConsolidateTest();
     dataNodeSplitTest();
     consolidateSplitDataNode();
+    findNodeTest();
+    indexConsolidationTest();
 }

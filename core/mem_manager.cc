@@ -16,10 +16,10 @@ MemoryManager::MemoryManager(int dataNodeCount,
 Node* MemoryManager::getNode(NodeType type) {
 	switch(type) {
 		case INDEX:
-			data_ ++;
+			index_ ++;
 			return indexNodes_->pop();
 		case DATA:
-			index_ ++;
+			data_ ++;
 			return dataNodes_->pop();
 		case DELTA_INSERT:
 		case DELTA_UPDATE:
