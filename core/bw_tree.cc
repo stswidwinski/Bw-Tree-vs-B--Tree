@@ -104,6 +104,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 				if(((DeltaNode*)currentNode)->followSplit(key)) {
 					chainLength = 0;
 					firstInChain = nullptr;
+					parentPid = currentPid;
 					currentPid = currentNode->nextPid(key);
 					
 					currentNode = map_->get(currentPid);
@@ -121,7 +122,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 				consolidate(firstInChain, currentNode, currentPid, man);
 
 				currentNode = map_->get(currentPid);
-				firstInChain = map_->get(currentPid);
+				firstInChain = currentNode;
 				if(currentNode->doSplit()) {
 					if(currentNode->getType() == DATA)
 						split(parentPid, currentPid, man, (DataNode*) currentNode, firstInChain);				
@@ -144,7 +145,6 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 			}
 
 			// attempt to find the record
-			//fprintf(stderr, "key %d\n", (DataNode*)currentNode->getHighKey());
 			recordFound = ((DataNode*)currentNode)->pointToRecord(key, &resultingValue);
 			
 			if (recordFound == FOUND) {
@@ -281,7 +281,8 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
             int kp = ((DeltaNode*) chainEnd)->getSplitKey(); // this is the lower bound of ISD
             // if didn't split or the kp is valid inside the index split delta, add the thing
             // first branch is for consolidate case
-            if (((ks != -1) && (kp < ks)) && !isSplit) { 
+            if (ks == -1 || 
+            	(((ks != -1) && (kp < ks)) && !isSplit)) { 
                 // if split and the kp of ISD is less than split key, 
                 // add the side pointer of ISD to the new index node
               newPt->addToSearchArray(kp, ((DeltaNode*) chainEnd)->getSidePtr());
@@ -302,7 +303,7 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
             for (int i = 0; i < arrLen; i++) {
               int key = ((IndexNode*) chainEnd)->getIndexKey(i); // get the <sep key, ptr> record from the old index node
               // if ks is set, and key exceeds ks, we can just stop
-              if ((ks != -1) && (key >= ks)) { 
+              if ((ks != -1) && (key > ks)) { 
                   break;
               }
               // if ks is not set or key < ks

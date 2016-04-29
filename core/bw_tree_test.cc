@@ -544,7 +544,7 @@ TEST(dataNodeSplitTest) {
 	EXPECT_EQ(DELTA_INDEX_SPLIT, newRoot->getType());
 	// the side pointer is set and Kp, Kq are set.
 	EXPECT_EQ(3, ((DeltaNode*) newRoot)->getSidePtr());
-	EXPECT_EQ(initialKey + MAX_RECORDS/2, ((DeltaNode*) newRoot)->getSplitKey());
+	EXPECT_EQ(initialKey + MAX_RECORDS/2 - 1, ((DeltaNode*) newRoot)->getSplitKey());
 	EXPECT_EQ(INIT_KEY_VALUE, ((DeltaNode*) newRoot)->getBorderKey());
 
 	// continue on the chain to the actual index node.
@@ -558,15 +558,15 @@ TEST(dataNodeSplitTest) {
 	Node* currentNode = t.map_->get(((IndexNode*)newRoot)->getSmallestPID());
 	EXPECT_EQ(DELTA_SPLIT, currentNode->getType());
 	EXPECT_EQ(3, ((DeltaNode*)currentNode)->getSidePtr());
-	EXPECT_EQ(initialKey + MAX_RECORDS/2, ((DeltaNode*)currentNode)->getSplitKey());
+	EXPECT_EQ(initialKey + MAX_RECORDS/2 - 1, ((DeltaNode*)currentNode)->getSplitKey());
 	// then there is the data node
 	currentNode = ((DeltaNode*)currentNode)->getNextNode();
 	EXPECT_EQ(DATA, currentNode->getType());
 	EXPECT_EQ(MAX_RECORDS, ((DataNode*)currentNode)->getDataLength());
 	// side pointer set to the 'right' node
 	EXPECT_EQ(((IndexNode*)newRoot)->getIndexPID(0), ((DataNode*)currentNode)->getSidePtr());
-	// should contain at least the first half of the keys.
-	for (int i = 0; i <= MAX_RECORDS/2; i++) {
+	// should contain the first half of the keys.
+	for (int i = 0; i < MAX_RECORDS/2; i++) {
 		EXPECT_EQ(initialKey + i, ((DataNode*)currentNode)->getDataKey(i));
 		foundPayload = ((DataNode*)currentNode)->getDataVal(i);
 		for(int j = 0; j < LENGTH_RECORDS; j++)
@@ -643,6 +643,7 @@ TEST(consolidateSplitDataNode) {
 	// Start with the consolidated node. 
 	Node* currentNode = t.map_->get( ((IndexNode*) ((DeltaNode*)t.map_->get(t.rootPid_))->getNextNode())->getSmallestPID());
 	EXPECT_EQ(DATA, currentNode->getType());
+	// 
 	EXPECT_EQ(MAX_RECORDS/2 + MAX_DELTA_CHAIN - 1, ((DataNode*)currentNode)->getDataLength());
 	// side pointer set to the 'right' node
 	EXPECT_EQ(3, ((DataNode*)currentNode)->getSidePtr());
@@ -783,11 +784,12 @@ TEST(findNodeTest) {
 // afterwards. 
 TEST(indexConsolidationTest) {
 	BwTree t = BwTree();
+	PID initialRootPID = t.rootPid_;
 
-	// For every split of the data node, we need MAX_RECORDS insert
-	// deltas, one split delta and one index split delta. We will
-	// split the node MAX_DELTA_CHAIN times.
-	int necessaryDeltaNodes = MAX_DELTA_CHAIN * (MAX_RECORDS + 2);
+	// For the first split to happen we need MAX_RECORDS inserted elements.
+	// For every next split we need MAX_RECORDS / 2. We must inlude the 
+	// split deltas -- 2 per split. 
+	int necessaryDeltaNodes = MAX_RECORDS / 2 * (MAX_DELTA_CHAIN + 1) + 2 * MAX_DELTA_CHAIN;
 
 	// We need a data node for every:
 	//		1) Split -- there are MAX_DELTA_CHAIN of those
@@ -815,14 +817,19 @@ TEST(indexConsolidationTest) {
 	byte* foundPayload;
 	byte* payload = new byte[LENGTH_RECORDS];
 
-	for(int i = 1; i <= iterations; i++) {
+	for(int i = 0; i <= iterations; i++) {
 		// trigger split for every MAX_RECORDS/2 iterations.
-		if( (i % (MAX_RECORDS/2)) == 0) {
-			// get what just has been inserted.
-			foundPayload = t.get(i + initialKey - 1, &man);
+		if( i != 0 && (i % (MAX_RECORDS/2)) == 0) {
+			// get what just has been previously inserted and is in the page by now.
+			foundPayload = t.get(i + initialKey - MAX_DELTA_CHAIN - 2, &man);
 			// check validity of response.
 			for(int j = 0; j < LENGTH_RECORDS; j++)
-				EXPECT_EQ((byte) (i - 1 + j), foundPayload[j]);
+				EXPECT_EQ((byte) (i - MAX_DELTA_CHAIN - 2 + j), foundPayload[j]);
+
+			// this allows us to do the final split without special code outside
+			// of the loop.
+			if (i == iterations)
+				break;
 		}
 
 		for(int j = 0; j < LENGTH_RECORDS; j++)
@@ -831,7 +838,44 @@ TEST(indexConsolidationTest) {
 	}
 
 	// inspect the resulting index delta chain. 
-	// TODO
+	Node* currentNode = t.map_->get(t.rootPid_);
+
+	// Now check all the other index split delta nodes
+	int initKp = initialKey + MAX_RECORDS/2 * MAX_DELTA_CHAIN - 1;
+	for(int i = 0; i < MAX_DELTA_CHAIN; i ++) {
+		EXPECT_EQ(DELTA_INDEX_SPLIT, currentNode->getType());
+		EXPECT_EQ(KEY_NOT_SET, ((DeltaNode*)currentNode)->getBorderKey());
+		// the splits are every MAX_RECORDS / 2 * i - 1 records and we are traversing
+		// it from the back. NOTE: we have 
+		EXPECT_EQ(initKp, ((DeltaNode*)currentNode)->getSplitKey());
+		initKp -= MAX_RECORDS / 2;
+		EXPECT_EQ((PID) (2 + MAX_DELTA_CHAIN - i), ((DeltaNode*)currentNode)->nextPid(0));
+		currentNode = ((DeltaNode*) currentNode)->getNextNode();
+	}
+
+	// currentNode now points to the index Node. Inspect.
+	EXPECT_EQ(INDEX, currentNode->getType());
+	EXPECT_EQ(1, ((IndexNode*)currentNode)->getCurrSize());
+	EXPECT_EQ(1, ((IndexNode*)currentNode)->getSmallestPID());
+	EXPECT_EQ(0, ((IndexNode*)currentNode)->getIndexPID(0));
+
+	// induce the consolidation of the index node. To ensure traversal
+	// of the delta chain, get from smallestPID
+	foundPayload = t.get(initialKey - 1, &man);
+	EXPECT_TRUE(foundPayload == nullptr);
+
+	// inspect resulting index node.
+	EXPECT_EQ(initialRootPID, t.rootPid_);
+	currentNode = t.map_->get(t.rootPid_);
+	EXPECT_EQ(INDEX, currentNode->getType());
+	// this should not have changed
+	EXPECT_EQ(1, ((IndexNode*)currentNode)->getSmallestPID());
+	EXPECT_EQ(1 + MAX_DELTA_CHAIN, ((IndexNode*)currentNode)->getCurrSize());
+	EXPECT_EQ(0, ((IndexNode*)currentNode)->getIndexPID(0));
+	// check that all the inserted nodes have the correct bucket
+	for(int i = 1; i <= MAX_DELTA_CHAIN; i++) {
+		EXPECT_EQ((PID) (2 + i), ((IndexNode*)currentNode)->getIndexPID(i));
+	}
 
 	END;
 

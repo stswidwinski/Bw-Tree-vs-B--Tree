@@ -91,11 +91,14 @@ int DeltaNode::getBorderKey() {
 bool DeltaNode::followSplit(int key) {
 	if(Node::type_ == DELTA_SPLIT ||
 		Node::type_ == DELTA_INDEX_SPLIT) {
-		if(key <= borderKey_ &&
-			key > splitKey_) {
-
+		// If the border key is not set and key > splitKey_
+		// OR 
+		// border key is set and key <= borderKey_ and key > splitKey).
+		// The following is logically equivalent.
+		if( (key > splitKey_) &&
+			(borderKey_ == KEY_NOT_SET ||
+				(borderKey_ >= key && key > splitKey_))) 
 			return true;
-		}
 	}
 
 	return false;
