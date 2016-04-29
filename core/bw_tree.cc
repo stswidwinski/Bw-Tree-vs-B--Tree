@@ -217,7 +217,7 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
               int key = ((DataNode*) chainEnd)->getDataKey(i);
               // if didn't find in P', then add key/val record from P to P' (P' new, P old)
               // P sorted
-              if ((kp != -1) && (key >= kp)) { 
+              if ((kp != -1) && (key > kp)) { 
                   break;
               }
 
@@ -232,7 +232,7 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
               int key = ((DataNode*) chainEnd)->getDataKey(i);
               // if didn't find in P', then add key/val record from P to P' (P' new, P old)
               // P sorted
-              if (key < kp) { 
+              if (key <= kp) { 
                   break;
               }
 
@@ -320,9 +320,9 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
                 break;
               }
               // should not encounter any key less than ks, since keys are in order
-              /*if (key < ks) {
-                  break; (shouldn't reach here)
-              }*/
+              if (key < ks) {
+                  break; 
+              }
 
               // if key > ks
               // just add to the new index node

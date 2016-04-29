@@ -69,7 +69,7 @@ bool DataNode::doSplit() {
 }
 
 int DataNode::getSplittingKey() {
-	return data_[dataLength_ / 2].key;
+	return data_[(dataLength_ - 1) / 2].key;
 }
 
 int DataNode::getHighKey() {
