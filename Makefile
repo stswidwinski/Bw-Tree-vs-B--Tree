@@ -55,6 +55,7 @@ MAKEFILE_TEMPLATE := Makefile.template
 include utils/Makefile.inc
 include nodes/Makefile.inc
 include core/Makefile.inc
+include benchmarks/Makefile.inc
 
 test: $(TESTS)
 
