@@ -25,11 +25,8 @@ using std::string;
 // the four parts of assignment 2, plus a simple serial (non-concurrent) mode.
 enum CCMode {
   SERIAL = 0,                  // Serial transaction execution (no concurrency)
-  LOCKING_EXCLUSIVE_ONLY = 1,  // Part 1A
-  LOCKING = 2,                 // Part 1B
-  OCC = 3,                     // Part 2
-  P_OCC = 4,                   // Part 3
-  MVCC = 5,
+  OCC = 1,                     // Part 2
+  P_OCC = 2                   // Part 3
 };
 
 // Returns a human-readable string naming of the providing mode.
@@ -126,9 +123,6 @@ class TxnProcessor {
 
   // Used it for critical section in parallel occ.
   Mutex active_set_mutex_;
-
-  // Lock Manager used for LOCKING concurrency implementations.
-  LockManager* lm_;
 };
 
 #endif  // _TXN_PROCESSOR_H_
