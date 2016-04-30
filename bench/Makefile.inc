@@ -4,7 +4,7 @@ OBJDIRS += bench
 UPPERC_DIR := BENCH
 LOWERC_DIR := bench
 
-BENCH_SRCS := bench/war.cc
+BENCH_SRCS := bench/txn_processor.cc
 
 SRC_LINKED_OBJECTS :=
 TEST_LINKED_OBJECTS :=

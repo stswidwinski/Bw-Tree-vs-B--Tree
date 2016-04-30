@@ -9,16 +9,13 @@
 #include <map>
 #include <string>
 
-#include "txn/common.h"
-#include "txn/lock_manager.h"
+#include "utils/common.h"
 #include "txn/storage.h"
-#include "txn/mvcc_storage.h"
 #include "txn/txn.h"
 #include "utils/atomic.h"
 #include "utils/static_thread_pool.h"
 #include "utils/mutex.h"
 #include "utils/condition.h"
-
 
 using std::deque;
 using std::map;
@@ -83,9 +80,6 @@ class TxnProcessor {
   // OCC version of scheduler with parallel validation.
   void RunOCCParallelScheduler();
   
-  // MVCC version of scheduler.
-  void RunMVCCScheduler();
-
   // Performs all reads required to execute the transaction, then executes the
   // transaction logic.
   void ExecuteTxn(Txn* txn);
@@ -94,15 +88,6 @@ class TxnProcessor {
   //
   // Requires: txn->Status() is COMPLETED_C.
   void ApplyWrites(Txn* txn);
-  
-  // The following functions are for MVCC
-  void MVCCExecuteTxn(Txn* txn);
-    
-  bool MVCCCheckWrites(Txn* txn);
-
-  void MVCCLockWriteKeys(Txn* txn);
-
-  void MVCCUnlockWriteKeys(Txn* txn);
   
   void GarbageCollection();
   

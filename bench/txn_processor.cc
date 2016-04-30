@@ -3,7 +3,7 @@
 // Modified by: Kun Ren (kun.ren@yale.edu)
 
 
-#include "txn/txn_processor.h"
+#include "bench/txn_processor.h"
 #include <stdio.h>
 #include <set>
 #include <algorithm>
