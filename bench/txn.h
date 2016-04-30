@@ -55,7 +55,7 @@ class Txn {
   // Requires: key appears in readset or writeset
   //
   // Note: Can ONLY be called from inside the 'Execute()' function.
-  bool Read(const Key& key, Value* value);
+  bool Read(const TKey& key, TValue* value);
 
   // Method to be used inside 'Execute()' function when writing records to
   // the database.
@@ -63,7 +63,7 @@ class Txn {
   // Requires: key appears in writeset
   //
   // Note: Can ONLY be called from inside the 'Execute()' function.
-  void Write(const Key& key, const Value& value);
+  void Write(const TKey& key, const TValue& value);
 
   // Macro to be used inside 'Execute()' function when deciding to COMMIT.
   //
@@ -85,16 +85,16 @@ class Txn {
 
   // Set of all keys that may need to be read in order to execute the
   // transaction.
-  set<Key> readset_;
+  set<TKey> readset_;
 
   // Set of all keys that may be updated when executing the transaction.
-  set<Key> writeset_;
+  set<TKey> writeset_;
 
   // Results of reads performed by the transaction.
-  map<Key, Value> reads_;
+  map<TKey, TValue> reads_;
 
-  // Key, Value pairs WRITTEN by the transaction.
-  map<Key, Value> writes_;
+  // TKey, TValue pairs WRITTEN by the transaction.
+  map<TKey, TValue> writes_;
 
   // Transaction's current execution status.
   TxnStatus status_;

@@ -100,8 +100,8 @@ typedef uint64_t uint64;
 
 // Key and value types
 // might need this later
-//typedef uint64 Key;
-//typedef uint64 Value;
+typedef uint64 TKey;
+typedef uint64 TValue;
 
 // Returns the number of seconds since midnight according to local system time,
 // to the nearest microsecond.
