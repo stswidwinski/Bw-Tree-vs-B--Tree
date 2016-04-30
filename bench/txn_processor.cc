@@ -340,76 +340,6 @@ void TxnProcessor::ExecuteTxnParallel(Txn* txn) {
   }
 }
 
-bool TxnProcessor::MVCCCheckWrites(Txn* txn) {
-  for (set<Key>::iterator it = txn->writeset_.begin();
-       it != txn->writeset_.end(); it++) {
-    if (!storage_->CheckWrite(*it, txn->unique_id_)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-void TxnProcessor::MVCCLockWriteKeys(Txn* txn) {
-  for (set<Key>::iterator it = txn->writeset_.begin();
-       it != txn->writeset_.end(); it++) {
-    storage_->Lock(*it);
-  }
-}
-
-void TxnProcessor::MVCCUnlockWriteKeys(Txn* txn) {
-  for (set<Key>::iterator it = txn->writeset_.begin();
-       it != txn->writeset_.end(); it++) {
-    storage_->Unlock(*it);
-  }
-}
-
-void TxnProcessor::MVCCExecuteTxn(Txn* txn) {
-
-  // Read everything in from readset.
-  for (set<Key>::iterator it = txn->readset_.begin();
-       it != txn->readset_.end(); it++) {
-    // lock the key before each read
-    storage_->Lock(*it);
-    // Save each read result iff record exists in storage.
-    Value result;
-    if (storage_->Read(*it, &result, txn->unique_id_))
-      txn->reads_[*it] = result;
-    storage_->Unlock(*it);
-  }
-
-  // Also read everything in from writeset.
-  for (set<Key>::iterator it = txn->writeset_.begin();
-       it != txn->writeset_.end(); it++) {
-    // lock the key before each read
-    storage_->Lock(*it);
-    // Save each read result iff record exists in storage.
-    Value result;
-    if (storage_->Read(*it, &result, txn->unique_id_))
-      txn->reads_[*it] = result;
-    storage_->Unlock(*it);
-  }
-
-  // Execute txn's program logic.
-  txn->Run();
-
-  // Lock keys of write set
-  MVCCLockWriteKeys(txn);
-
-  if (MVCCCheckWrites(txn)) {
-    ApplyWrites(txn);
-    // release all locks
-    MVCCUnlockWriteKeys(txn);
-    txn->status_ = COMMITTED;
-    txn_results_.Push(txn);
-  }
-  else {
-    MVCCUnlockWriteKeys(txn);
-    cleanup_txn(txn);
-    restart_txn(txn);
-  }
-}
-
 void TxnProcessor::ApplyWrites(Txn* txn) {
   // Write buffered writes out to storage.
   for (map<Key, Value>::iterator it = txn->writes_.begin();
@@ -432,53 +362,6 @@ void TxnProcessor::restart_txn(Txn *txn) {
     mutex_.Unlock();
 }
 
-void TxnProcessor::RunOCCScheduler() {
-  // CPSC 438/538:
-  //
-  // Implement this method!
-  //
-  // [For now, run serial scheduler in order to make it through the test
-  // suite]
-  Txn* txn;
-  while (tp_.Active()) {
-    // Start processing the next incoming transaction request.
-    if (txn_requests_.Pop(&txn)) {
-      tp_.RunTask(new Method<TxnProcessor, void, Txn*>(
-            this,
-            &TxnProcessor::ExecuteTxn,
-            txn));
-    }
-
-    // Process and commit all transactions that have finished running.
-    while (completed_txns_.Pop(&txn)) {
-      // get all keys in intersection of read and write set
-      set<Key> uni;
-      set_union(txn->writeset_.begin(),txn->writeset_.end(),txn->readset_.begin(),txn->readset_.end(), std::inserter(uni, uni.begin()));
-
-    // validation
-      std::set<Key>::iterator it;
-      bool isValid = true;
-      for (it = uni.begin(); it != uni.end(); ++it) {
-        double lastUpdate = storage_->Timestamp(*it);
-        if (lastUpdate > txn->occ_start_time_) {
-          isValid = false;
-          break;
-        }
-      }
-
-      if (!isValid) {
-        cleanup_txn(txn);
-        restart_txn(txn);
-      } else {
-        ApplyWrites(txn);
-        txn->status_ = COMMITTED;
-        // Return result to client.
-        txn_results_.Push(txn);
-      }
-    }
-  }
-}
-
 void TxnProcessor::RunOCCParallelScheduler() {
   // CPSC 438/538:
   //
@@ -498,22 +381,6 @@ void TxnProcessor::RunOCCParallelScheduler() {
       tp_.RunTask(new Method<TxnProcessor, void, Txn*>(
             this,
             &TxnProcessor::ExecuteTxnParallel,
-            txn));
-    }
-  }
-}
-
-void TxnProcessor::RunMVCCScheduler() {
-  // CPSC 438/538:
-  //
-
-  Txn* txn;
-  while (tp_.Active()) {
-    // Start processing the next incoming transaction request.
-    if (txn_requests_.Pop(&txn)) {
-      tp_.RunTask(new Method<TxnProcessor, void, Txn*>(
-            this,
-            &TxnProcessor::MVCCExecuteTxn,
             txn));
     }
   }
