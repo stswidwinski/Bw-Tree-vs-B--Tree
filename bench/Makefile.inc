@@ -1,10 +1,10 @@
-OBJDIRS += benchmarks 
+OBJDIRS += bench
 
 # Create template specific variables
-UPPERC_DIR := BENCHMARKS 
-LOWERC_DIR := benchmarks 
+UPPERC_DIR := BENCH
+LOWERC_DIR := bench
 
-BENCHMARKS_SRCS := benchmarks/txn_processor.cc 
+BENCH_SRCS := bench/war.cc
 
 SRC_LINKED_OBJECTS :=
 TEST_LINKED_OBJECTS :=
@@ -13,8 +13,8 @@ TEST_LINKED_OBJECTS :=
 include $(MAKEFILE_TEMPLATE)
 
 # Need to specify test cases explicitly because they have variables in recipe
-test-benchmarks: $(BENCHMARKS_TESTS)
-	@for a in $(BENCHMARKS_TESTS); do \
+test-bench: $(BENCH_TESTS)
+	@for a in $(BENCH_TESTS); do \
 		echo == $$a ==; \
 		$(LDLIBRARYPATH) $$a; \
 	done
