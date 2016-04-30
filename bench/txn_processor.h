@@ -10,8 +10,8 @@
 #include <string>
 
 #include "utils/common.h"
-#include "txn/storage.h"
-#include "txn/txn.h"
+#include "bench/storage.h"
+#include "bench/txn.h"
 #include "utils/atomic.h"
 #include "utils/static_thread_pool.h"
 #include "utils/mutex.h"
