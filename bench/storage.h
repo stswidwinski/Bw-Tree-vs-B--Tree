@@ -9,8 +9,8 @@
 #include <deque>
 #include <map>
 
-#include "txn/common.h"
-#include "txn/txn.h"
+#include "utils/common.h"
+#include "bench/txn.h"
 #include "utils/mutex.h"
 
 using std::tr1::unordered_map;
