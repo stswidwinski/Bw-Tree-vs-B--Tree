@@ -58,7 +58,6 @@ include core/Makefile.inc
 include experiments/Makefile.inc
 
 test: $(TESTS)
-	echo $(TESTS)
 
 clean:
 	rm -rf $(OBJDIR) $(BINDIR)
