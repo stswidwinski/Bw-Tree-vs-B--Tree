@@ -71,6 +71,8 @@ class StaticThreadPool : public ThreadPool {
     }
   }
 
+  // each thread spins waiting for requests from a particular AtomicQueue
+  // and can contain memory
   // Function executed by each pthread.
   static void* RunThread(void* arg) {
     int queue_id = reinterpret_cast<pair<int, StaticThreadPool*>*>(arg)->first;

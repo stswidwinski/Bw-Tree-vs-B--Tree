@@ -18,6 +18,7 @@
 TxnProcessor::TxnProcessor(CCMode mode)
     : mode_(mode), tp_(THREAD_COUNT), next_unique_id_(1) {
 
+        // allocates manager per thread?
         MemoryManager* man = new MemoryManager(30,30,30);
         tree_ = new BwTree();
         tree_->get(0,man);
@@ -37,7 +38,6 @@ TxnProcessor::TxnProcessor(CCMode mode)
   pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &cpuset);
   pthread_t scheduler_;
   pthread_create(&scheduler_, &attr, StartScheduler, reinterpret_cast<void*>(this));
-
 }
 
 void* TxnProcessor::StartScheduler(void * arg) {
@@ -73,31 +73,6 @@ void TxnProcessor::RunScheduler() {
   /*switch (mode_) {
     case SERIAL:                 RunSerialScheduler(); break;
   }*/
-}
-
-void TxnProcessor::RunSerialScheduler() {
-  Txn* txn;
-  while (tp_.Active()) {
-    // Get next txn request.
-    if (txn_requests_.Pop(&txn)) {
-      // Execute txn.
-      ExecuteTxn(txn);
-
-      // Commit/abort txn according to program logic's commit/abort decision.
-      if (txn->Status() == COMPLETED_C) {
-        ApplyWrites(txn);
-        txn->status_ = COMMITTED;
-      } else if (txn->Status() == COMPLETED_A) {
-        txn->status_ = ABORTED;
-      } else {
-        // Invalid TxnStatus!
-        DIE("Completed Txn has invalid TxnStatus: " << txn->Status());
-      }
-
-      // Return result to client.
-      txn_results_.Push(txn);
-    }
-  }
 }
 
 
