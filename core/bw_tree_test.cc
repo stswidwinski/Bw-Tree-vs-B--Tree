@@ -686,12 +686,13 @@ TEST(findNodeTest) {
 	int minValue = INIT_KEY_VALUE - 100 + 1;
 	int minV = minValue; //minV = 3900
 
+	int pages = 7;
+
 	BwTree * tree = new BwTree();
-	MemoryManager  * man = new MemoryManager(100, 100, 100);
+	MemoryManager  * man = new MemoryManager(0, 0, 0);
 	
 	DataNode * child;
 	DataNode * newPage;
-	int pages = 7;
 	int step = 10;
 	PID next;
 
