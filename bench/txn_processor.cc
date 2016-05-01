@@ -3,6 +3,8 @@
 // Modified by: Kun Ren (kun.ren@yale.edu)
 
 
+#include "core/mem_manager.h"
+#include "core/bw_tree.h"
 #include "bench/txn_processor.h"
 #include <stdio.h>
 #include <set>
@@ -15,8 +17,10 @@
 
 TxnProcessor::TxnProcessor(CCMode mode)
     : mode_(mode), tp_(THREAD_COUNT), next_unique_id_(1) {
-  storage_ = new Storage();
-  storage_->InitStorage();
+
+        MemoryManager* man = new MemoryManager(30,30,30);
+        tree_ = new BwTree();
+        tree_->get(0,man);
 
   // Start 'RunScheduler()' running.
   cpu_set_t cpuset;
@@ -42,7 +46,7 @@ void* TxnProcessor::StartScheduler(void * arg) {
 }
 
 TxnProcessor::~TxnProcessor() {
-  delete storage_;
+  delete tree_;
 }
 
 void TxnProcessor::NewTxnRequest(Txn* txn) {
@@ -66,11 +70,9 @@ Txn* TxnProcessor::GetTxnResult() {
 }
 
 void TxnProcessor::RunScheduler() {
-  switch (mode_) {
+  /*switch (mode_) {
     case SERIAL:                 RunSerialScheduler(); break;
-    case OCC:                    RunOCCScheduler(); break;
-    case P_OCC:                  RunOCCParallelScheduler(); break;
-  }
+  }*/
 }
 
 void TxnProcessor::RunSerialScheduler() {
@@ -105,7 +107,7 @@ void TxnProcessor::ExecuteTxn(Txn* txn) {
   txn->occ_start_time_ = GetTime();
 
   // Read everything in from readset.
-  for (set<TKey>::iterator it = txn->readset_.begin();
+/*  for (set<TKey>::iterator it = txn->readset_.begin();
        it != txn->readset_.end(); ++it) {
     // Save each read result iff record exists in storage.
     TValue result;
@@ -120,7 +122,7 @@ void TxnProcessor::ExecuteTxn(Txn* txn) {
     TValue result;
     if (storage_->Read(*it, &result))
       txn->reads_[*it] = result;
-  }
+  }*/
 
   // Execute txn's program logic.
   txn->Run();
@@ -138,8 +140,7 @@ void TxnProcessor::ExecuteTxnParallel(Txn* txn) {
   for (set<TKey>::iterator it = txn->readset_.begin();
        it != txn->readset_.end(); ++it) {
     // Save each read result iff record exists in storage.
-    TValue result;
-    if (storage_->Read(*it, &result))
+/*    if (storage_->Read(*it, &result))
       txn->reads_[*it] = result;
   }
 
@@ -150,7 +151,7 @@ void TxnProcessor::ExecuteTxnParallel(Txn* txn) {
     TValue result;
     if (storage_->Read(*it, &result))
       txn->reads_[*it] = result;
-  }
+  }*/
 
   // Execute txn's program logic.
   txn->Run();
@@ -162,44 +163,8 @@ void TxnProcessor::ExecuteTxnParallel(Txn* txn) {
   active_set_mutex_.Unlock();
 
   // validation
-  set<TKey> uni;
-  set_union(txn->writeset_.begin(),txn->writeset_.end(),txn->readset_.begin(),txn->readset_.end(), std::inserter(uni, uni.begin()));
-  std::set<TKey>::iterator it;
-  bool isValid = true;
-  for (it = uni.begin(); it != uni.end(); ++it) {
-    double lastUpdate = storage_->Timestamp(*it);
-    if (lastUpdate > txn->occ_start_time_) {
-      isValid = false;
-      break;
-    }
-  }
 
-  if(isValid) {
-      std::set<Txn*>::iterator iter;
-      for (iter = localSet.begin(); iter != localSet.end(); ++iter) {
-        set<TKey> readInts, writeInts, write2Ints;
-        // check if txn's write set intersects with t's read or write set
-        set_intersection(txn->writeset_.begin(),txn->writeset_.end(),(*iter)->readset_.begin(),(*iter)->readset_.end(), std::inserter(readInts, readInts.begin()));
-        if(!writeInts.empty()) {
-            isValid = false;
-            break;
-        }
-        set_intersection(txn->writeset_.begin(),txn->writeset_.end(), (*iter)->writeset_.begin(), (*iter)->writeset_.end(), std::inserter(writeInts, writeInts.begin()));
-        if(!readInts.empty()) {
-            isValid = false;
-            break;
-        }
-
-        // check if txn's read set intersects with t's write set
-        set_intersection(txn->readset_.begin(),txn->readset_.end(),(*iter)->writeset_.begin(),(*iter)->writeset_.end(), std::inserter(write2Ints, write2Ints.begin()));
-        if(!write2Ints.empty()) {
-            isValid = false;
-            break;
-        }
-      }
-  }
-
-  if (isValid) {
+/*  if (isValid) {
     ApplyWrites(txn);
     active_set_mutex_.Lock();
     active_set_.Erase(txn);
@@ -213,15 +178,16 @@ void TxnProcessor::ExecuteTxnParallel(Txn* txn) {
     active_set_mutex_.Unlock();
     cleanup_txn(txn);
     restart_txn(txn);
-  }
+  }*/
+}
 }
 
 void TxnProcessor::ApplyWrites(Txn* txn) {
   // Write buffered writes out to storage.
-  for (map<TKey, TValue>::iterator it = txn->writes_.begin();
+/*  for (map<TKey, TValue>::iterator it = txn->writes_.begin();
        it != txn->writes_.end(); ++it) {
     storage_->Write(it->first, it->second, txn->unique_id_);
-  }
+  }*/
 }
 
 void TxnProcessor::cleanup_txn(Txn *txn) {

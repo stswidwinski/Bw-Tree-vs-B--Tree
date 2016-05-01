@@ -9,8 +9,8 @@
 #include <map>
 #include <string>
 
+#include "core/bw_tree.h"
 #include "utils/common.h"
-#include "bench/storage.h"
 #include "bench/txn.h"
 #include "utils/atomic.h"
 #include "utils/static_thread_pool.h"
@@ -95,7 +95,7 @@ class TxnProcessor {
   StaticThreadPool tp_;
 
   // Data storage used for all modes.
-  Storage* storage_;
+  BwTree* tree_;
 
   // Next valid unique_id, and a mutex to guard incoming txn requests.
   int next_unique_id_;
