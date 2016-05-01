@@ -82,6 +82,14 @@
 #define INIT_KEY_VALUE 65536
 
 
+/*
+	Memory manager variables
+*/
+#define DATA_NODES_COUNT 10000
+#define DELTA_NODES_COUNT 100000
+#define INDEX_NODES_COUNT 123123
+#define MEM_MANAGER_TEST true
+
 typedef uint64_t PID;
 typedef unsigned char byte;
 typedef unsigned int BKey;

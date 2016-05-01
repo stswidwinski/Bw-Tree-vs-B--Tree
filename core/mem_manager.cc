@@ -13,7 +13,39 @@ MemoryManager::MemoryManager(int dataNodeCount,
 	deltaNodes_ = initialize(DELTA_INSERT, deltaNodeCount);
 }
 
+// initialize the memory manager according to sizes described 
+// inside common.h.
+MemoryManager::MemoryManager() {
+	if(!MEM_MANAGER_TEST) {
+		MemoryManager(DATA_NODES_COUNT, 
+			DELTA_NODES_COUNT, 
+			INDEX_NODES_COUNT);
+		return;
+	}
+
+	// memory will be allocated at run-time
+	MemoryManager(0, 0, 0);
+}
+
 Node* MemoryManager::getNode(NodeType type) {
+	// in test mode allocate data on the fly.
+	if(MEM_MANAGER_TEST) {
+		switch(type) {
+			case INDEX:
+				index_ ++;
+				return new IndexNode();
+			case DATA:
+				data_ ++;
+				return new DataNode();
+			case DELTA_INSERT:
+			case DELTA_UPDATE:
+			case DELTA_SPLIT:
+			case DELTA_INDEX_SPLIT:
+				delta_ ++;
+				return new DeltaNode();
+			}
+	}
+
 	switch(type) {
 		case INDEX:
 			index_ ++;

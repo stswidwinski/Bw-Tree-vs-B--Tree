@@ -1,0 +1,143 @@
+// Author: Alexander Thomson (thomson@cs.yale.edu)
+// Modified by: Kun Ren (kun.ren@yale.edu)
+
+#include "experiments/txn_processor.h"
+#include "experiments/experiments_common.h"
+#include "experiments/txn.h"
+
+#include <vector>
+#include <iostream>
+
+#include "utils/common.h"
+#include "utils/testing.h"
+
+class LoadGen {
+ public:
+  virtual ~LoadGen() {}
+  virtual Txn* NewTxn() = 0;
+};
+
+// Read Update Insert Load Generator
+class RUILoadGen : public LoadGen {
+  public:
+    RUILoadGen(int dbsize, int rsetsize, int usetsize, int isetsize, double wait_time) 
+      : dbsize_(dbsize),
+      rsetsize_(rsetsize),
+      usetsize_(usetsize),
+      isetsize_(isetsize),
+      wait_time_(wait_time)
+      {}
+
+    // read, update and insert give the percentages of actions executed. 
+    // They must sum to 100. 
+    virtual Txn* NewTxn(int read = 50, int update = 40, int insert = 10) {
+      assert(read + update + insert == 100);
+
+      int txnType = rand() % 100;
+      int key = rand() % dbsize_;
+      byte* payload = new byte[LENGTH_RECORDS];
+      for(int i = 0; i < LENGTH_RECORDS; i++) {
+        payload[i] = (byte) i;
+      }
+
+      if(txnType < read) {
+        delete[] payload;
+        return new Txn(READ, key);
+      } else if (txnType < read + update) {
+        return new Txn(UPDATE, key, payload);
+      } else {
+        return new Txn(INSERT, key, payload);
+      }
+    }
+
+  private:
+    int dbsize_;
+    int rsetsize_;
+    int usetsize_;
+    int isetsize_;
+    double wait_time_;
+};
+
+void Benchmark(const vector<LoadGen*>& lg) {
+  // Number of transaction requests that can be active at any given time.
+  int active_txns = 100;
+  deque<Txn*> doneTxns;
+  
+  // For each experiment, run 3 times and get the average.
+  for (unsigned int exp = 0; exp < lg.size(); exp++) {
+    double throughput[3];
+    for (unsigned int round = 0; round < 3; round++) {
+
+      int txn_count = 0;
+
+      // Create TxnProcessor in next mode.
+      TxnProcessor* p = new TxnProcessor();
+
+      // Record start time.
+      double start = GetTime();
+
+      // Start specified number of txns running.
+      for (int i = 0; i < active_txns; i++)
+        p->NewTxnRequest(lg[exp]->NewTxn());
+
+      // Keep 100 active txns at all times for the first full second.
+      while (GetTime() < start + 1) {
+        Txn* txn = p->GetTxnResult();
+        doneTxns.push_back(txn);
+        txn_count++;
+        p->NewTxnRequest(lg[exp]->NewTxn());
+      }
+
+      // Wait for all of them to finish.
+      for (int i = 0; i < active_txns; i++) {
+        Txn* txn = p->GetTxnResult();
+        doneTxns.push_back(txn);
+        txn_count++;
+      }
+
+      // Record end time.
+      double end = GetTime();
+    
+      throughput[round] = txn_count / (end-start);
+
+      doneTxns.clear();
+      delete p;
+    }
+    
+    // Print throughput
+    cout << "\t" << (throughput[0] + throughput[1] + throughput[2]) / 3 << "\t" << flush;
+  }
+
+  cout << endl;
+}
+
+int main(int argc, char** argv) {
+  // cout << "\t\t\t    Average Transaction Duration" << endl;
+  // cout << "\t\t0.1ms\t\t1ms\t\t10ms";
+  // cout << endl;
+
+  cpu_set_t cs;
+  CPU_ZERO(&cs);
+  CPU_SET(7, &cs);
+  int ret = sched_setaffinity(0, sizeof(cs), &cs);
+  if (ret) {
+    perror("sched_setaffinity");
+    assert(false);
+  }
+
+  // the following is left as a reference.
+  vector<LoadGen*> lg;
+
+  // cout << "'Low contention' Read only (5 records)" << endl;
+  // lg.push_back(new RMWLoadGen(1000000, 5, 0, 0.0001));
+  // lg.push_back(new RMWLoadGen(1000000, 5, 0, 0.001));
+  // lg.push_back(new RMWLoadGen(1000000, 5, 0, 0.01));
+
+  // Benchmark(lg);
+
+  for (unsigned int i = 0; i < lg.size(); i++)
+    delete lg[i];
+  lg.clear();
+  
+}
+

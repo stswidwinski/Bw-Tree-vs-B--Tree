@@ -25,6 +25,8 @@ class MemoryManager {
 			int indexNodeCount,
 			int deltaNodeCount);
 
+		MemoryManager();
+
 		// server node of given type
 		Node* getNode(NodeType type);
 
