@@ -24,47 +24,50 @@ class LoadGen {
  public:
   virtual ~LoadGen() {}
   virtual Txn* NewTxn() = 0;
+  virtual int GetInitSize() = 0;
 };
 
 // Read Update Insert Load Generator
 class RUILoadGen : public LoadGen {
   public:
-    RUILoadGen(int dbsize, int rsetsize, int usetsize, int isetsize, double wait_time) 
-      : dbsize_(dbsize),
-      rsetsize_(rsetsize),
-      usetsize_(usetsize),
-      isetsize_(isetsize),
-      wait_time_(wait_time)
-      {}
+    RUILoadGen(int initDbSize, int readPerc, int updatePerc, int insertPerc) 
+      : dbInitSize_(initDbSize),
+      readPerc_(readPerc),
+      updatePerc_(updatePerc),
+      insertPerc_(insertPerc)
+      {
+        assert(readPerc + updatePerc + insertPerc == 100);
+      }
 
     // read, update and insert give the percentages of actions executed. 
     // They must sum to 100. 
-    virtual Txn* NewTxn(int read = 50, int update = 40, int insert = 10) {
-      assert(read + update + insert == 100);
-
+    virtual Txn* NewTxn() {
       int txnType = rand() % 100;
-      int key = rand() % dbsize_;
+      int key = rand() % UINT64_MAX;
       byte* payload = new byte[LENGTH_RECORDS];
       for(int i = 0; i < LENGTH_RECORDS; i++) {
         payload[i] = (byte) i;
       }
 
-      if(txnType < read) {
+      if(txnType < readPerc_) {
         delete[] payload;
         return new Txn(READ, key);
-      } else if (txnType < read + update) {
+      } else if (txnType < readPerc_ + updatePerc_) {
         return new Txn(UPDATE, key, payload);
       } else {
         return new Txn(INSERT, key, payload);
       }
     }
 
+    virtual int GetInitSize() {
+      return dbInitSize_;
+    }
+
   private:
-    int dbsize_;
-    int rsetsize_;
-    int usetsize_;
-    int isetsize_;
-    double wait_time_;
+    int dbInitSize_;
+    int readPerc_;
+    int updatePerc_;
+    int insertPerc_;
 };
 
 void Benchmark(const vector<LoadGen*>& lg) {
@@ -87,6 +90,20 @@ void Benchmark(const vector<LoadGen*>& lg) {
 
         // Create TxnProcessor in next mode.
         TxnProcessor* p = new TxnProcessor(mode);
+          
+          // initialize the size of the tree
+          int size = 0;
+          while(size < lg[exp]->GetInitSize()) {
+            p->NewTxnRequest(lg[exp]->NewTxn());
+            size++;
+          }
+
+          // Wait for all of them to finish.
+          for (int i = 0; i < size; i++) {
+            Txn* txn = p->GetTxnResult();
+            doneTxns.push_back(txn);
+          }
+          doneTxns.clear();
 
         // Record start time.
         double start = GetTime();
@@ -127,9 +144,9 @@ void Benchmark(const vector<LoadGen*>& lg) {
 }
 
 int main(int argc, char** argv) {
-  // cout << "\t\t\t    Average Transaction Duration" << endl;
-  // cout << "\t\t0.1ms\t\t1ms\t\t10ms";
-  // cout << endl;
+  cout << "\t\t\t    Initial Tree Size" << endl;
+  cout << "\t\t100\t\t10000\t\t10000000";
+  cout << endl;
 
   cpu_set_t cs;
   CPU_ZERO(&cs);
@@ -143,12 +160,12 @@ int main(int argc, char** argv) {
   // the following is left as a reference.
   vector<LoadGen*> lg;
 
-  // cout << "'Low contention' Read only (5 records)" << endl;
-  // lg.push_back(new RMWLoadGen(1000000, 5, 0, 0.0001));
-  // lg.push_back(new RMWLoadGen(1000000, 5, 0, 0.001));
-  // lg.push_back(new RMWLoadGen(1000000, 5, 0, 0.01));
+  cout << "Insert only, huge key space." << endl;
+  lg.push_back(new RUILoadGen(100, 0, 0, 100));
+  lg.push_back(new RUILoadGen(100, 0, 0, 100));
+  lg.push_back(new RUILoadGen(100, 0, 0, 100));
 
-  // Benchmark(lg);
+  Benchmark(lg);
 
   for (unsigned int i = 0; i < lg.size(); i++)
     delete lg[i];
