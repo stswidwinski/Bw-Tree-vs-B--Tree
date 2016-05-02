@@ -14,14 +14,20 @@ class TxnProcessor;
 #include "experiments/static_thread_pool.h"
 #include "core/bw_tree.h"
 #include "core/mem_manager.h"
+#include <iostream>
 
 using std::vector;
+
+enum BwMode {
+  SERIAL = 0,                  // Serial transaction execution (no concurrency)
+  CONCUR = 1                   // Concurrent mode -- 8 threads.  
+};
 
 class TxnProcessor {
  public:
   // The TxnProcessor's constructor starts the TxnProcessor running in the
   // background.
-  explicit TxnProcessor();
+  explicit TxnProcessor(BwMode mode);
 
   // The TxnProcessor's destructor stops all background threads and deallocates
   // all objects currently owned by the TxnProcessor, except for Txn objects.
@@ -37,6 +43,10 @@ class TxnProcessor {
 
   // Main loop implementing all concurrency control/thread scheduling.
   void RunScheduler();
+
+  void RunSerialScheduler();
+
+  void RunConcurScheduler();
   
   static void* StartScheduler(void * arg);
   
@@ -58,6 +68,10 @@ class TxnProcessor {
   // to client.
   AtomicQueue<Txn*> txn_results_;
 
+  BwMode mode_;
+
+  // for serial mode.
+  MemoryManager* man;
 };
 
 #endif  // _TXN_PROCESSOR_H_

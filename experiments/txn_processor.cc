@@ -9,9 +9,12 @@
 // Thread & queue counts for StaticThreadPool initialization.
 #define THREAD_COUNT 8
 
-TxnProcessor::TxnProcessor()
-    : tp_(THREAD_COUNT) {
+TxnProcessor::TxnProcessor(BwMode mode)
+    : tp_(THREAD_COUNT), mode_(mode) {
   tree_ = new BwTree();
+  
+  if(mode_ == SERIAL)
+    man = new MemoryManager();
   
   // Start 'RunScheduler()' running.
   cpu_set_t cpuset;
@@ -36,6 +39,10 @@ void* TxnProcessor::StartScheduler(void * arg) {
 }
 
 TxnProcessor::~TxnProcessor() {
+  if(mode_ == SERIAL) {
+    std::cout << "\t SERIAL execution ended. Used:\n";
+    man->reportUsage();
+  }
 }
 
 void TxnProcessor::NewTxnRequest(Txn* txn) {
@@ -53,7 +60,25 @@ Txn* TxnProcessor::GetTxnResult() {
   return txn;
 }
 
+
 void TxnProcessor::RunScheduler() {
+  switch (mode_) {
+    case SERIAL:                 RunSerialScheduler(); break;
+    case CONCUR:                 RunConcurScheduler(); break;
+  }
+}
+
+void TxnProcessor::RunSerialScheduler() {
+  Txn* txn;
+  while(tp_.Active()) {
+    // start processing the next incoming transaction request
+    if(txn_requests_.Pop(&txn)) {
+      ExecuteTxn(txn, man);
+    }
+  }
+}
+
+void TxnProcessor::RunConcurScheduler() {
   Txn* txn;
   while(tp_.Active()) {
     // start processing the next incoming transaction request

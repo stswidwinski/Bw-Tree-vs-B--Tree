@@ -11,6 +11,15 @@
 #include "utils/common.h"
 #include "utils/testing.h"
 
+// Returns a human-readable string naming of the providing mode.
+string ModeToString(BwMode mode) {
+  switch (mode) {
+    case SERIAL:                 return " Serial   ";
+    case CONCUR:                 return "Concurrent";
+    default:                     return "INVALID MODE";
+  }
+}
+
 class LoadGen {
  public:
   virtual ~LoadGen() {}
@@ -63,51 +72,57 @@ void Benchmark(const vector<LoadGen*>& lg) {
   int active_txns = 100;
   deque<Txn*> doneTxns;
   
-  // For each experiment, run 3 times and get the average.
-  for (unsigned int exp = 0; exp < lg.size(); exp++) {
-    double throughput[3];
-    for (unsigned int round = 0; round < 3; round++) {
+  // For each MODE...
+  for (BwMode mode = SERIAL;
+      mode <= CONCUR;
+      mode = static_cast<BwMode>(mode+1)) {
+    // Print out mode name.
+    cout << ModeToString(mode) << flush;
+    // For each experiment, run 3 times and get the average.
+    for (unsigned int exp = 0; exp < lg.size(); exp++) {
+      double throughput[3];
+      for (unsigned int round = 0; round < 3; round++) {
 
-      int txn_count = 0;
+        int txn_count = 0;
 
-      // Create TxnProcessor in next mode.
-      TxnProcessor* p = new TxnProcessor();
+        // Create TxnProcessor in next mode.
+        TxnProcessor* p = new TxnProcessor(mode);
 
-      // Record start time.
-      double start = GetTime();
+        // Record start time.
+        double start = GetTime();
 
-      // Start specified number of txns running.
-      for (int i = 0; i < active_txns; i++)
-        p->NewTxnRequest(lg[exp]->NewTxn());
+        // Start specified number of txns running.
+        for (int i = 0; i < active_txns; i++)
+          p->NewTxnRequest(lg[exp]->NewTxn());
 
-      // Keep 100 active txns at all times for the first full second.
-      while (GetTime() < start + 1) {
-        Txn* txn = p->GetTxnResult();
-        doneTxns.push_back(txn);
-        txn_count++;
-        p->NewTxnRequest(lg[exp]->NewTxn());
+        // Keep 100 active txns at all times for the first full second.
+        while (GetTime() < start + 1) {
+          Txn* txn = p->GetTxnResult();
+          doneTxns.push_back(txn);
+          txn_count++;
+          p->NewTxnRequest(lg[exp]->NewTxn());
+        }
+
+        // Wait for all of them to finish.
+        for (int i = 0; i < active_txns; i++) {
+          Txn* txn = p->GetTxnResult();
+          doneTxns.push_back(txn);
+          txn_count++;
+        }
+
+        // Record end time.
+        double end = GetTime();
+      
+        throughput[round] = txn_count / (end-start);
+
+        doneTxns.clear();
+        delete p;
       }
-
-      // Wait for all of them to finish.
-      for (int i = 0; i < active_txns; i++) {
-        Txn* txn = p->GetTxnResult();
-        doneTxns.push_back(txn);
-        txn_count++;
-      }
-
-      // Record end time.
-      double end = GetTime();
-    
-      throughput[round] = txn_count / (end-start);
-
-      doneTxns.clear();
-      delete p;
+      
+      // Print throughput
+      cout << "\t" << (throughput[0] + throughput[1] + throughput[2]) / 3 << "\t" << flush;
     }
-    
-    // Print throughput
-    cout << "\t" << (throughput[0] + throughput[1] + throughput[2]) / 3 << "\t" << flush;
   }
-
   cout << endl;
 }
 

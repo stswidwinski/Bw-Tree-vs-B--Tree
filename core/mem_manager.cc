@@ -85,3 +85,10 @@ LinkedList<Node>* MemoryManager::initialize(NodeType type, int count) {
 
 	return result;
 }
+
+void MemoryManager::reportUsage() {
+	std::cout << "\tTestFlag:\t" << MEM_MANAGER_TEST << "\n";
+	std::cout << "\tDataNodes:\t" << data_ << "\n";
+	std::cout << "\tIndexNodes:\t" << index_ << "\n";
+	std::cout << "\tDeltaNodes:\t" << delta_ << "\n";
+}

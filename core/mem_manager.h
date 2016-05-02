@@ -18,6 +18,7 @@
 #include "nodes/delta_node.h"
 #include "utils/common.h"
 #include "utils/linked_list.cc"
+#include <iostream>
 
 class MemoryManager {
 	public:
@@ -30,6 +31,7 @@ class MemoryManager {
 		// server node of given type
 		Node* getNode(NodeType type);
 
+		void reportUsage();
 	private:
 		// arrays of nodes
 		LinkedList<Node>* dataNodes_;
