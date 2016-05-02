@@ -14,9 +14,10 @@ MemoryManager::MemoryManager(int dataNodeCount,
 }
 
 MemoryManager::~MemoryManager() {
-	delete dataNodes_;
-	delete indexNodes_;
-	delete deltaNodes_;
+	if(!MEM_MANAGER_TEST)
+		delete dataNodes_;
+		delete indexNodes_;
+		delete deltaNodes_;
 }
 
 // initialize the memory manager according to sizes described 
