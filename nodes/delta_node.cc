@@ -97,7 +97,7 @@ bool DeltaNode::followSplit(int key) {
 		// The following is logically equivalent.
 		if( (key > splitKey_) &&
 			(borderKey_ == KEY_NOT_SET ||
-				(borderKey_ >= key && key > splitKey_))) 
+				(borderKey_ >= key))) 
 			return true;
 	}
 

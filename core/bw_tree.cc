@@ -36,6 +36,8 @@ In the case of any write (insert/update) we want a pointer to the node that cont
 (the PID of that page). We must also ensure that the value either exists (in case of update) or does not exist (in case of insert). 
 Hence, we actually need both PID and Node*
 
+This function also handles consolidates and splits, which means
+it detects when the delta chain length has grown too long.
 */
 Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	// necessary for splits
@@ -102,6 +104,10 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 
 				// following split means taking side pointer
 				if(((DeltaNode*)currentNode)->followSplit(key)) {
+                                        // if took side pointer, reset because
+                                        // the old count is no longer relevant
+                                        // (i.e., those deltas only pertained to
+                                        // those keys <= the split key)
 					chainLength = 0;
 					firstInChain = nullptr;
 					parentPid = currentPid;
@@ -170,39 +176,42 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	}	
 }
 
+// function used in both consolidation and splitting
 void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* man) {
 	Node* chainEnd = oldPt;
 	NodeType type = chainEnd->getType();
 
+        // check if kp is set, to determine if we are splitting or consolidating
+        // isSplit = 1 if splitting, isSplit = 0 if consolidating
         bool isSplit = (kp == -1) ? 0 : 1;
 	
 	while(type != DATA) {
-		// split delta
-        if ((kp == -1) && (type == DELTA_SPLIT)) { 
-            // if spit, low key and high key are different
-            // so is the side pointer
-            kp = ((DeltaNode*) chainEnd)->getSplitKey();
-            PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
-            newPt->setSidePter(sideP); // set new to old side pointer
-            newPt->setLowKey(oldPt->getLowKey());//low key of old
-            newPt->setHighKey(kp);//high key of kp
-        } else if (type == DELTA_INSERT || type == DELTA_UPDATE) {
-            int key = ((DeltaNode*) chainEnd)->getKey();//get key
-            byte * val = ((DeltaNode*) chainEnd)->getValue();//get payload 
-            // for inserting chain data, we need to make sure 
-            // the key is less than kp if there is a kp to consider in order to add it
-            // otherwise, there is no kp to consider, so we just insert it all
-            if ((kp == -1 || (key < kp)) && !isSplit) {
-                newPt->insertChainData(key, val);
-            }
+	    // split delta
+            if ((kp == -1) && (type == DELTA_SPLIT)) { 
+                // if spit, low key and high key are different
+                // so is the side pointer
+                kp = ((DeltaNode*) chainEnd)->getSplitKey();
+                PID sideP = ((DeltaNode*) chainEnd)->getSidePtr();
+                newPt->setSidePter(sideP); // set new to old side pointer
+                newPt->setLowKey(oldPt->getLowKey());//low key of old
+                newPt->setHighKey(kp);//high key of kp
+            } else if (type == DELTA_INSERT || type == DELTA_UPDATE) {
+                int key = ((DeltaNode*) chainEnd)->getKey();//get key
+                byte * val = ((DeltaNode*) chainEnd)->getValue();//get payload 
+                // for inserting chain data, we need to make sure 
+                // the key is less than kp if there is a kp to consider in order to add it
+                // otherwise, there is no kp to consider, so we just insert it all
+                if ((kp == -1 || (key < kp)) && !isSplit) {
+                    newPt->insertChainData(key, val);
+                }
 
-            if (isSplit && (key >= kp)) {
-                newPt->insertChainData(key, val);
-            }
-        } 
-        // go to next node in chain
-        chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
-        type = chainEnd->getType();
+                if (isSplit && (key >= kp)) {
+                    newPt->insertChainData(key, val);
+                }
+            } 
+            // go to next node in chain
+            chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+            type = chainEnd->getType();
 	}
 	// sort the things already inside newPt (from chain)
 	newPt->mergesort();
@@ -342,27 +351,27 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
 }
 
 void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) {
-    // 1. get type
-	Node* chainEnd = bot;
-	while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
-		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
-	}
+    // 1. get type of node at end of delta chain
+    // to determine what consolidation to perform
+    Node* chainEnd = bot;
+    while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
+            chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+    }
     NodeType type = chainEnd->getType();
         
     // 2. data
-	if (type == DATA) {
-            Node* newPage = (DataNode*) man->getNode(DATA); 
-     	    populate((DataNode*) top, (DataNode*) newPage, -1, man);
-            map_->CAS(topPID, top, newPage);//might need to screw with this
+    if (type == DATA) {
+        Node* newPage = (DataNode*) man->getNode(DATA); 
+        populate((DataNode*) top, (DataNode*) newPage, -1, man);
+        map_->CAS(topPID, top, newPage);//might need to screw with this
     }
 
     // 3. index 
-	if (type == INDEX) {
-            Node* newPage = (IndexNode*) man->getNode(INDEX); 
-     	    populate((IndexNode*) top, (IndexNode*) newPage, -1, man);
-     	    map_->CAS(topPID, top, newPage);//might need to screw with this
+    if (type == INDEX) {
+        Node* newPage = (IndexNode*) man->getNode(INDEX); 
+        populate((IndexNode*) top, (IndexNode*) newPage, -1, man);
+        map_->CAS(topPID, top, newPage);//might need to screw with this
     }
-
 }
 
 
@@ -438,7 +447,7 @@ void BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Nod
 
 	DataNode* newNode = (DataNode*) man->getNode(DATA);
 
-    // Kp should not be -1
+        // Kp should not be -1
 	populate(toSplit, newNode, Kp, man);
 
 	PID newNodePid = map_->put(newNode);

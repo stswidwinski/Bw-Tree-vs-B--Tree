@@ -3,7 +3,7 @@
 #include "utils/common.h"
 #include <string>
 
-/* TODO -- TESTS WE SHOULD EVENUALLY WRITE
+/* TODO -- TESTS WE SHOULD EVENTUALLY WRITE
 
 	1) Insert an element to a page. The insertion triggers consolidation
 	AND then split. Check that the insertion is correct both in case of 
@@ -175,7 +175,7 @@ TEST(chainInsert) {
 	// only insert to the right kid. 
 	int initialKey = INIT_KEY_VALUE + 1;
 
-	// payload has monotinically increasing 
+	// payload has monotonically increasing 
 	// value from i to i+LENGTH_RECORDS
 	byte* payload = new byte[LENGTH_RECORDS];
 
@@ -213,7 +213,7 @@ TEST(chainInsert) {
 	END;
 }
 
-// insert a single value via BwTree.insert and update is MAX_DELTA_CHAIN-1
+// insert a single value via BwTree.insert and update it MAX_DELTA_CHAIN-1
 // times. Inspect the resulting delta chain.
 TEST(chainUpdate) {
 	BwTree t = BwTree();
@@ -222,7 +222,7 @@ TEST(chainUpdate) {
 	// only insert to the right kid. 
 	int initialKey = INIT_KEY_VALUE + 1;
 
-	// payload has monotinically increasing 
+	// payload has monotonically increasing 
 	// value from i to i+LENGTH_RECORDS
 	byte* payload = new byte[LENGTH_RECORDS];
 
@@ -282,7 +282,7 @@ TEST(dataNodeInsertConsolidateTest) {
 	// insert only to the initial right kid.
 	int initialKey = INIT_KEY_VALUE + 1;
 
-	// payload has monotinically increasing 
+	// payload has monotonically increasing 
 	// value from i to i+LENGTH_RECORDS
 	byte* payload = new byte[LENGTH_RECORDS];
 
@@ -294,6 +294,7 @@ TEST(dataNodeInsertConsolidateTest) {
 	}
 
 	// attempt to get unexisting record. Should trigger consolidation
+        // will search in right kid
 	byte* foundPayload = t.get(MAX_DELTA_CHAIN + 1 + initialKey, &man);
 	
 	// we should get null as the answer.
@@ -372,7 +373,7 @@ TEST(dataNodeInsertConsolidateByInsertTest) {
 	// insert only to the initial right kid.
 	int initialKey = INIT_KEY_VALUE + 1;
 
-	// payload has monotinically increasing 
+	// payload has monotonically increasing 
 	// value from i to i+LENGTH_RECORDS
 	byte* payload = new byte[LENGTH_RECORDS];
 
@@ -686,12 +687,13 @@ TEST(findNodeTest) {
 	int minValue = INIT_KEY_VALUE - 100 + 1;
 	int minV = minValue; //minV = 3900
 
+	int pages = 7;
+
 	BwTree * tree = new BwTree();
-	MemoryManager  * man = new MemoryManager(100, 100, 100);
+	MemoryManager  * man = new MemoryManager(0, 0, 0);
 	
 	DataNode * child;
 	DataNode * newPage;
-	int pages = 7;
 	int step = 10;
 	PID next;
 
