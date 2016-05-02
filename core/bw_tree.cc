@@ -104,6 +104,10 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 
 				// following split means taking side pointer
 				if(((DeltaNode*)currentNode)->followSplit(key)) {
+                                        // if took side pointer, reset because
+                                        // the old count is no longer relevant
+                                        // (i.e., those deltas only pertained to
+                                        // those keys <= the split key)
 					chainLength = 0;
 					firstInChain = nullptr;
 					parentPid = currentPid;
