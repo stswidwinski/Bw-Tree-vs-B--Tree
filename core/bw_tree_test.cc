@@ -3,7 +3,7 @@
 #include "utils/common.h"
 #include <string>
 
-/* TODO -- TESTS WE SHOULD EVENUALLY WRITE
+/* TODO -- TESTS WE SHOULD EVENTUALLY WRITE
 
 	1) Insert an element to a page. The insertion triggers consolidation
 	AND then split. Check that the insertion is correct both in case of 
