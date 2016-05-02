@@ -13,8 +13,10 @@ TxnProcessor::TxnProcessor(BwMode mode)
     : tp_(THREAD_COUNT), mode_(mode) {
   tree_ = new BwTree();
   
-  if(mode_ == SERIAL)
-    man = new MemoryManager();
+  if(mode_ == SERIAL) {
+
+  }
+//    man = new MemoryManager();
   
   // Start 'RunScheduler()' running.
   cpu_set_t cpuset;
@@ -99,11 +101,11 @@ void TxnProcessor::ExecuteTxn(Txn* txn, MemoryManager* man) {
   switch(txn->type_) {
     case READ:
       txn->status_ = (tree_->get(txn->key_, man) == nullptr) ?
-        FAILURE : SUCCESS;
+      FAILURE : SUCCESS;
       break;
     case UPDATE:
       txn->status_ = tree_->update(txn->key_, txn->value_, man) ?
-        FAILURE : SUCCESS;
+      FAILURE : SUCCESS;
       break;
     case INSERT:
       txn->status_ = tree_->insert(txn->key_, txn->value_, man) ?

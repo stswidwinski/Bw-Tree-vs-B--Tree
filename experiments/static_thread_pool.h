@@ -57,17 +57,21 @@ class StaticThreadPool : public ThreadPool {
     int thread;
     do {
       thread = rand() % thread_count_;
-      ((Method<TxnProcessor, void, Txn*, MemoryManager*>*)task)->changeParam(&memMans_[thread]);
+      ((Method<TxnProcessor, void, Txn*, MemoryManager*>*)task)->changeParam(memMans_[thread]);
     } while (!queues_[thread].PushNonBlocking(task));
   }
 
   virtual int ThreadCount() { return thread_count_; }
 
- private:
+ public:
   void Start() {
     memMans_.resize(thread_count_);
     threads_.resize(thread_count_);
     queues_.resize(thread_count_);
+    // allocate nodes for memMans
+   for (int i = 0; i < thread_count_; i++) {
+       memMans_[i] = new MemoryManager(10000,10000,10000);
+   }
     
     // Pin all threads in the thread pool to CPU Core 0 ~ 6
     cpu_set_t cpuset;
@@ -131,7 +135,7 @@ class StaticThreadPool : public ThreadPool {
   vector<AtomicQueue<Task*> > queues_;
 
   // Memory manager queues
-  vector<MemoryManager> memMans_;
+  vector<MemoryManager*> memMans_;
 
   bool stopped_;
 };
