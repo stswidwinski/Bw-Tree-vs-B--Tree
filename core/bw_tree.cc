@@ -440,7 +440,7 @@ void BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Nod
 
 	DataNode* newNode = (DataNode*) man->getNode(DATA);
 
-    // Kp should not be -1
+        // Kp should not be -1
 	populate(toSplit, newNode, Kp, man);
 
 	PID newNodePid = map_->put(newNode);
