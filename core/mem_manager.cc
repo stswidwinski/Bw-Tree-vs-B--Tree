@@ -2,11 +2,7 @@
 
 MemoryManager::MemoryManager(long dataNodeCount,
 	long indexNodeCount,
-	long deltaNodeCount) {
-	
-	data_ = 0;
-	delta_ = 0;
-	index_ = 0;
+	long deltaNodeCount) : data_(0), delta_(0), index_(0) {
 
 	dataNodes_ = initialize(DATA, dataNodeCount);
 	indexNodes_ = initialize(INDEX, indexNodeCount);
@@ -52,6 +48,7 @@ Node* MemoryManager::getNode(NodeType type) {
 				delta_ ++;
 				return new DeltaNode();
 			}
+		DIE("Node Type Does Not Match");
 	}
 
 	switch(type) {
