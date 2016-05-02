@@ -353,26 +353,25 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
 void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) {
     // 1. get type of node at end of delta chain
     // to determine what consolidation to perform
-	Node* chainEnd = bot;
-	while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
-		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
-	}
+    Node* chainEnd = bot;
+    while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
+            chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
+    }
     NodeType type = chainEnd->getType();
         
     // 2. data
-	if (type == DATA) {
-            Node* newPage = (DataNode*) man->getNode(DATA); 
-     	    populate((DataNode*) top, (DataNode*) newPage, -1, man);
-            map_->CAS(topPID, top, newPage);//might need to screw with this
+    if (type == DATA) {
+        Node* newPage = (DataNode*) man->getNode(DATA); 
+        populate((DataNode*) top, (DataNode*) newPage, -1, man);
+        map_->CAS(topPID, top, newPage);//might need to screw with this
     }
 
     // 3. index 
-	if (type == INDEX) {
-            Node* newPage = (IndexNode*) man->getNode(INDEX); 
-     	    populate((IndexNode*) top, (IndexNode*) newPage, -1, man);
-     	    map_->CAS(topPID, top, newPage);//might need to screw with this
+    if (type == INDEX) {
+        Node* newPage = (IndexNode*) man->getNode(INDEX); 
+        populate((IndexNode*) top, (IndexNode*) newPage, -1, man);
+        map_->CAS(topPID, top, newPage);//might need to screw with this
     }
-
 }
 
 
