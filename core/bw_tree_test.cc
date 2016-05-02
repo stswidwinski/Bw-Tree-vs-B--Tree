@@ -294,6 +294,7 @@ TEST(dataNodeInsertConsolidateTest) {
 	}
 
 	// attempt to get unexisting record. Should trigger consolidation
+        // will search in right kid
 	byte* foundPayload = t.get(MAX_DELTA_CHAIN + 1 + initialKey, &man);
 	
 	// we should get null as the answer.
