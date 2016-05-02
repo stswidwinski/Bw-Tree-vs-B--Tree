@@ -222,7 +222,7 @@ TEST(chainUpdate) {
 	// only insert to the right kid. 
 	int initialKey = INIT_KEY_VALUE + 1;
 
-	// payload has monotinically increasing 
+	// payload has monotonically increasing 
 	// value from i to i+LENGTH_RECORDS
 	byte* payload = new byte[LENGTH_RECORDS];
 
