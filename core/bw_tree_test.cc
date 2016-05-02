@@ -175,7 +175,7 @@ TEST(chainInsert) {
 	// only insert to the right kid. 
 	int initialKey = INIT_KEY_VALUE + 1;
 
-	// payload has monotinically increasing 
+	// payload has monotonically increasing 
 	// value from i to i+LENGTH_RECORDS
 	byte* payload = new byte[LENGTH_RECORDS];
 
@@ -213,7 +213,7 @@ TEST(chainInsert) {
 	END;
 }
 
-// insert a single value via BwTree.insert and update is MAX_DELTA_CHAIN-1
+// insert a single value via BwTree.insert and update it MAX_DELTA_CHAIN-1
 // times. Inspect the resulting delta chain.
 TEST(chainUpdate) {
 	BwTree t = BwTree();
