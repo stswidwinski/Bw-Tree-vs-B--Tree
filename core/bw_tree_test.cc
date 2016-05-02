@@ -890,8 +890,8 @@ TEST(rootSplitTest) {
 
 	int necessaryDataNodes = MAX_KEYS + recordsToInsert / MAX_DELTA_CHAIN;
 
-	// +2 for split bcs this is the root.
-	int necessaryIndexNodes = MAX_KEYS / MAX_DELTA_CHAIN + 2;
+	// +3 for split bcs this is the root.
+	int necessaryIndexNodes = MAX_KEYS / MAX_DELTA_CHAIN + 3;
 	
 	MemoryManager man = MemoryManager(necessaryDataNodes,
 		necessaryIndexNodes,
@@ -939,17 +939,19 @@ TEST(rootSplitTest) {
 	// inspect the left child of the root. 
 	PID rightChild = ((IndexNode*) currentNode)->getIndexPID(0);
 	PID leftChild = ((IndexNode*) currentNode)->getSmallestPID();
-	EXPECT_EQ(initialKey + (MAX_KEYS + 1)/2 * MAX_RECORDS / 2 - 1, ((IndexNode*) currentNode)->getIndexKey(0));
+	EXPECT_EQ(initialKey + (MAX_KEYS + 1)/2 * MAX_RECORDS / 2 - 1, 
+		((IndexNode*) currentNode)->getIndexKey(0));
 
 	currentNode = t.map_->get(leftChild);
 	EXPECT_EQ(INDEX, currentNode->getType());
 	// left node is the old root node. It is NOT consolidated.
 	// should contain the left half of the keys
-	EXPECT_TRUE(MAX_KEYS / 2 <= ((IndexNode*) currentNode)->getCurrSize());
+	EXPECT_EQ(MAX_KEYS / 2, ((IndexNode*) currentNode)->getCurrSize());
 	// the first element is the old node. 
 	EXPECT_EQ((PID) 1, ((IndexNode*)currentNode)->getSmallestPID());
 	EXPECT_EQ(initialKey, ((IndexNode*)currentNode)->getIndexKey(0));
 	EXPECT_EQ((PID) 0, ((IndexNode*)currentNode)->getIndexPID(0));
+	EXPECT_EQ(rightChild, ((IndexNode*)currentNode)->getSibling());
 	// the rest of the keys should be new
 	for(int i = 1; i < MAX_KEYS / 2; i++) {
 		EXPECT_EQ(initialKey + i * MAX_RECORDS / 2 - 1, ((IndexNode*)currentNode)->getIndexKey(i));

@@ -482,12 +482,24 @@ void BwTree::split(PID ppid, PID pid, MemoryManager* man, IndexNode* toSplit, No
 	if(ppid == PID_NOT_FOUND) {
 		assert(pid == rootPid_);
 
-		// assign new PID to the old root
-		PID oldRootPid = map_->put(toSplit);
+		// create the left child
+		// we CANNOT reuse the old root because we must set
+		// the sibling pointer and old nodes are immutable.
+		IndexNode* leftChild = (IndexNode*) man->getNode(INDEX);
+		leftChild->setSmallestPID(toSplit->getSmallestPID());
+		leftChild->setSibling(newNodePid);
+		leftChild->setHighKey(Kp);
+		int i = 0;
+		while(toSplit->getIndexKey(i) < Kp) {
+			leftChild->insertKeyVal(toSplit->getIndexKey(i), toSplit->getIndexPID(i));
+			i++;
+		}
+
+		PID leftChildPid = map_->put(leftChild);
 
 		IndexNode* newRootNode = new IndexNode();
 		newRootNode->setVariables(0,
-			oldRootPid,
+			leftChildPid,
 			KEY_NOT_SET,
 			KEY_NOT_SET);
 
