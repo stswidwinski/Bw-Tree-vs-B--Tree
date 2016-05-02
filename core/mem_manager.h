@@ -22,9 +22,9 @@
 
 class MemoryManager {
 	public:
-		MemoryManager(int dataNodeCount,
-			int indexNodeCount,
-			int deltaNodeCount);
+		MemoryManager(long dataNodeCount,
+			long indexNodeCount,
+			long deltaNodeCount);
 
 		MemoryManager();
 
@@ -46,7 +46,7 @@ class MemoryManager {
 		long index_;
 
 		// make a linked list with count number of nodes type type.
-		LinkedList<Node>* initialize(NodeType type, int count);
+		LinkedList<Node>* initialize(NodeType type, long count);
 };
 
 #endif

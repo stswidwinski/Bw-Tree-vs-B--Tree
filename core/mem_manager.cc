@@ -1,8 +1,8 @@
 #include "core/mem_manager.h"
 
-MemoryManager::MemoryManager(int dataNodeCount,
-	int indexNodeCount,
-	int deltaNodeCount) {
+MemoryManager::MemoryManager(long dataNodeCount,
+	long indexNodeCount,
+	long deltaNodeCount) {
 	
 	data_ = 0;
 	delta_ = 0;
@@ -71,10 +71,10 @@ Node* MemoryManager::getNode(NodeType type) {
 	DIE("Node Type Does Not Match");
 }
 
-LinkedList<Node>* MemoryManager::initialize(NodeType type, int count) {
+LinkedList<Node>* MemoryManager::initialize(NodeType type, long count) {
 	LinkedList<Node>* result = new LinkedList<Node>;
 
-	for(int i = 0; i < count; i++) {
+	for(long i = 0; i < count; i++) {
 		switch(type) {
 			case INDEX:
 				result->push(new IndexNode());
