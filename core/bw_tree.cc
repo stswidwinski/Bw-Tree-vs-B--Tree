@@ -36,6 +36,8 @@ In the case of any write (insert/update) we want a pointer to the node that cont
 (the PID of that page). We must also ensure that the value either exists (in case of update) or does not exist (in case of insert). 
 Hence, we actually need both PID and Node*
 
+This function also handles consolidates and splits, which means
+it detects when the delta chain length has grown too long.
 */
 Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	// necessary for splits
