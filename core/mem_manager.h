@@ -23,7 +23,7 @@ class MemoryManager {
 	public:
 		MemoryManager(int dataNodeCount,
 			int indexNodeCount,
-			int deltaNodeCount, int branchFactor);
+			int deltaNodeCount);
 
 		// server node of given type
 		Node* getNode(NodeType type);
@@ -31,7 +31,6 @@ class MemoryManager {
 	private:
 		// arrays of nodes
 		LinkedList<Node>* dataNodes_;
-		LinkedList<Node>* dataConsNodes_;
 		LinkedList<Node>* indexNodes_;
 		LinkedList<Node>* deltaNodes_;
 
@@ -41,7 +40,7 @@ class MemoryManager {
 		int index_;
 
 		// make a linked list with count number of nodes type type.
-		LinkedList<Node>* initialize(NodeType type, int count, int branchFactor);
+		LinkedList<Node>* initialize(NodeType type, int count);
 };
 
 #endif

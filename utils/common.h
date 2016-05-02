@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <iostream>
 #include <assert.h>
+#include <limits.h>
 
 // debug mode
 #define DEBUG true
@@ -32,7 +33,7 @@
 // key array size = MAX_KEYS + SAFETY_KEYS * MAX_DELTA_CHAIN
 #define SAFETY_KEYS 3
 // flag which means that PID was not found
-#define PID_NOT_FOUND -100
+#define PID_NOT_FOUND UINT64_MAX
 // maximal number of keys in index nodes
 // MUST BE AT LEAST 3
 #define MAX_KEYS 256
@@ -49,6 +50,7 @@
 // the length of the entry.
 #define LENGTH_RECORDS 8
 // maximal number of data pairs inside data node
+// should be a power of 2.
 #define MAX_RECORDS 1024
 
 // flag which means that record was not found
@@ -71,15 +73,16 @@
 */
 
 // maximal length of the delta chain
-#define MAX_DELTA_CHAIN 100
+// should be a power of 2.
+#define MAX_DELTA_CHAIN 8
 
 #define MAP_SIZE 16777216 // 2^24
 
 // inside bw_tree for initialization
-#define INIT_KEY_VALUE 4000
+#define INIT_KEY_VALUE 65536
 
 
-typedef int PID;
+typedef uint64_t PID;
 typedef unsigned char byte;
 typedef unsigned int BKey;
 

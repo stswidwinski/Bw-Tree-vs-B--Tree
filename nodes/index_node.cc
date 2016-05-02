@@ -7,6 +7,7 @@
 
 IndexNode::IndexNode() : Node(INDEX) {
 	searchArray_ = new Pair<int, PID>[ARRAY_KEYS_LENGTH];
+	currentSize_ = 0;
 }
 
 IndexNode::IndexNode(int currentSize,
@@ -43,21 +44,24 @@ PID IndexNode::nextPid(int key) {
 		return smallestPID_;
 
 	// do binary search to find the right bucket
-	// the largest bucket such that given key is larger then
+	// the largest bucket such that given key is larger than
 	// bucket's key.
+        // 
+        // some reasoning suffices to show that this is correct:
+        // left > right can only arise in two situations:
+        // if the left moves past the right, or if the 
+        // right moves past the left... in both these cases
+        // we have encountered the bucket that satisfies
+        // above condition
 	int left = 0, right = currentSize_ - 1, middle = 0;
-	while(left < right) {
+	while(left <= right) {
 		// avoiding overflow
 		middle = left + (right - left) / 2;
 		if(searchArray_[middle].key > key) {
-			right = middle;
-		} 
-		else if (searchArray_[middle].key < key) {
-			left = middle + 1;
-			middle++; 
-		}
-		else {
-			return searchArray_[middle].value;
+			right = middle - 1;
+			middle--;
+		} else {
+			left =  middle + 1;
 		}
 	}
 
@@ -127,36 +131,44 @@ int IndexNode::getCurrSize() {
 }
 
 void IndexNode::merge(int low, int mid, int high, int currentSize) {
-        int h,i,j,b[currentSize],k;
-        h=low;
-        i=low;
-        j=mid+1;
+	int h,i,j,b[currentSize],k;
+	PID values[currentSize];
+	h=low;
+	i=low;
+	j=mid+1;
 
-        while((h<=mid)&&(j<=high)) {
-                if(searchArray_[h].key <= searchArray_[j].key) {
-                        b[i]=searchArray_[h].key;
-                        h++;
-                } else {
-                        b[i]=searchArray_[j].key;
-                        j++;
-                }
-                
-                i++;
-        }
+	while((h<=mid)&&(j<=high)) {
+		if(searchArray_[h].key <= searchArray_[j].key) {
+			b[i]=searchArray_[h].key;
+			values[i] = searchArray_[h].value;
+			h++;
+		} else {
+			b[i]=searchArray_[j].key;
+			values[i] = searchArray_[j].value;
+			j++;
+		}
+		
+		i++;
+	}
 
-        if(h>mid) {
-                for(k=j;k<=high;k++) {
-                        b[i]=searchArray_[k].key;
-                        i++;
-                }
-        } else {
-                for(k=h;k<=mid;k++) {
-                        b[i]= searchArray_[k].key;
-                        i++;
-                }
-        }
+	if(h>mid) {
+		for(k=j;k<=high;k++) {
+			b[i]=searchArray_[k].key;
+			values[i] = searchArray_[k].value;
+			i++;
+		}
+	} else {
+		for(k=h;k<=mid;k++) {
+			b[i]= searchArray_[k].key;
+			values[i] = searchArray_[k].value;
+			i++;
+		}
+	}
 
-        for(k=low;k<=high;k++)  searchArray_[k].key=b[k];
+	for(k=low;k<=high;k++) {
+		searchArray_[k].key=b[k];
+		searchArray_[k].value = values[k];
+	}
 }
 
 void IndexNode::mergesortHelper(int low,int high, int currentSize) {
