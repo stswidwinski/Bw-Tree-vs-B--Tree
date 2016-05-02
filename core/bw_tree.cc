@@ -176,6 +176,7 @@ Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
 	}	
 }
 
+// function used in both consolidation and splitting
 void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* man) {
 	Node* chainEnd = oldPt;
 	NodeType type = chainEnd->getType();
