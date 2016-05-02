@@ -39,10 +39,7 @@ void* TxnProcessor::StartScheduler(void * arg) {
 }
 
 TxnProcessor::~TxnProcessor() {
-  if(mode_ == SERIAL) {
-    std::cout << "\t SERIAL execution ended. Used:\n";
-    man->reportUsage();
-  }
+  
 }
 
 void TxnProcessor::NewTxnRequest(Txn* txn) {
@@ -76,6 +73,9 @@ void TxnProcessor::RunSerialScheduler() {
       ExecuteTxn(txn, man);
     }
   }
+
+  std::cout << "\t SERIAL execution ended. Used:\n";
+  man->reportUsage();
 }
 
 void TxnProcessor::RunConcurScheduler() {
