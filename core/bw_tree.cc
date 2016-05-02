@@ -37,17 +37,20 @@ In the case of any write (insert/update) we want a pointer to the node that cont
 Hence, we actually need both PID and Node*
 
 */
-Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man) {
+
+// startPID is 0 if it is not passed in as meaningful.
+// TODO
+// Do it better. rootPID cannot be used unfortunately. Perhaps overload? 
+Triple<PID, Node*, byte*> BwTree::findNode(int key, MemoryManager* man, PID startPID) {
 	// necessary for splits
 	PID parentPid = PID_NOT_FOUND;
-	PID currentPid = rootPid_;
+	PID currentPid = startPID ? startPID : rootPid_;
 
 	// pointer to the node that is first in the delta
 	// chain.
 	Node* firstInChain = nullptr;
 	// node we are processing
-        // start from root
-	Node* currentNode = map_->get(rootPid_);
+	Node* currentNode = map_->get(currentPid);
 	// the result. Not set until the end.
 	Node* resultingNode = nullptr;
 	byte* resultingValue = nullptr;
@@ -379,58 +382,71 @@ byte* BwTree::get(int key, MemoryManager* man) {
 // return 1 on success
 // return 0 on failure
 int BwTree::update(int key, byte *value, MemoryManager* man) {
-	
+	PID startPID = rootPid_;
+    
     Triple<PID, Node*, byte*> found = findNode(key, man);
+    // cannot update a record that does not exist
+    if(found.record == nullptr)
+    	return 0;
 
-	// if the record was found, can update
-	if (found.record != nullptr) { 
-		// get the physical address of first thing in the chain
-		Node* firstInChain = map_->get(found.pid);
-		// create new delta node
-		DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_UPDATE);
+	// get the physical address of first thing in the chain
+	Node* firstInChain = map_->get(found.pid);
+	// create new delta node
+	DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_UPDATE);
 
-		// set new delta to point to found.node
-		newNode->setVariables(DELTA_UPDATE,
-				firstInChain,
-				key, value);
+	// set new delta to point to found.node
+	newNode->setVariables(DELTA_UPDATE,
+			firstInChain,
+			key, value);
 
-	    // CAS within memory map to point to new delta
-        while(!map_->CAS(found.pid, firstInChain, newNode)) {
-        	firstInChain = map_->get(found.pid);
-        	newNode->setNextNode(firstInChain);
-        }
-        
-        return 1;
-	}
-    return 0;
+	while(!map_->CAS(found.pid, firstInChain, newNode)) {
+		// find the correct place to insert again.
+		found = findNode(key, man, startPID);
+		// if the record was found, we cannot add it
+		if (found.record == nullptr)
+			return 0;
+
+    	firstInChain = map_->get(found.pid);
+    	newNode->setNextNode(firstInChain);
+    }
+    
+    return 1;
+
 }
 
 // return 1 on success
 // return 0 on failure
 int BwTree::insert(int key, byte *value, MemoryManager* man) {
+	PID startPID = rootPid_;
+	Triple<PID, Node*, byte*> found = findNode(key, man, startPID);
+	startPID = found.pid;
+
+	// if the record was found, we cannot add it
+	if (found.record != nullptr)
+		return 0;
+
+	// get the physical address of first thing in the chain
+	Node* firstInChain = map_->get(found.pid);
+
+	// create new delta node
+    DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_INSERT);
+    // set new delta to point to found.node 
+    newNode->setVariables(DELTA_INSERT,
+	        firstInChain,
+            key, value);	
+
+	while(!map_->CAS(found.pid, firstInChain, newNode)) {
+		// find the correct place to insert again.
+		found = findNode(key, man, startPID);
+		// if the record was found, we cannot add it
+		if (found.record != nullptr)
+			return 0;
+
+    	firstInChain = map_->get(found.pid);
+    	newNode->setNextNode(firstInChain);
+    }
 	
-	Triple<PID, Node*, byte*> found = findNode(key, man);
-	// // if the record was not found, can add it
-	if (found.record == nullptr) { 
-			// get the physical address of first thing in the chain
-			Node* firstInChain = map_->get(found.pid);
-
-            // create new delta node
-            DeltaNode* newNode = (DeltaNode*) man->getNode(DELTA_INSERT);
-            // set new delta to point to found.node 
-            newNode->setVariables(DELTA_INSERT,
-                                 firstInChain,
-                                 key, value);
-
-            // CAS within memory map to point to new delta
-            while(!map_->CAS(found.pid, firstInChain, newNode)) {
-            	firstInChain = map_->get(found.pid);
-            	newNode->setNextNode(firstInChain);
-            }
-
-            return 1;
-	}
-        return 0;
+    return 1;
 }
 
 void BwTree::split(PID ppid, PID pid, MemoryManager* man, DataNode* toSplit, Node* firstInChain) {
