@@ -40,7 +40,7 @@ class BwTree {
 
         void populate(DataNode * oldPt, DataNode* newPt, int kp, MemoryManager * man);
         void populate(IndexNode * oldPt, IndexNode* newPt, int kp, MemoryManager * man);
-        void consolidate(Node* top, Node* bot, PID topPID, MemoryManager * man);
+        bool consolidate(Node* top, Node* bot, PID topPID, MemoryManager * man);
 
         PID getRootPID() {
         	return rootPid_;
