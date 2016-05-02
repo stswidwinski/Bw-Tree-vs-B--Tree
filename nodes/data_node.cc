@@ -9,17 +9,20 @@ DataNode::DataNode(int dataLength,
 	int lowKey,
 	int highKey) : Node(DATA) {
 
-    data_ = new Pair<int, byte*>[dataLength];
+    data_ = new Pair<int, byte*>[ARRAY_RECORDS_LENGTH];
 	dataLength_ = dataLength;
 	sidePter_ = sidePter;
 	lowKey_ = lowKey;
 	highKey_ = highKey;
+	for(int i = 0; i < ARRAY_RECORDS_LENGTH; i++)
+		data_[i].value = new byte[LENGTH_RECORDS];
 }
 
 DataNode::DataNode() : Node(DATA) {
 	data_ = new Pair<int, byte*>[ARRAY_RECORDS_LENGTH];
 	for(int i = 0; i < ARRAY_RECORDS_LENGTH; i++)
 		data_[i].value = new byte[LENGTH_RECORDS];
+	dataLength_=0;
 }
 
 void DataNode::setVariables(Pair<int, byte*>* data,
@@ -62,11 +65,11 @@ int DataNode::pointToRecord(int key, byte ** record) {
 }
 
 bool DataNode::doSplit() {
-	return (dataLength_ > MAX_RECORDS);
+	return (dataLength_ >= MAX_RECORDS);
 }
 
 int DataNode::getSplittingKey() {
-	return data_[dataLength_ / 2].key;
+	return data_[(dataLength_ - 1) / 2].key;
 }
 
 int DataNode::getHighKey() {
@@ -126,7 +129,7 @@ void DataNode::insertBaseData(int key, byte *val) {
     data_[dataLength_].key = key;
     // copy the byte value
     for(int i = 0; i < LENGTH_RECORDS; i++)
-    	data_[dataLength_].value[i] = *(val+i);
+        	data_[dataLength_].value[i] = *(val+i);
     dataLength_++;
 };
 
@@ -151,6 +154,7 @@ bool DataNode::findSub(int key, int bound) {
 
 void DataNode::merge(int low, int mid, int high, int dataLength) {
 	int h,i,j,b[dataLength],k;
+	byte* payload[dataLength];
 	h=low;
 	i=low;
 	j=mid+1;
@@ -158,9 +162,11 @@ void DataNode::merge(int low, int mid, int high, int dataLength) {
 	while((h<=mid)&&(j<=high)) {
 		if(data_[h].key <= data_[j].key) {
 			b[i]=data_[h].key;
+			payload[i] = data_[h].value;
 			h++;
 		} else {
 			b[i]=data_[j].key;
+			payload[i] = data_[j].value;
 			j++;
 		}
 		
@@ -170,16 +176,21 @@ void DataNode::merge(int low, int mid, int high, int dataLength) {
 	if(h>mid) {
 		for(k=j;k<=high;k++) {
 			b[i]=data_[k].key;
+			payload[i] = data_[k].value;
 			i++;
 		}
 	} else {
 		for(k=h;k<=mid;k++) {
 			b[i]= data_[k].key;
+			payload[i] = data_[k].value;
 			i++;
 		}
 	}
 
-	for(k=low;k<=high;k++)  data_[k].key=b[k];
+	for(k=low;k<=high;k++) {
+		data_[k].key=b[k];
+		data_[k].value = payload[k];
+	}
 }
 
 void DataNode::mergesortHelper(int low,int high, int dataLength) {

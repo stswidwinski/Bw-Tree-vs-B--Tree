@@ -189,7 +189,7 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
  	for(int i = arrSize - 1; i >= 0; i--) {
  		payload = node->getDataVal(i);
  		for(int j = 0; j < LENGTH_RECORDS; j++)
- 			EXPECT_EQ((byte) i, *(payload+j));
+ 			EXPECT_EQ((byte) arrSize - 1 - i, *(payload+j));
  		EXPECT_EQ(key, node->getDataKey(i));
  		key += stepKey;
  	}
@@ -221,12 +221,15 @@ DataNode* initializeForTest(int arrSize = 100, int highKey = 10000,
  	for(int i = arrSize - 1; i >= 0; i--) {
  		payload = node->getDataVal(i);
  		for(int j = 0; j < LENGTH_RECORDS; j++)
- 			EXPECT_EQ((byte) i, *(payload+j));
+ 			EXPECT_EQ((byte) arrSize -1 - i, *(payload+j));
  		EXPECT_EQ(key, node->getDataKey(i));
  		key += stepKey;
  	}
 
  	EXPECT_EQ(500, node->getDataKey(arrSize));
+ 	payload = node->getDataVal(arrSize);
+ 	for(int j = 0; j < LENGTH_RECORDS; j++)
+ 		EXPECT_EQ((byte) 123 - j, *(payload + j));
 
  	END;
 

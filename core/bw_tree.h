@@ -110,7 +110,7 @@ class BwTree {
 			GCC has __sync_val_compare_and_swap() built in. I think we could use it. Better ideas?
 		*/
 
-	private:
+	//private:
 		MemoryMap<Node>* map_;
 		PID rootPid_;
 
