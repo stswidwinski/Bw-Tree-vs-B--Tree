@@ -39,9 +39,9 @@ class MemoryManager {
 		LinkedList<Node>* deltaNodes_;
 
 		// number of nodes served
-		int data_;
-		int delta_;
-		int index_;
+		long data_;
+		long delta_;
+		long index_;
 
 		// make a linked list with count number of nodes type type.
 		LinkedList<Node>* initialize(NodeType type, int count);
