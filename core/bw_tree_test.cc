@@ -971,6 +971,12 @@ TEST(rootSplitTest) {
 	END;
 }
 
+TEST(nonRootIndexSplitTest) {
+	// @ TODO
+	// eventually
+	END;
+}
+
 int main(int argc, char** argv) {
     initTest();
     insert1Test();
