@@ -180,7 +180,8 @@ void BwTree::populate(DataNode *oldPt, DataNode *newPt, int kp, MemoryManager* m
 	Node* chainEnd = oldPt;
 	NodeType type = chainEnd->getType();
 
-        // check if kp is set, to determine if we have encountered a split delta 
+        // check if kp is set, to determine if we are splitting or consolidating
+        // isSplit = 1 if splitting, isSplit = 0 if consolidating
         bool isSplit = (kp == -1) ? 0 : 1;
 	
 	while(type != DATA) {
