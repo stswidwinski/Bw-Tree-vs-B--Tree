@@ -16,6 +16,7 @@ class LinkedList {
 		LinkedList() {
 			head_ = nullptr;
 			tail_ = nullptr;
+			firstElementEver_ = nullptr;
 		};
 
 		// a cut-down version of standard pop. We do NOT
@@ -39,13 +40,21 @@ class LinkedList {
 			if (head_ == nullptr) {
 				head_ = listElem;
 				tail_ = head_;
+				firstElementEver_ = head_;
 			} else {
 				head_->next = listElem;
 				head_ = listElem;
 			}
 		}
 
-		~LinkedList(){}
+		~LinkedList(){
+			ListElement* tmp;
+			while(firstElementEver_ != nullptr) {
+				tmp = firstElementEver_->next;
+				delete firstElementEver_;
+				firstElementEver_ = tmp;
+			}
+		}
 
 	private:
 		// container for elements stored in the linked list that 
@@ -64,6 +73,8 @@ class LinkedList {
 		// standard head_ and tail_ of the list
 		ListElement* head_;
 		ListElement* tail_;
+		// for garbage collection.
+		ListElement* firstElementEver_;
 };
 
 #endif

@@ -13,6 +13,12 @@ MemoryManager::MemoryManager(int dataNodeCount,
 	deltaNodes_ = initialize(DELTA_INSERT, deltaNodeCount);
 }
 
+MemoryManager::~MemoryManager() {
+	delete dataNodes_;
+	delete indexNodes_;
+	delete deltaNodes_;
+}
+
 // initialize the memory manager according to sizes described 
 // inside common.h.
 MemoryManager::MemoryManager() {

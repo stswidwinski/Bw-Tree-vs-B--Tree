@@ -32,6 +32,8 @@ class MemoryManager {
 		Node* getNode(NodeType type);
 
 		void reportUsage();
+
+		~MemoryManager();
 	private:
 		// arrays of nodes
 		LinkedList<Node>* dataNodes_;
