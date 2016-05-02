@@ -348,7 +348,8 @@ void BwTree::populate(IndexNode *oldPt, IndexNode *newPt, int ks, MemoryManager*
 }
 
 void BwTree::consolidate(Node* top, Node * bot, PID topPID, MemoryManager* man) {
-    // 1. get type
+    // 1. get type of node at end of delta chain
+    // to determine what consolidation to perform
 	Node* chainEnd = bot;
 	while(chainEnd->getType() != DATA && (chainEnd->getType() != INDEX)) {
 		chainEnd = ((DeltaNode*)chainEnd)->getNextNode();
