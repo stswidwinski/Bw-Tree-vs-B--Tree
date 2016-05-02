@@ -878,7 +878,95 @@ TEST(indexConsolidationTest) {
 	}
 
 	END;
+}
 
+TEST(rootSplitTest) {
+	BwTree t = BwTree();
+	PID initialRootPID = t.rootPid_;
+	
+	int recordsToInsert = (MAX_KEYS + 1) * MAX_RECORDS / 2;
+
+	int necessaryDeltaNodes = recordsToInsert + 2 * MAX_KEYS;
+
+	int necessaryDataNodes = MAX_KEYS + recordsToInsert / MAX_DELTA_CHAIN;
+
+	// +2 for split bcs this is the root.
+	int necessaryIndexNodes = MAX_KEYS / MAX_DELTA_CHAIN + 2;
+	
+	MemoryManager man = MemoryManager(necessaryDataNodes,
+		necessaryIndexNodes,
+		necessaryDeltaNodes);
+
+	int initialKey = INIT_KEY_VALUE;
+
+	// Add nodes to the right-most page, until we split
+	// for MAX_KEYS/MAX_DELTA_CHAIN times. Every time there should
+	// be an index split use a read to trigger it. 
+	int iterations = recordsToInsert;
+	byte* foundPayload;
+	byte* payload = new byte[LENGTH_RECORDS];
+
+	for(int i = 0; i <= iterations; i++) {
+		if( i != 0 && (i % (MAX_RECORDS/2)) == 0) {
+			// trigger split of data node
+			foundPayload = t.get(initialKey + i - MAX_DELTA_CHAIN - 1, &man);
+			for(int j = 0; j < LENGTH_RECORDS; j++)
+				EXPECT_EQ((byte) (i - MAX_DELTA_CHAIN - 1 + j), foundPayload[j]);
+
+			// trigger consolidation of index node
+			// get what just has been previously inserted and is in the page by now.
+			foundPayload = t.get(initialKey - 1, &man);
+			// check validity of response.
+			EXPECT_TRUE(foundPayload == nullptr);
+
+			// this allows us to do the final split without special code outside
+			// of the loop.
+			if (i == iterations)
+				break;
+		}
+		for(int j = 0; j < LENGTH_RECORDS; j++)
+			*(payload + j) = (byte) (i + j);
+		EXPECT_EQ(1, t.insert(i + initialKey, payload, &man));
+	}
+
+	// inspect the resulting tree.
+	// root pid should not change
+	EXPECT_EQ(t.rootPid_, initialRootPID);
+	// the top node should have only one element
+	Node* currentNode = t.map_->get(t.rootPid_);
+	EXPECT_EQ(INDEX, currentNode->getType());
+	EXPECT_EQ(1, ((IndexNode*) currentNode)->getCurrSize());
+	// inspect the left child of the root. 
+	PID rightChild = ((IndexNode*) currentNode)->getIndexPID(0);
+	PID leftChild = ((IndexNode*) currentNode)->getSmallestPID();
+	EXPECT_EQ(initialKey + (MAX_KEYS + 1)/2 * MAX_RECORDS / 2 - 1, ((IndexNode*) currentNode)->getIndexKey(0));
+
+	currentNode = t.map_->get(leftChild);
+	EXPECT_EQ(INDEX, currentNode->getType());
+	// left node is the old root node. It is NOT consolidated.
+	// should contain the left half of the keys
+	EXPECT_TRUE(MAX_KEYS / 2 <= ((IndexNode*) currentNode)->getCurrSize());
+	// the first element is the old node. 
+	EXPECT_EQ((PID) 1, ((IndexNode*)currentNode)->getSmallestPID());
+	EXPECT_EQ(initialKey, ((IndexNode*)currentNode)->getIndexKey(0));
+	EXPECT_EQ((PID) 0, ((IndexNode*)currentNode)->getIndexPID(0));
+	// the rest of the keys should be new
+	for(int i = 1; i < MAX_KEYS / 2; i++) {
+		EXPECT_EQ(initialKey + i * MAX_RECORDS / 2 - 1, ((IndexNode*)currentNode)->getIndexKey(i));
+		EXPECT_EQ((PID) (2 + i), ((IndexNode*)currentNode)->getIndexPID(i));
+	}
+
+	// check the right child
+	currentNode = t.map_->get(rightChild);
+	EXPECT_EQ(INDEX, currentNode->getType());
+	EXPECT_EQ(MAX_KEYS / 2, ((IndexNode*)currentNode)->getCurrSize());
+	EXPECT_EQ((PID) (2 + MAX_KEYS / 2), ((IndexNode*)currentNode)->getSmallestPID());
+	for(int i = 0; i < MAX_KEYS / 2; i++) {
+		EXPECT_EQ(initialKey + (i + MAX_KEYS/2 + 1) * MAX_RECORDS / 2 - 1, ((IndexNode*)currentNode)->getIndexKey(i));
+		EXPECT_EQ((PID) (3 + i + MAX_KEYS / 2), ((IndexNode*)currentNode)->getIndexPID(i));
+	}
+
+	END;
 }
 
 int main(int argc, char** argv) {
@@ -898,4 +986,5 @@ int main(int argc, char** argv) {
     consolidateSplitDataNode();
     findNodeTest();
     indexConsolidationTest();
+    rootSplitTest();
 }
